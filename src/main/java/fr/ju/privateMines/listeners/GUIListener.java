@@ -208,11 +208,15 @@ public class GUIListener implements Listener {
         String targetName = targetPlayer.getName();
         if (targetName == null) targetName = "Joueur inconnu";
         Player onlineTarget = targetPlayer.isOnline() ? targetPlayer.getPlayer() : null;
+        Mine ownerMine = plugin.getMineManager().getMine(player).orElse(null);
+        if (ownerMine == null) {
+            player.closeInventory();
+            return;
+        }
         switch (slot) {
             case 10:
                 if (onlineTarget != null && onlineTarget.isOnline()) {
-                    Mine ownerMine = plugin.getMineManager().getMine(player).orElse(null);
-                    if (ownerMine != null && plugin.getMineManager().getMineProtectionManager().isPlayerInMineRegion(onlineTarget)) {
+                    if (plugin.getMineManager().getMineProtectionManager().isPlayerInMineRegion(onlineTarget)) {
                         onlineTarget.teleport(plugin.getServer().getWorlds().get(0).getSpawnLocation());
                         onlineTarget.sendMessage(ColorUtil.translateColors("&cVous avez été expulsé de la mine de &e" + player.getName() + "&c."));
                         player.sendMessage(ColorUtil.translateColors("&aVous avez expulsé &e" + targetName + "&a de votre mine."));
@@ -265,6 +269,16 @@ public class GUIListener implements Listener {
                 mine.allowAccess(targetId);
                 player.sendMessage(ColorUtil.translateColors("&aVous avez autorisé &e" + targetName + "&a à accéder à votre mine."));
                 MineVisitorsGUI.openGUI(player, 0);
+                return;
+            case 28:
+                boolean canBreak = ownerMine.hasVisitorPermission(targetId, Mine.VisitorPermission.BREAK);
+                ownerMine.setVisitorPermission(targetId, Mine.VisitorPermission.BREAK, !canBreak);
+                if (!canBreak) {
+                    plugin.getMineManager().getMineProtectionManager().addMemberToMineRegion(ownerMine.getOwner(), targetId);
+                } else {
+                    plugin.getMineManager().getMineProtectionManager().removeMemberFromMineRegion(ownerMine.getOwner(), targetId);
+                }
+                MineVisitorsGUI.openActionGUI(player, targetId);
                 return;
             case 31:
                 MineVisitorsGUI.openGUI(player, 0);

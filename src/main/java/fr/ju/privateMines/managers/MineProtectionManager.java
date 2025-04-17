@@ -1,9 +1,14 @@
 package fr.ju.privateMines.managers;
+import java.util.UUID;
+
 import org.bukkit.World;
 import org.bukkit.entity.Player;
+
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.protection.managers.RegionManager;
+import com.sk89q.worldguard.protection.regions.ProtectedRegion;
+
 import fr.ju.privateMines.PrivateMines;
 import fr.ju.privateMines.models.Mine;
 import fr.ju.privateMines.services.MineRegionService;
@@ -73,5 +78,31 @@ public class MineProtectionManager {
     }
     public String getMineRegionId(Player player) {
         return regionPrefix + player.getUniqueId().toString();
+    }
+    public boolean addMemberToMineRegion(UUID owner, UUID member) {
+        Mine mine = plugin.getMineManager().getMine(owner).orElse(null);
+        if (mine == null) return false;
+        World world = mine.getLocation().getWorld();
+        if (world == null) return false;
+        RegionManager regionManager = WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(world));
+        if (regionManager == null) return false;
+        String regionId = regionPrefix + owner.toString();
+        ProtectedRegion region = regionManager.getRegion(regionId);
+        if (region == null) return false;
+        region.getMembers().addPlayer(member);
+        return true;
+    }
+    public boolean removeMemberFromMineRegion(UUID owner, UUID member) {
+        Mine mine = plugin.getMineManager().getMine(owner).orElse(null);
+        if (mine == null) return false;
+        World world = mine.getLocation().getWorld();
+        if (world == null) return false;
+        RegionManager regionManager = WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(world));
+        if (regionManager == null) return false;
+        String regionId = regionPrefix + owner.toString();
+        ProtectedRegion region = regionManager.getRegion(regionId);
+        if (region == null) return false;
+        region.getMembers().removePlayer(member);
+        return true;
     }
 } 
