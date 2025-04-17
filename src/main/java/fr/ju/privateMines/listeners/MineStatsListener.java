@@ -20,33 +20,17 @@ public class MineStatsListener implements Listener {
         this.plugin = plugin;
         this.mineManager = plugin.getMineManager();
         this.statsManager = plugin.getStatsManager();
-        this.autoResetEnabled = plugin.getConfigManager().getConfig().getBoolean("Gameplay.auto-reset.enabled", true);
-        this.autoResetMessage = plugin.getConfigManager().getConfig().getString("Gameplay.auto-reset.message", 
-                                "&eVotre mine a été automatiquement réinitialisée !");
+        this.autoResetEnabled = false;
+        this.autoResetMessage = "";
     }
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event) {
-        if (!autoResetEnabled) return;
         Location blockLoc = event.getBlock().getLocation();
         Mine mine = findMineByLocation(blockLoc);
         if (mine == null) return;
-        int beforeBlocksMined = mine.getStats().getBlocksMined();
-        int beforeTotalBlocks = mine.getStats().getTotalBlocks();
-        plugin.getLogger().info("[DEBUG MINE] Avant incrémentation - Stats: " + beforeBlocksMined + "/" + beforeTotalBlocks + " (" + mine.getStats().getPercentageMined() + "%)");
-        boolean shouldReset = statsManager.incrementBlocksMined(mine);
+        statsManager.incrementBlocksMined(mine);
         if (plugin.getHologramManager() != null) {
             plugin.getHologramManager().createOrUpdateHologram(mine);
-        }
-        int afterBlocksMined = mine.getStats().getBlocksMined();
-        int afterTotalBlocks = mine.getStats().getTotalBlocks();
-        plugin.getLogger().info("[DEBUG MINE] Après incrémentation - Stats: " + afterBlocksMined + "/" + afterTotalBlocks + " (" + mine.getStats().getPercentageMined() + "%)");
-        Player player = event.getPlayer();
-        if (shouldReset) {
-            Player owner = plugin.getServer().getPlayer(mine.getOwner());
-            if (owner != null && owner.isOnline()) {
-                owner.sendMessage(autoResetMessage.replace("&", "§"));
-            }
-            mineManager.resetMine(mine.getOwner());
         }
     }
     @EventHandler
