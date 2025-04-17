@@ -209,56 +209,60 @@ public class GUIListener implements Listener {
         if (targetName == null) targetName = "Joueur inconnu";
         Player onlineTarget = targetPlayer.isOnline() ? targetPlayer.getPlayer() : null;
         switch (slot) {
-            case 10: 
+            case 10:
                 if (onlineTarget != null && onlineTarget.isOnline()) {
                     onlineTarget.teleport(plugin.getServer().getWorlds().get(0).getSpawnLocation());
                     onlineTarget.sendMessage(ColorUtil.translateColors("&cVous avez été expulsé de la mine de &e" + player.getName() + "&c."));
-                    player.sendMessage(ColorUtil.translateColors("&aVous avez expulsé &e" + targetName + "&a de votre mine."));
-                } else {
-                    player.sendMessage(ColorUtil.translateColors("&cLe joueur n'est pas connecté ou déjà hors de la mine."));
                 }
-                break;
-            case 12: 
+                player.sendMessage(ColorUtil.translateColors("&aVous avez expulsé &e" + targetName + "&a de votre mine."));
+                MineVisitorsGUI.openGUI(player, 0);
+                return;
+            case 12:
                 mine.banPlayerPermanently(targetId);
                 player.sendMessage(ColorUtil.translateColors("&cVous avez banni définitivement &e" + targetName + "&c de votre mine."));
-                break;
-            case 14: 
+                MineVisitorsGUI.openGUI(player, 0);
+                return;
+            case 14:
                 mine.banPlayer(targetId, 3600);
                 player.sendMessage(ColorUtil.translateColors("&cVous avez banni &e" + targetName + "&c de votre mine pour &e1 heure&c."));
                 if (onlineTarget != null) {
                     onlineTarget.teleport(plugin.getServer().getWorlds().get(0).getSpawnLocation());
                     onlineTarget.sendMessage(ColorUtil.translateColors("&cVous avez été banni de la mine de &e" + player.getName() + "&c pour 1 heure."));
                 }
-                break;
-            case 16: 
+                MineVisitorsGUI.openGUI(player, 0);
+                return;
+            case 16:
                 mine.banPlayer(targetId, 86400);
                 player.sendMessage(ColorUtil.translateColors("&cVous avez banni &e" + targetName + "&c de votre mine pour &e24 heures&c."));
                 if (onlineTarget != null) {
                     onlineTarget.teleport(plugin.getServer().getWorlds().get(0).getSpawnLocation());
                     onlineTarget.sendMessage(ColorUtil.translateColors("&cVous avez été banni de la mine de &e" + player.getName() + "&c pour 24 heures."));
                 }
-                break;
-            case 20: 
+                MineVisitorsGUI.openGUI(player, 0);
+                return;
+            case 20:
                 mine.unbanPlayer(targetId);
                 player.sendMessage(ColorUtil.translateColors("&aVous avez débanni &e" + targetName + "&a de votre mine."));
-                break;
-            case 22: 
+                MineVisitorsGUI.openGUI(player, 0);
+                return;
+            case 22:
                 mine.denyAccess(targetId);
                 player.sendMessage(ColorUtil.translateColors("&cVous avez refusé l'accès à &e" + targetName + "&c dans votre mine."));
                 if (onlineTarget != null) {
                     onlineTarget.teleport(plugin.getServer().getWorlds().get(0).getSpawnLocation());
                     onlineTarget.sendMessage(ColorUtil.translateColors("&cVotre accès à la mine de &e" + player.getName() + "&c a été révoqué."));
                 }
-                break;
-            case 24: 
+                MineVisitorsGUI.openGUI(player, 0);
+                return;
+            case 24:
                 mine.allowAccess(targetId);
                 player.sendMessage(ColorUtil.translateColors("&aVous avez autorisé &e" + targetName + "&a à accéder à votre mine."));
-                break;
-            case 31: 
+                MineVisitorsGUI.openGUI(player, 0);
+                return;
+            case 31:
                 MineVisitorsGUI.openGUI(player, 0);
                 return;
         }
-        MineVisitorsGUI.openActionGUI(player, targetId);
     }
     private void handleSettingsGUIClick(Player player, ItemStack clickedItem, int slot) {
         switch (slot) {
