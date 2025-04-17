@@ -168,7 +168,10 @@ public class GUIListener implements Listener {
         }
         if (slot >= 9 && slot <= 44) {
             Mine mine = plugin.getMineManager().getMine(player).orElse(null);
-            if (mine == null) return;
+            if (mine == null) {
+                player.closeInventory();
+                return;
+            }
             MineStats stats = mine.getStats();
             Map<UUID, Integer> visitorStats = stats.getVisitorStats();
             List<Map.Entry<UUID, Integer>> sortedVisitors = visitorStats.entrySet()
@@ -178,7 +181,10 @@ public class GUIListener implements Listener {
                     .collect(Collectors.toList());
             int startIndex = currentPage * MineVisitorsGUI.PAGE_SIZE;
             int visitorIndex = startIndex + (slot - 9);
-            if (visitorIndex < 0 || visitorIndex >= sortedVisitors.size()) return;
+            if (visitorIndex < 0 || visitorIndex >= sortedVisitors.size()) {
+                player.closeInventory();
+                return;
+            }
             UUID targetId = sortedVisitors.get(visitorIndex).getKey();
             MineVisitorsGUI.openActionGUI(player, targetId);
         }
@@ -194,30 +200,29 @@ public class GUIListener implements Listener {
             return;
         }
         Mine mine = plugin.getMineManager().getMine(player).orElse(null);
-        if (mine == null) return;
+        if (mine == null) {
+            player.closeInventory();
+            return;
+        }
         OfflinePlayer targetPlayer = Bukkit.getOfflinePlayer(targetId);
         String targetName = targetPlayer.getName();
         if (targetName == null) targetName = "Joueur inconnu";
         Player onlineTarget = targetPlayer.isOnline() ? targetPlayer.getPlayer() : null;
         switch (slot) {
-            case 4: 
-                if (onlineTarget != null) {
+            case 10: 
+                if (onlineTarget != null && onlineTarget.isOnline()) {
                     onlineTarget.teleport(plugin.getServer().getWorlds().get(0).getSpawnLocation());
                     onlineTarget.sendMessage(ColorUtil.translateColors("&cVous avez été expulsé de la mine de &e" + player.getName() + "&c."));
                     player.sendMessage(ColorUtil.translateColors("&aVous avez expulsé &e" + targetName + "&a de votre mine."));
                 } else {
-                    player.sendMessage(ColorUtil.translateColors("&cCe joueur n'est pas en ligne ou n'est pas dans votre mine."));
-                }
-                break;
-            case 11: 
-                mine.banPlayerPermanently(targetId);
-                player.sendMessage(ColorUtil.translateColors("&cVous avez banni &e" + targetName + "&c de votre mine de façon permanente."));
-                if (onlineTarget != null) {
-                    onlineTarget.teleport(plugin.getServer().getWorlds().get(0).getSpawnLocation());
-                    onlineTarget.sendMessage(ColorUtil.translateColors("&cVous avez été banni de la mine de &e" + player.getName() + "&c."));
+                    player.sendMessage(ColorUtil.translateColors("&cLe joueur n'est pas connecté ou déjà hors de la mine."));
                 }
                 break;
             case 12: 
+                mine.banPlayerPermanently(targetId);
+                player.sendMessage(ColorUtil.translateColors("&cVous avez banni définitivement &e" + targetName + "&c de votre mine."));
+                break;
+            case 14: 
                 mine.banPlayer(targetId, 3600);
                 player.sendMessage(ColorUtil.translateColors("&cVous avez banni &e" + targetName + "&c de votre mine pour &e1 heure&c."));
                 if (onlineTarget != null) {
@@ -225,7 +230,7 @@ public class GUIListener implements Listener {
                     onlineTarget.sendMessage(ColorUtil.translateColors("&cVous avez été banni de la mine de &e" + player.getName() + "&c pour 1 heure."));
                 }
                 break;
-            case 13: 
+            case 16: 
                 mine.banPlayer(targetId, 86400);
                 player.sendMessage(ColorUtil.translateColors("&cVous avez banni &e" + targetName + "&c de votre mine pour &e24 heures&c."));
                 if (onlineTarget != null) {
@@ -233,7 +238,11 @@ public class GUIListener implements Listener {
                     onlineTarget.sendMessage(ColorUtil.translateColors("&cVous avez été banni de la mine de &e" + player.getName() + "&c pour 24 heures."));
                 }
                 break;
-            case 15: 
+            case 20: 
+                mine.unbanPlayer(targetId);
+                player.sendMessage(ColorUtil.translateColors("&aVous avez débanni &e" + targetName + "&a de votre mine."));
+                break;
+            case 22: 
                 mine.denyAccess(targetId);
                 player.sendMessage(ColorUtil.translateColors("&cVous avez refusé l'accès à &e" + targetName + "&c dans votre mine."));
                 if (onlineTarget != null) {
@@ -241,15 +250,11 @@ public class GUIListener implements Listener {
                     onlineTarget.sendMessage(ColorUtil.translateColors("&cVotre accès à la mine de &e" + player.getName() + "&c a été révoqué."));
                 }
                 break;
-            case 16: 
+            case 24: 
                 mine.allowAccess(targetId);
                 player.sendMessage(ColorUtil.translateColors("&aVous avez autorisé &e" + targetName + "&a à accéder à votre mine."));
                 break;
-            case 21: 
-                mine.unbanPlayer(targetId);
-                player.sendMessage(ColorUtil.translateColors("&aVous avez débanni &e" + targetName + "&a de votre mine."));
-                break;
-            case 22: 
+            case 31: 
                 MineVisitorsGUI.openGUI(player, 0);
                 return;
         }
