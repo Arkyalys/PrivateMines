@@ -1,0 +1,72 @@
+name: PrivateMines
+version: 3.0-HOTFIX
+main: fr.ju.privateMines.PrivateMines
+api-version: 1.19
+author: Julien
+description: Private mines management plugin
+depend: [WorldEdit, WorldGuard, FastAsyncWorldEdit]
+softdepend: [PlaceholderAPI]
+commands:
+  jumine:
+    description: Main plugin command
+    aliases: [pmine, mine]
+    permission: privatemines.use
+
+permissions:
+  privatemines.use:
+    description: Allows using the main /jumine command
+    default: true
+  privatemines.create:
+    description: Allows creating a private mine
+    default: true
+  privatemines.delete:
+    description: Allows deleting your private mine
+    default: true
+  privatemines.reset:
+    description: Allows resetting your private mine
+    default: true
+  privatemines.expand:
+    description: Allows expanding your private mine
+    default: true
+  privatemines.settype:
+    description: Allows changing your mine type
+    default: true
+  privatemines.settax:
+    description: Allows setting your mine tax
+    default: true
+  privatemines.teleport:
+    description: Allows teleporting to your mine
+    default: true
+  privatemines.admin:
+    description: Gives access to all admin commands
+    default: op
+  privatemines.admin.create:
+    description: Allows creating a private mine for another player
+    default: op
+  privatemines.admin.delete:
+    description: Allows deleting another player's private mine
+    default: op
+  privatemines.admin.reset:
+    description: Allows resetting another player's private mine
+    default: op
+  privatemines.admin.expand:
+    description: Allows expanding another player's private mine
+    default: op
+  privatemines.admin.settype:
+    description: Allows changing the type of another player's private mine
+    default: op
+  privatemines.admin.settax:
+    description: Allows setting the tax for another player's private mine
+    default: op
+  privatemines.admin.settier:
+    description: Allows setting the tier of a private mine
+    default: op
+  privatemines.admin.pregen:
+    description: Allows pre-generating mines
+    default: op
+  privatemines.admin.upgrade:
+    description: Allows upgrading mines (without cost)
+    default: op
+  privatemines.admin.reload:
+    description: Allows reloading the plugin configuration
+    default: op

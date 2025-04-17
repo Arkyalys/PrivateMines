@@ -1,0 +1,28 @@
+package fr.ju.privateMines.commands;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+import fr.ju.privateMines.managers.MineManager;
+import fr.ju.privateMines.utils.ConfigManager;
+import fr.ju.privateMines.utils.Permissions;
+public class MineSetTypeCommand implements SubCommand {
+    private final MineManager mineManager;
+    private final ConfigManager configManager;
+    public MineSetTypeCommand(MineManager mineManager, ConfigManager configManager) {
+        this.mineManager = mineManager;
+        this.configManager = configManager;
+    }
+    @Override
+    public boolean execute(Player player, String[] args, CommandSender sender, Command command, String label) {
+        if (!player.hasPermission(Permissions.SET_TYPE)) {
+            player.sendMessage(configManager.getMessage("Messages.no-permission"));
+            return true;
+        }
+        if (args.length < 2) {
+            player.sendMessage(configManager.getMessage("Messages.invalid-type"));
+            return true;
+        }
+        mineManager.setMineType(player, args[1]);
+        return true;
+    }
+} 

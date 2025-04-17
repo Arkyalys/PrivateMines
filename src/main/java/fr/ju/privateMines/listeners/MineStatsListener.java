@@ -1,0 +1,107 @@
+package fr.ju.privateMines.listeners;
+import org.bukkit.Location;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
+
+import fr.ju.privateMines.PrivateMines;
+import fr.ju.privateMines.managers.MineManager;
+import fr.ju.privateMines.managers.StatsManager;
+import fr.ju.privateMines.models.Mine;
+public class MineStatsListener implements Listener {
+    private final PrivateMines plugin;
+    private final MineManager mineManager;
+    private final StatsManager statsManager;
+    private final boolean autoResetEnabled;
+    private final String autoResetMessage;
+    public MineStatsListener(PrivateMines plugin) {
+        this.plugin = plugin;
+        this.mineManager = plugin.getMineManager();
+        this.statsManager = plugin.getStatsManager();
+        this.autoResetEnabled = plugin.getConfigManager().getConfig().getBoolean("Gameplay.auto-reset.enabled", true);
+        this.autoResetMessage = plugin.getConfigManager().getConfig().getString("Gameplay.auto-reset.message", 
+                                "&eVotre mine a été automatiquement réinitialisée !");
+    }
+    @EventHandler
+    public void onBlockBreak(BlockBreakEvent event) {
+        if (!autoResetEnabled) return;
+        Location blockLoc = event.getBlock().getLocation();
+        Mine mine = findMineByLocation(blockLoc);
+        if (mine == null) return;
+        int beforeBlocksMined = mine.getStats().getBlocksMined();
+        int beforeTotalBlocks = mine.getStats().getTotalBlocks();
+        plugin.getLogger().info("[DEBUG MINE] Avant incrémentation - Stats: " + beforeBlocksMined + "/" + beforeTotalBlocks + " (" + mine.getStats().getPercentageMined() + "%)");
+        boolean shouldReset = statsManager.incrementBlocksMined(mine);
+        if (plugin.getHologramManager() != null) {
+            plugin.getHologramManager().createOrUpdateHologram(mine);
+        }
+        int afterBlocksMined = mine.getStats().getBlocksMined();
+        int afterTotalBlocks = mine.getStats().getTotalBlocks();
+        plugin.getLogger().info("[DEBUG MINE] Après incrémentation - Stats: " + afterBlocksMined + "/" + afterTotalBlocks + " (" + mine.getStats().getPercentageMined() + "%)");
+        Player player = event.getPlayer();
+        if (shouldReset) {
+            Player owner = plugin.getServer().getPlayer(mine.getOwner());
+            if (owner != null && owner.isOnline()) {
+                owner.sendMessage(autoResetMessage.replace("&", "§"));
+            }
+            mineManager.resetMine(mine.getOwner());
+        }
+    }
+    @EventHandler
+    public void onPlayerMove(PlayerMoveEvent event) {
+        if (event.getFrom().getBlockX() == event.getTo().getBlockX() && 
+            event.getFrom().getBlockY() == event.getTo().getBlockY() && 
+            event.getFrom().getBlockZ() == event.getTo().getBlockZ()) {
+            return;
+        }
+        Player player = event.getPlayer();
+        Location loc = event.getTo();
+        Mine mine = findMineByLocation(loc);
+        if (mine == null) return;
+        if (!mine.getOwner().equals(player.getUniqueId())) {
+            statsManager.addVisit(mine, player.getUniqueId());
+        }
+    }
+    private Mine findMineByLocation(Location location) {
+        if (plugin.getCacheManager() != null) {
+            Object cachedMine = plugin.getCacheManager().get("mine_at_" + location.getWorld().getName() + "_" + 
+                                                           location.getBlockX() + "_" + 
+                                                           location.getBlockY() + "_" + 
+                                                           location.getBlockZ());
+            if (cachedMine instanceof Mine) {
+                return (Mine) cachedMine;
+            }
+            if (cachedMine instanceof Boolean && !(Boolean)cachedMine) {
+                return null;
+            }
+        }
+        for (Mine mine : mineManager.getAllMines()) {
+            if (!mine.hasMineArea()) continue;
+            if (location.getWorld() != null && location.getWorld().equals(mine.getLocation().getWorld())) {
+                int x = location.getBlockX();
+                int y = location.getBlockY();
+                int z = location.getBlockZ();
+                if (x >= mine.getMinX() && x <= mine.getMaxX() &&
+                    y >= mine.getMinY() && y <= mine.getMaxY() &&
+                    z >= mine.getMinZ() && z <= mine.getMaxZ()) {
+                    if (plugin.getCacheManager() != null) {
+                        plugin.getCacheManager().put("mine_at_" + location.getWorld().getName() + "_" + 
+                                                   location.getBlockX() + "_" + 
+                                                   location.getBlockY() + "_" + 
+                                                   location.getBlockZ(), mine, 300); 
+                    }
+                    return mine;
+                }
+            }
+        }
+        if (plugin.getCacheManager() != null) {
+            plugin.getCacheManager().put("mine_at_" + location.getWorld().getName() + "_" + 
+                                       location.getBlockX() + "_" + 
+                                       location.getBlockY() + "_" + 
+                                       location.getBlockZ(), false, 300); 
+        }
+        return null;
+    }
+} 

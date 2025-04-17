@@ -1,0 +1,64 @@
+package fr.ju.privateMines.utils;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import org.bukkit.plugin.java.JavaPlugin;
+public class ErrorHandler {
+    private final JavaPlugin plugin;
+    private final File errorLogFile;
+    private final SimpleDateFormat dateFormat;
+    public ErrorHandler(JavaPlugin plugin) {
+        this.plugin = plugin;
+        this.errorLogFile = new File(plugin.getDataFolder(), "errors.log");
+        this.dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        if (!errorLogFile.exists()) {
+            try {
+                errorLogFile.createNewFile();
+            } catch (IOException e) {
+                plugin.getLogger().severe("Impossible de créer le fichier de log d'erreurs: " + e.getMessage());
+            }
+        }
+    }
+    public void logError(String message, Throwable throwable) {
+        String timestamp = dateFormat.format(new Date());
+        String logMessage = String.format("[%s] %s", timestamp, message);
+        plugin.getLogger().severe(logMessage);
+        if (throwable != null) {
+            throwable.printStackTrace();
+        }
+        try (PrintWriter writer = new PrintWriter(new FileWriter(errorLogFile, true))) {
+            writer.println(logMessage);
+            if (throwable != null) {
+                throwable.printStackTrace(writer);
+            }
+            writer.println(); 
+        } catch (IOException e) {
+            plugin.getLogger().severe("Impossible d'écrire dans le fichier de log: " + e.getMessage());
+        }
+    }
+    public void logWarning(String message) {
+        String timestamp = dateFormat.format(new Date());
+        String logMessage = String.format("[%s] WARNING: %s", timestamp, message);
+        plugin.getLogger().warning(message);
+        try (PrintWriter writer = new PrintWriter(new FileWriter(errorLogFile, true))) {
+            writer.println(logMessage);
+            writer.println();
+        } catch (IOException e) {
+            plugin.getLogger().severe("Impossible d'écrire dans le fichier de log: " + e.getMessage());
+        }
+    }
+    public void logInfo(String message) {
+        String timestamp = dateFormat.format(new Date());
+        String logMessage = String.format("[%s] INFO: %s", timestamp, message);
+        plugin.getLogger().info(message);
+        try (PrintWriter writer = new PrintWriter(new FileWriter(errorLogFile, true))) {
+            writer.println(logMessage);
+            writer.println();
+        } catch (IOException e) {
+            plugin.getLogger().severe("Impossible d'écrire dans le fichier de log: " + e.getMessage());
+        }
+    }
+} 

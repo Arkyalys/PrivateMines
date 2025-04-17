@@ -1,0 +1,178 @@
+Config:
+   # Distance entre chaque mine (en blocs)
+   Distance-Between-Mines: 5000
+   
+   # Temps d'attente entre chaque reset (en secondes)
+   Reset-Cooldown: 300
+   
+   # Taille de la grille des mines (en blocs)
+   Mine-Grid-Size: 1000
+   
+   # Donner une mine au joueur lors de sa connexion
+   Give-Mine-On-Join: true
+   
+   # Type de mine par défaut pour les nouveaux joueurs
+   Default-Mine-Type: "default"
+   
+   # Configuration de l'attribution des mines pré-générées
+   Pregen-Mine-Assignment:
+      # Activer l'attribution automatique des mines pré-générées
+      enabled: true
+      
+      # Si activé, le système attribuera une mine pré-générée existante plutôt que d'en créer une nouvelle
+      prefer-existing-mines: true
+      
+      # Message affiché au joueur quand une mine pré-générée lui est attribuée
+      assignment-message: "&aUne mine existante vous a été attribuée ! Utilisez &e/jumine tp &apour vous y téléporter."
+   
+   # Configuration du gameplay
+   Gameplay:
+      # Téléporter après un reset
+      teleport-on-reset: true
+      
+      # Options d'expansion de mine
+      expansions-enabled: true
+      expand-cost: 100
+      expand-cost-multiplier: 1.5
+      
+      # Options d'amélioration
+      upgrades-enabled: true
+      upgrade-cost: 30
+      upgrade-cost-multiplier: 2
+      
+      # Limite d'expansion de la mine
+      expand-limit: 20
+      
+      # Taxe maximale autorisée (en pourcentage)
+      max-tax: 100
+      
+      # Auto-reset des mines
+      auto-reset:
+         # Activer l'auto-reset
+         enabled: true
+         
+         # Pourcentage de blocs minés avant auto-reset (1-100)
+         threshold: 65
+         
+         # Message envoyé lors d'un auto-reset
+         message: "&eYour mine has been automatically reset because it reached 35% of blocks remaining!"
+      
+      # Configuration des barres de progression
+      progress-bars:
+         # Couleur de la partie complétée (format &a, &b, etc.)
+         completed-color: "&a"
+         
+         # Couleur de la partie non complétée
+         remaining-color: "&7"
+         
+         # Couleur de la bordure
+         border-color: "&8"
+         
+         # Caractère utilisé pour la barre
+         character: "■"
+         
+         # Longueur de la barre
+         length: 20
+         
+         # Intervalle de mise à jour en ticks (10 = 0.5 secondes)
+         update-interval: 10
+   
+   # Configuration de la mine par défaut
+   Mines:
+      # Taille maximum autorisée pour les mines
+      max-size: 100
+      
+      # Coût par niveau d'agrandissement (en niveaux d'XP)
+      expand-cost: 100
+      
+      # Activer le reset automatique
+      auto-reset: true
+      
+      # Pourcentage de blocs minés avant reset automatique
+      auto-reset-percentage: 75
+      
+      default:
+         # Taille par défaut de la mine
+         size: 10
+         
+         # Type par défaut de la mine
+         type: default
+         
+         # Palier par défaut de la mine
+         tier: 1
+         
+         # Nom du fichier schematic à utiliser
+         # Placez le fichier dans le dossier /plugins/PrivateMines/schematics/
+         schematic: mine.schem
+         
+         # Bloc utilisé pour les bordures
+         border-block: BEDROCK
+         
+         # Types de mines disponibles
+         types:
+            default:
+               blocks:
+                  STONE: 0.7
+                  COAL_ORE: 0.15
+                  IRON_ORE: 0.1
+                  GOLD_ORE: 0.05
+            diamond:
+               blocks:
+                  STONE: 0.6
+                  IRON_ORE: 0.2
+                  GOLD_ORE: 0.1
+                  DIAMOND_ORE: 0.1
+      
+      # Configuration des paliers des mines
+      tiers:
+         1:
+            blocks:
+               STONE: 0.7
+               COAL_ORE: 0.15
+               IRON_ORE: 0.1
+               GOLD_ORE: 0.05
+         2:
+            blocks:
+               STONE: 0.6
+               COAL_ORE: 0.15
+               IRON_ORE: 0.15
+               GOLD_ORE: 0.08
+               DIAMOND_ORE: 0.02
+         3:
+            blocks:
+               STONE: 0.5
+               COAL_ORE: 0.15
+               IRON_ORE: 0.15
+               GOLD_ORE: 0.1
+               DIAMOND_ORE: 0.07
+               EMERALD_ORE: 0.03
+
+# Configuration des statistiques
+Statistics:
+   # Activer les statistiques
+   enabled: true
+   
+   # Intervalle de sauvegarde (en minutes)
+   save-interval: 10
+   
+   # Nombre maximum de visiteurs à suivre par mine
+   max-tracked-visitors: 50
+   
+   # Notifications
+   notifications:
+      # Afficher les notifications de sauvegarde dans la console
+      console: false
+      
+      # Afficher les notifications aux administrateurs en jeu
+      in-game: false
+
+Advanced:
+   enabled: false
+   mine-rail1:
+      x: 0
+      y: 0
+      z: 0
+   mine-rail2:
+      x: 0
+      y: 0
+      z: 0 
