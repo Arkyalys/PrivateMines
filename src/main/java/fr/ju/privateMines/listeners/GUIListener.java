@@ -211,10 +211,17 @@ public class GUIListener implements Listener {
         switch (slot) {
             case 10:
                 if (onlineTarget != null && onlineTarget.isOnline()) {
-                    onlineTarget.teleport(plugin.getServer().getWorlds().get(0).getSpawnLocation());
-                    onlineTarget.sendMessage(ColorUtil.translateColors("&cVous avez été expulsé de la mine de &e" + player.getName() + "&c."));
+                    Mine ownerMine = plugin.getMineManager().getMine(player).orElse(null);
+                    if (ownerMine != null && plugin.getMineManager().getMineProtectionManager().isPlayerInMineRegion(onlineTarget)) {
+                        onlineTarget.teleport(plugin.getServer().getWorlds().get(0).getSpawnLocation());
+                        onlineTarget.sendMessage(ColorUtil.translateColors("&cVous avez été expulsé de la mine de &e" + player.getName() + "&c."));
+                        player.sendMessage(ColorUtil.translateColors("&aVous avez expulsé &e" + targetName + "&a de votre mine."));
+                    } else {
+                        player.sendMessage(ColorUtil.translateColors("&cLe joueur n'est pas dans votre mine."));
+                    }
+                } else {
+                    player.sendMessage(ColorUtil.translateColors("&cLe joueur n'est pas connecté."));
                 }
-                player.sendMessage(ColorUtil.translateColors("&aVous avez expulsé &e" + targetName + "&a de votre mine."));
                 MineVisitorsGUI.openGUI(player, 0);
                 return;
             case 12:
