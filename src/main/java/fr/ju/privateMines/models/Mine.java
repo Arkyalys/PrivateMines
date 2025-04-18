@@ -1,8 +1,6 @@
 package fr.ju.privateMines.models;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 import org.bukkit.Location;
@@ -22,14 +20,6 @@ public class Mine {
     private double schematicMinX, schematicMinY, schematicMinZ;
     private double schematicMaxX, schematicMaxY, schematicMaxZ;
     private MineAccess mineAccess;
-    // Permissions fines pour chaque visiteur
-    public enum VisitorPermission {
-        BREAK,
-        PLACE,
-        USE,
-        INTERACT
-    }
-    private final Map<UUID, Set<VisitorPermission>> visitorPermissions = new HashMap<>();
     public Mine(UUID owner, Location location, String type) {
         if (owner == null) {
             throw new IllegalArgumentException("Owner cannot be null");
@@ -260,23 +250,5 @@ public class Mine {
     }
     public void allowAccess(UUID playerUUID) {
         getMineAccess().removeDeniedUser(playerUUID);
-    }
-    public void setVisitorPermission(UUID visitor, VisitorPermission permission, boolean value) {
-        Set<VisitorPermission> perms = visitorPermissions.computeIfAbsent(visitor, k -> EnumSet.noneOf(VisitorPermission.class));
-        if (value) {
-            perms.add(permission);
-        } else {
-            perms.remove(permission);
-        }
-    }
-    public boolean hasVisitorPermission(UUID visitor, VisitorPermission permission) {
-        Set<VisitorPermission> perms = visitorPermissions.get(visitor);
-        return perms != null && perms.contains(permission);
-    }
-    public Set<VisitorPermission> getVisitorPermissions(UUID visitor) {
-        return visitorPermissions.getOrDefault(visitor, EnumSet.noneOf(VisitorPermission.class));
-    }
-    public void setAllVisitorPermissions(UUID visitor, Set<VisitorPermission> permissions) {
-        visitorPermissions.put(visitor, EnumSet.copyOf(permissions));
     }
 } 

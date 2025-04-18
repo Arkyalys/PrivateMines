@@ -260,6 +260,7 @@ public class MinePersistenceService {
                     double maxY = mineSection.getDouble("schematic.maxY");
                     double maxZ = mineSection.getDouble("schematic.maxZ");
                     mine.setSchematicBounds(minX, minY, minZ, maxX, maxY, maxZ);
+                    plugin.getLogger().info("[DEBUG-LOAD] Bounds schematic pour la mine " + key + " : min=(" + minX + ", " + minY + ", " + minZ + "), max=(" + maxX + ", " + maxY + ", " + maxZ + ")");
                 }
                 if (mineSection.contains("blocks")) {
                     ConfigurationSection blocksSection = mineSection.getConfigurationSection("blocks");

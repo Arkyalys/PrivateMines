@@ -148,13 +148,6 @@ public class MineVisitorsGUI {
         boolean isPermanentlyBanned = mineAccess.isPermanentlyBanned(targetId);
         boolean isTemporarilyBanned = mineAccess.isTemporarilyBanned(targetId);
         boolean isDenied = mineAccess.isDenied(targetId);
-        boolean canBreak = ownerMine.hasVisitorPermission(targetId, Mine.VisitorPermission.BREAK);
-        Material breakMat = canBreak ? Material.DIAMOND_PICKAXE : Material.WOODEN_PICKAXE;
-        String breakName = (canBreak ? "&a✔ &2Peut casser" : "&c✖ &7Ne peut pas casser");
-        List<String> breakLore = new ArrayList<>();
-        breakLore.add(canBreak ? "&7Ce visiteur a le droit de casser des blocs dans votre mine." : "&7Ce visiteur n'a PAS le droit de casser des blocs dans votre mine.");
-        breakLore.add("");
-        breakLore.add("&eCliquez pour " + (canBreak ? "&cinterdire" : "&aautoriser") + " &ele cassage de blocs.");
         Inventory inventory = Bukkit.createInventory(null, 36, ColorUtil.translateColors("&8■ &bActions pour " + targetName + " &8■"));
         ItemStack playerInfo = new ItemStack(Material.PLAYER_HEAD);
         SkullMeta playerMeta = (SkullMeta) playerInfo.getItemMeta();
@@ -187,7 +180,7 @@ public class MineVisitorsGUI {
         inventory.setItem(20, guiManager.createGuiItem(!isBanned ? Material.GRAY_DYE : Material.LIME_DYE, !isBanned ? "&8✓ &7Pas banni" : "&a✓ &aDébannir", Arrays.asList(!isBanned ? "&7Ce joueur n'est pas banni" : "&7Retire le bannissement de ce joueur")));
         inventory.setItem(22, guiManager.createGuiItem(isDenied ? Material.GRAY_CONCRETE : Material.RED_CONCRETE, isDenied ? "&8☒ &7Déjà refusé" : "&c☒ &cRefuser l'accès", Arrays.asList(isDenied ? "&7Ce joueur a déjà un accès refusé" : "&7Refuse l'accès à ce joueur")));
         inventory.setItem(24, guiManager.createGuiItem(!isDenied ? Material.GRAY_CONCRETE : Material.LIME_CONCRETE, !isDenied ? "&8☑ &7Déjà autorisé" : "&a☑ &aAutoriser l'accès", Arrays.asList(!isDenied ? "&7Ce joueur a déjà accès" : "&7Autorise l'accès à ce joueur")));
-        inventory.setItem(28, guiManager.createGuiItem(breakMat, breakName, breakLore));
+        inventory.setItem(28, guiManager.createGuiItem(Material.EMERALD, "&aAjouter comme contributeur", Arrays.asList("&7Ce joueur pourra gérer la mine comme un co-propriétaire.", "", "&eCliquez pour ajouter comme contributeur")));
         inventory.setItem(31, guiManager.createGuiItem(Material.BARRIER, "&e◀ &cRetour", Arrays.asList("&7Retourner à la liste des visiteurs")));
         guiManager.fillEmptySlots(inventory);
         player.openInventory(inventory);

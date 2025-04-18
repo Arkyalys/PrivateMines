@@ -271,13 +271,7 @@ public class GUIListener implements Listener {
                 MineVisitorsGUI.openGUI(player, 0);
                 return;
             case 28:
-                boolean canBreak = ownerMine.hasVisitorPermission(targetId, Mine.VisitorPermission.BREAK);
-                ownerMine.setVisitorPermission(targetId, Mine.VisitorPermission.BREAK, !canBreak);
-                if (!canBreak) {
-                    plugin.getMineManager().getMineProtectionManager().addMemberToMineRegion(ownerMine.getOwner(), targetId);
-                } else {
-                    plugin.getMineManager().getMineProtectionManager().removeMemberFromMineRegion(ownerMine.getOwner(), targetId);
-                }
+                player.sendMessage(ColorUtil.translateColors("&aFonctionnalité contributeur à venir !"));
                 MineVisitorsGUI.openActionGUI(player, targetId);
                 return;
             case 31:

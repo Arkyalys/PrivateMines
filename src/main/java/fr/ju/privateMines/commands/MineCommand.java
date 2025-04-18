@@ -253,6 +253,23 @@ public class MineCommand implements CommandExecutor {
                     player.sendMessage("§aStatistiques sauvegardées.");
                 }
                 return true;
+            case "add":
+                if (args.length < 2) {
+                    player.sendMessage(ColorUtil.translateColors("&cUtilisation: /mine add <joueur>"));
+                    return true;
+                }
+                Player target = player.getServer().getPlayer(args[1]);
+                if (target == null) {
+                    player.sendMessage(ColorUtil.translateColors("&cJoueur introuvable."));
+                    return true;
+                }
+                if (!mineManager.hasMine(player)) {
+                    player.sendMessage(ColorUtil.translateColors("&cVous n'avez pas de mine."));
+                    return true;
+                }
+                mineManager.getMineProtectionManager().addMemberToMineRegion(player.getUniqueId(), target.getUniqueId());
+                player.sendMessage(ColorUtil.translateColors("&a" + target.getName() + " est maintenant contributeur de votre mine !"));
+                return true;
             default:
                 sendHelp(player);
                 break;

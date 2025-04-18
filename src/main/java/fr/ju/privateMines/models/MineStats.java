@@ -26,19 +26,6 @@ public class MineStats {
     public void addVisit(UUID visitor) {
         this.visits++;
         visitorStats.put(visitor, visitorStats.getOrDefault(visitor, 0) + 1);
-        try {
-            fr.ju.privateMines.PrivateMines plugin = fr.ju.privateMines.PrivateMines.getInstance();
-            if (plugin != null) {
-                plugin.getLogger().info("[DEBUG] MineStats.addVisit: Visit recorded for UUID " + visitor + 
-                                      " to mine owned by " + mineOwner + 
-                                      ". Total visits: " + visits + 
-                                      ". This visitor's visits: " + visitorStats.get(visitor));
-            }
-        } catch (Exception e) {
-            if (fr.ju.privateMines.PrivateMines.getInstance() != null) {
-                fr.ju.privateMines.PrivateMines.getInstance().getLogger().severe("[ERROR] MineStats.addVisit: Error logging visit: " + e.getMessage());
-            }
-        }
     }
     public void resetBlockStats() {
         this.blocksMined = 0;

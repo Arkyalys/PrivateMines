@@ -1,6 +1,7 @@
 package fr.ju.privateMines.services;
 import org.bukkit.Location;
 import org.bukkit.World;
+
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldguard.WorldGuard;
@@ -9,6 +10,7 @@ import com.sk89q.worldguard.protection.flags.StateFlag;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedCuboidRegion;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
+
 import fr.ju.privateMines.PrivateMines;
 import fr.ju.privateMines.managers.MineProtectionManager;
 import fr.ju.privateMines.models.Mine;
@@ -39,6 +41,7 @@ public class MineRegionService {
             max = BlockVector3.at(center.getX() + size, center.getY() + size, center.getZ() + size);
         }
         ProtectedRegion region = new ProtectedCuboidRegion(regionId, min, max);
+        region.setPriority(1);
         region.setFlag(Flags.BLOCK_BREAK, StateFlag.State.ALLOW);
         region.setFlag(Flags.BLOCK_PLACE, StateFlag.State.DENY);
         region.setFlag(Flags.USE, StateFlag.State.ALLOW);
@@ -48,9 +51,15 @@ public class MineRegionService {
         region.setFlag(Flags.CHEST_ACCESS, StateFlag.State.ALLOW);
         region.getOwners().addPlayer(mine.getOwner());
         regionManager.addRegion(region);
-        if (schematicBounds != null && schematicBounds.length >= 2 && schematicBounds[0] != null && schematicBounds[1] != null) {
-            BlockVector3 fullMin = schematicBounds[0];
-            BlockVector3 fullMax = schematicBounds[1];
+        BlockVector3[] boundsToUse = schematicBounds;
+        if ((boundsToUse == null || boundsToUse.length < 2 || boundsToUse[0] == null || boundsToUse[1] == null) && mine.hasSchematicBounds()) {
+            BlockVector3 minS = BlockVector3.at(mine.getSchematicMinX(), mine.getSchematicMinY(), mine.getSchematicMinZ());
+            BlockVector3 maxS = BlockVector3.at(mine.getSchematicMaxX(), mine.getSchematicMaxY(), mine.getSchematicMaxZ());
+            boundsToUse = new BlockVector3[] { minS, maxS };
+        }
+        if (boundsToUse != null && boundsToUse.length >= 2 && boundsToUse[0] != null && boundsToUse[1] != null) {
+            BlockVector3 fullMin = boundsToUse[0];
+            BlockVector3 fullMax = boundsToUse[1];
             ProtectedRegion fullMineRegion = new ProtectedCuboidRegion(fullMineId, fullMin, fullMax);
             fullMineRegion.setFlag(Flags.BLOCK_BREAK, StateFlag.State.DENY);
             fullMineRegion.setFlag(Flags.BLOCK_PLACE, StateFlag.State.DENY);
@@ -60,6 +69,7 @@ public class MineRegionService {
             fullMineRegion.setFlag(Flags.MOB_SPAWNING, StateFlag.State.DENY);
             fullMineRegion.setFlag(Flags.CHEST_ACCESS, StateFlag.State.DENY);
             regionManager.addRegion(fullMineRegion);
+            plugin.getLogger().info("[DEBUG-CREATE] Région fullmine-" + mine.getOwner() + " créée : min=" + fullMin + ", max=" + fullMax);
         }
     }
     public void unprotectMine(Mine mine) {
