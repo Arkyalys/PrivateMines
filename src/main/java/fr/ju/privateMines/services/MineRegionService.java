@@ -57,19 +57,27 @@ public class MineRegionService {
             BlockVector3 maxS = BlockVector3.at(mine.getSchematicMaxX(), mine.getSchematicMaxY(), mine.getSchematicMaxZ());
             boundsToUse = new BlockVector3[] { minS, maxS };
         }
+        boolean schematicValide = false;
         if (boundsToUse != null && boundsToUse.length >= 2 && boundsToUse[0] != null && boundsToUse[1] != null) {
-            BlockVector3 fullMin = boundsToUse[0];
-            BlockVector3 fullMax = boundsToUse[1];
-            ProtectedRegion fullMineRegion = new ProtectedCuboidRegion(fullMineId, fullMin, fullMax);
-            fullMineRegion.setFlag(Flags.BLOCK_BREAK, StateFlag.State.DENY);
-            fullMineRegion.setFlag(Flags.BLOCK_PLACE, StateFlag.State.DENY);
-            fullMineRegion.setFlag(Flags.USE, StateFlag.State.DENY);
-            fullMineRegion.setFlag(Flags.INTERACT, StateFlag.State.DENY);
-            fullMineRegion.setFlag(Flags.PVP, StateFlag.State.DENY);
-            fullMineRegion.setFlag(Flags.MOB_SPAWNING, StateFlag.State.DENY);
-            fullMineRegion.setFlag(Flags.CHEST_ACCESS, StateFlag.State.DENY);
-            regionManager.addRegion(fullMineRegion);
-            plugin.getLogger().info("[DEBUG-CREATE] Région fullmine-" + mine.getOwner() + " créée : min=" + fullMin + ", max=" + fullMax);
+            BlockVector3 minS = boundsToUse[0];
+            BlockVector3 maxS = boundsToUse[1];
+            if (!(minS.getBlockX() == 0 && minS.getBlockY() == 0 && minS.getBlockZ() == 0 &&
+                  maxS.getBlockX() == 0 && maxS.getBlockY() == 0 && maxS.getBlockZ() == 0)) {
+                schematicValide = true;
+                ProtectedRegion fullMineRegion = new ProtectedCuboidRegion(fullMineId, minS, maxS);
+                fullMineRegion.setFlag(Flags.BLOCK_BREAK, StateFlag.State.DENY);
+                fullMineRegion.setFlag(Flags.BLOCK_PLACE, StateFlag.State.DENY);
+                fullMineRegion.setFlag(Flags.USE, StateFlag.State.DENY);
+                fullMineRegion.setFlag(Flags.INTERACT, StateFlag.State.DENY);
+                fullMineRegion.setFlag(Flags.PVP, StateFlag.State.DENY);
+                fullMineRegion.setFlag(Flags.MOB_SPAWNING, StateFlag.State.DENY);
+                fullMineRegion.setFlag(Flags.CHEST_ACCESS, StateFlag.State.DENY);
+                regionManager.addRegion(fullMineRegion);
+                plugin.getLogger().info("[DEBUG-CREATE] Région fullmine-" + mine.getOwner() + " créée : min=" + minS + ", max=" + maxS);
+            }
+        }
+        if (!schematicValide && mine.hasSchematicBounds()) {
+            plugin.getLogger().warning("[DEBUG-CREATE] Impossible de créer la région fullmine-" + mine.getOwner() + " : bounds schematic invalides ou absents (vérifiez data.yml)");
         }
     }
     public void unprotectMine(Mine mine) {

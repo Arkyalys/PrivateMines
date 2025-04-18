@@ -9,8 +9,6 @@ import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 
-import com.sk89q.worldedit.math.BlockVector3;
-
 import fr.ju.privateMines.PrivateMines;
 import fr.ju.privateMines.managers.MineManager;
 import fr.ju.privateMines.managers.MineProtectionManager;
@@ -286,17 +284,7 @@ public class MinePersistenceService {
                 plugin.getLogger().info("Mine chargée avec succès pour UUID: " + key);
                 plugin.getLogger().info("UUID " + ownerUUID + " ajouté à la map. Taille actuelle: " + mineManager.mineMemoryService.getPlayerMines().size());
                 if (protectionManager != null) {
-                    if (mine.hasMineArea()) {
-                        BlockVector3 min = BlockVector3.at(mine.getMinX(), mine.getMinY(), mine.getMinZ());
-                        BlockVector3 max = BlockVector3.at(mine.getMaxX(), mine.getMaxY(), mine.getMaxZ());
-                        BlockVector3[] bounds = new BlockVector3[]{min, max};
-                        protectionManager.protectMine(mine, bounds);
-                    } else if (mine.hasSchematicBounds()) {
-                        BlockVector3 min = BlockVector3.at((int)mine.getSchematicMinX(), (int)mine.getSchematicMinY(), (int)mine.getSchematicMinZ());
-                        BlockVector3 max = BlockVector3.at((int)mine.getSchematicMaxX(), (int)mine.getSchematicMaxY(), (int)mine.getSchematicMaxZ());
-                        BlockVector3[] bounds = new BlockVector3[]{min, max};
-                        protectionManager.protectMine(mine, bounds);
-                    }
+                    protectionManager.protectMine(mine, null);
                 }
                 if (plugin.getStatsManager() != null) {
                     plugin.getStatsManager().syncMineStats(mine);
