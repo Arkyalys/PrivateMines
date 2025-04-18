@@ -1,18 +1,18 @@
 package fr.ju.privateMines.listeners;
-import java.util.Comparator;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -26,10 +26,12 @@ import fr.ju.privateMines.guis.MineStatsGUI;
 import fr.ju.privateMines.guis.MineTypeGUI;
 import fr.ju.privateMines.guis.MineVisitorsGUI;
 import fr.ju.privateMines.models.Mine;
-import fr.ju.privateMines.models.MineStats;
 import fr.ju.privateMines.utils.ColorUtil;
+
 public class GUIListener implements Listener {
     private final PrivateMines plugin;
+    private final Map<UUID, Boolean> awaitingContributorName = new HashMap<>();
+    private final Map<UUID, Boolean> awaitingContributorChat = new HashMap<>();
     public GUIListener(PrivateMines plugin) {
         this.plugin = plugin;
     }
@@ -38,11 +40,14 @@ public class GUIListener implements Listener {
         if (event.getClickedInventory() == null) return;
         Player player = (Player) event.getWhoClicked();
         String inventoryType = plugin.getGUIManager().getOpenInventoryType(player);
-        if (inventoryType == null) return; 
-        event.setCancelled(true);
+        if (inventoryType == null) return;
+        String type = inventoryType.split(":")[0];
+        if (!type.equals("mine_contributor_anvil")) {
+            event.setCancelled(true);
+        }
         ItemStack clickedItem = event.getCurrentItem();
         if (clickedItem == null || clickedItem.getType() == Material.AIR) return;
-        switch (inventoryType.split(":")[0]) {
+        switch (type) {
             case "mine_main":
                 handleMainGUIClick(player, clickedItem, event.getSlot());
                 break;
@@ -50,6 +55,7 @@ public class GUIListener implements Listener {
                 handleStatsGUIClick(player, clickedItem, event.getSlot());
                 break;
             case "mine_visitors":
+            case "mine_contributors":
                 handleVisitorsGUIClick(player, clickedItem, event.getSlot(), inventoryType, event);
                 break;
             case "mine_visitor_action":
@@ -67,12 +73,42 @@ public class GUIListener implements Listener {
             case "mine_composition":
                 handleCompositionGUIClick(player, clickedItem, event.getSlot());
                 break;
+            case "mine_contributor_anvil":
+                handleContributorAnvilClick(player, event);
+                break;
         }
     }
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent event) {
         Player player = (Player) event.getPlayer();
         plugin.getGUIManager().unregisterOpenInventory(player);
+    }
+    @EventHandler
+    public void onPlayerChat(AsyncPlayerChatEvent event) {
+        Player player = event.getPlayer();
+        if (!awaitingContributorChat.containsKey(player.getUniqueId())) return;
+        event.setCancelled(true);
+        String msg = event.getMessage().trim();
+        if (msg.equalsIgnoreCase("/cancel")) {
+            player.sendMessage(ColorUtil.translateColors("&cAjout de contributeur annulé."));
+            awaitingContributorChat.remove(player.getUniqueId());
+            return;
+        }
+        Player target = plugin.getServer().getPlayerExact(msg);
+        if (target == null) {
+            player.sendMessage(ColorUtil.translateColors("&cJoueur introuvable. Réessaie ou tape /cancel."));
+            return;
+        }
+        Mine mine = plugin.getMineManager().getMine(player).orElse(null);
+        if (mine == null) {
+            player.sendMessage(ColorUtil.translateColors("&cErreur mine."));
+            awaitingContributorChat.remove(player.getUniqueId());
+            return;
+        }
+        mine.addContributor(target.getUniqueId());
+        player.sendMessage(ColorUtil.translateColors("&aContributeur ajouté !"));
+        awaitingContributorChat.remove(player.getUniqueId());
+        org.bukkit.Bukkit.getScheduler().runTask(plugin, () -> MineVisitorsGUI.openGUI(player, 0));
     }
     private void handleMainGUIClick(Player player, ItemStack clickedItem, int slot) {
         boolean hasMine = plugin.getMineManager().hasMine(player);
@@ -145,47 +181,70 @@ public class GUIListener implements Listener {
         }
     }
     private void handleVisitorsGUIClick(Player player, ItemStack clickedItem, int slot, String inventoryType, InventoryClickEvent event) {
+        player.sendMessage("[DEBUG] handleVisitorsGUIClick: slot=" + slot + ", inventoryType=" + inventoryType);
         int currentPage = 0;
         String[] parts = inventoryType.split(":");
         if (parts.length > 1) {
             try {
                 currentPage = Integer.parseInt(parts[1]);
             } catch (NumberFormatException e) {
+                player.sendMessage("[DEBUG] Erreur parsing page: " + e.getMessage());
             }
         }
-        switch (slot) {
-            case 45: 
-                if (currentPage > 0) {
-                    MineVisitorsGUI.openGUI(player, currentPage - 1);
-                }
-                return;
-            case 53: 
-                MineVisitorsGUI.openGUI(player, currentPage + 1);
-                return;
-            case 49: 
-                MineMainGUI.openGUI(player);
-                return;
+        if (slot == 6) {
+            player.closeInventory();
+            player.sendMessage(ColorUtil.translateColors("&eÉcris le pseudo du joueur à ajouter comme contributeur dans le chat. Tape &c/cancel &epour annuler."));
+            awaitingContributorChat.put(player.getUniqueId(), true);
+            return;
+        }
+        if (slot == 45 && currentPage > 0) {
+            player.sendMessage("[DEBUG] Clic page précédente");
+            MineVisitorsGUI.openGUI(player, currentPage - 1);
+            return;
+        }
+        if (slot == 53) {
+            player.sendMessage("[DEBUG] Clic page suivante");
+            MineVisitorsGUI.openGUI(player, currentPage + 1);
+            return;
+        }
+        if (slot == 49) {
+            player.sendMessage("[DEBUG] Clic bouton retour");
+            MineMainGUI.openGUI(player);
+            return;
         }
         if (slot >= 9 && slot <= 44) {
+            player.sendMessage("[DEBUG] Clic sur une tête de contributeur, slot=" + slot);
+            PrivateMines plugin = PrivateMines.getInstance();
             Mine mine = plugin.getMineManager().getMine(player).orElse(null);
             if (mine == null) {
+                player.sendMessage("[DEBUG] Mine null");
                 player.closeInventory();
                 return;
             }
-            MineStats stats = mine.getStats();
-            Map<UUID, Integer> visitorStats = stats.getVisitorStats();
-            List<Map.Entry<UUID, Integer>> sortedVisitors = visitorStats.entrySet()
-                    .stream()
-                    .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
-                    .filter(entry -> !entry.getKey().equals(mine.getOwner())) 
-                    .collect(Collectors.toList());
+            org.bukkit.World world = mine.getLocation().getWorld();
+            com.sk89q.worldguard.protection.managers.RegionManager regionManager = com.sk89q.worldguard.WorldGuard.getInstance().getPlatform().getRegionContainer().get(com.sk89q.worldedit.bukkit.BukkitAdapter.adapt(world));
+            String regionId = "mine-" + mine.getOwner().toString();
+            com.sk89q.worldguard.protection.regions.ProtectedRegion region = regionManager != null ? regionManager.getRegion(regionId) : null;
+            List<UUID> contributors = new ArrayList<>();
+            if (region != null) {
+                for (String uuidStr : region.getMembers().getPlayers()) {
+                    try {
+                        UUID uuid = UUID.fromString(uuidStr);
+                        if (!uuid.equals(mine.getOwner())) {
+                            contributors.add(uuid);
+                        }
+                    } catch (IllegalArgumentException ignored) {}
+                }
+            }
             int startIndex = currentPage * MineVisitorsGUI.PAGE_SIZE;
-            int visitorIndex = startIndex + (slot - 9);
-            if (visitorIndex < 0 || visitorIndex >= sortedVisitors.size()) {
+            int contributorIndex = startIndex + (slot - 9);
+            if (contributorIndex < 0 || contributorIndex >= contributors.size()) {
+                player.sendMessage("[DEBUG] contributorIndex hors limite");
                 player.closeInventory();
                 return;
             }
-            UUID targetId = sortedVisitors.get(visitorIndex).getKey();
+            UUID targetId = contributors.get(contributorIndex);
+            player.sendMessage("[DEBUG] Ouvre menu action pour UUID=" + targetId);
             MineVisitorsGUI.openActionGUI(player, targetId);
         }
     }
@@ -204,79 +263,15 @@ public class GUIListener implements Listener {
             player.closeInventory();
             return;
         }
-        OfflinePlayer targetPlayer = Bukkit.getOfflinePlayer(targetId);
-        String targetName = targetPlayer.getName();
-        if (targetName == null) targetName = "Joueur inconnu";
-        Player onlineTarget = targetPlayer.isOnline() ? targetPlayer.getPlayer() : null;
-        Mine ownerMine = plugin.getMineManager().getMine(player).orElse(null);
-        if (ownerMine == null) {
-            player.closeInventory();
+        if (slot == 15) {
+            mine.removeContributor(targetId);
+            player.sendMessage(ColorUtil.translateColors("&aContributeur retiré avec succès."));
+            MineVisitorsGUI.openGUI(player, 0);
             return;
         }
-        switch (slot) {
-            case 10:
-                if (onlineTarget != null && onlineTarget.isOnline()) {
-                    if (plugin.getMineManager().getMineProtectionManager().isPlayerInMineRegion(onlineTarget)) {
-                        onlineTarget.teleport(plugin.getServer().getWorlds().get(0).getSpawnLocation());
-                        onlineTarget.sendMessage(ColorUtil.translateColors("&cVous avez été expulsé de la mine de &e" + player.getName() + "&c."));
-                        player.sendMessage(ColorUtil.translateColors("&aVous avez expulsé &e" + targetName + "&a de votre mine."));
-                    } else {
-                        player.sendMessage(ColorUtil.translateColors("&cLe joueur n'est pas dans votre mine."));
-                    }
-                } else {
-                    player.sendMessage(ColorUtil.translateColors("&cLe joueur n'est pas connecté."));
-                }
-                MineVisitorsGUI.openGUI(player, 0);
-                return;
-            case 12:
-                mine.banPlayerPermanently(targetId);
-                player.sendMessage(ColorUtil.translateColors("&cVous avez banni définitivement &e" + targetName + "&c de votre mine."));
-                MineVisitorsGUI.openGUI(player, 0);
-                return;
-            case 14:
-                mine.banPlayer(targetId, 3600);
-                player.sendMessage(ColorUtil.translateColors("&cVous avez banni &e" + targetName + "&c de votre mine pour &e1 heure&c."));
-                if (onlineTarget != null) {
-                    onlineTarget.teleport(plugin.getServer().getWorlds().get(0).getSpawnLocation());
-                    onlineTarget.sendMessage(ColorUtil.translateColors("&cVous avez été banni de la mine de &e" + player.getName() + "&c pour 1 heure."));
-                }
-                MineVisitorsGUI.openGUI(player, 0);
-                return;
-            case 16:
-                mine.banPlayer(targetId, 86400);
-                player.sendMessage(ColorUtil.translateColors("&cVous avez banni &e" + targetName + "&c de votre mine pour &e24 heures&c."));
-                if (onlineTarget != null) {
-                    onlineTarget.teleport(plugin.getServer().getWorlds().get(0).getSpawnLocation());
-                    onlineTarget.sendMessage(ColorUtil.translateColors("&cVous avez été banni de la mine de &e" + player.getName() + "&c pour 24 heures."));
-                }
-                MineVisitorsGUI.openGUI(player, 0);
-                return;
-            case 20:
-                mine.unbanPlayer(targetId);
-                player.sendMessage(ColorUtil.translateColors("&aVous avez débanni &e" + targetName + "&a de votre mine."));
-                MineVisitorsGUI.openGUI(player, 0);
-                return;
-            case 22:
-                mine.denyAccess(targetId);
-                player.sendMessage(ColorUtil.translateColors("&cVous avez refusé l'accès à &e" + targetName + "&c dans votre mine."));
-                if (onlineTarget != null) {
-                    onlineTarget.teleport(plugin.getServer().getWorlds().get(0).getSpawnLocation());
-                    onlineTarget.sendMessage(ColorUtil.translateColors("&cVotre accès à la mine de &e" + player.getName() + "&c a été révoqué."));
-                }
-                MineVisitorsGUI.openGUI(player, 0);
-                return;
-            case 24:
-                mine.allowAccess(targetId);
-                player.sendMessage(ColorUtil.translateColors("&aVous avez autorisé &e" + targetName + "&a à accéder à votre mine."));
-                MineVisitorsGUI.openGUI(player, 0);
-                return;
-            case 28:
-                player.sendMessage(ColorUtil.translateColors("&aFonctionnalité contributeur à venir !"));
-                MineVisitorsGUI.openActionGUI(player, targetId);
-                return;
-            case 31:
-                MineVisitorsGUI.openGUI(player, 0);
-                return;
+        if (slot == 18) {
+            MineVisitorsGUI.openGUI(player, 0);
+            return;
         }
     }
     private void handleSettingsGUIClick(Player player, ItemStack clickedItem, int slot) {
@@ -403,5 +398,51 @@ public class GUIListener implements Listener {
                 "&cVotre mine est maintenant fermée aux visiteurs." : 
                 "&aVotre mine est maintenant ouverte aux visiteurs.";
         player.sendMessage(ColorUtil.translateColors(message));
+    }
+    private void handleContributorAnvilClick(Player player, InventoryClickEvent event) {
+        player.sendMessage("[DEBUG] handleContributorAnvilClick: slot=" + event.getSlot());
+        if (event.getInventory().getType() != InventoryType.ANVIL) return;
+        if (event.getSlot() == 2) {
+            player.sendMessage("[DEBUG] Clic sur slot 2 de l'anvil");
+            ItemStack result = event.getInventory().getItem(2);
+            if (result == null || result.getType() != Material.PAPER) {
+                player.sendMessage("[DEBUG] Pas de papier dans le slot 2");
+                return;
+            }
+            String pseudo = result.getItemMeta() != null ? result.getItemMeta().getDisplayName() : null;
+            player.sendMessage("[DEBUG] Pseudo saisi: " + pseudo);
+            if (pseudo == null || pseudo.trim().isEmpty() || pseudo.equals("Entrer le pseudo")) {
+                player.sendMessage(ColorUtil.translateColors("&cPseudo invalide."));
+                event.setCancelled(true);
+                return;
+            }
+            Player target = plugin.getServer().getPlayerExact(pseudo.trim());
+            if (target == null) {
+                player.sendMessage(ColorUtil.translateColors("&cJoueur introuvable."));
+                event.setCancelled(true);
+                return;
+            }
+            Mine mine = plugin.getMineManager().getMine(player).orElse(null);
+            if (mine == null) {
+                player.sendMessage(ColorUtil.translateColors("&cErreur mine."));
+                event.setCancelled(true);
+                return;
+            }
+            org.bukkit.World world = mine.getLocation().getWorld();
+            com.sk89q.worldguard.protection.managers.RegionManager regionManager = com.sk89q.worldguard.WorldGuard.getInstance().getPlatform().getRegionContainer().get(com.sk89q.worldedit.bukkit.BukkitAdapter.adapt(world));
+            String regionId = "mine-" + mine.getOwner().toString();
+            com.sk89q.worldguard.protection.regions.ProtectedRegion region = regionManager != null ? regionManager.getRegion(regionId) : null;
+            if (region == null) {
+                player.sendMessage(ColorUtil.translateColors("&cErreur région."));
+                event.setCancelled(true);
+                return;
+            }
+            region.getMembers().addPlayer(target.getUniqueId());
+            player.sendMessage(ColorUtil.translateColors("&aContributeur ajouté !"));
+            awaitingContributorName.remove(player.getUniqueId());
+            MineVisitorsGUI.openGUI(player, 0);
+            event.setCancelled(true);
+            player.closeInventory();
+        }
     }
 } 

@@ -1,6 +1,8 @@
 package fr.ju.privateMines.models;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import org.bukkit.Location;
@@ -20,6 +22,7 @@ public class Mine {
     private double schematicMinX, schematicMinY, schematicMinZ;
     private double schematicMaxX, schematicMaxY, schematicMaxZ;
     private MineAccess mineAccess;
+    private final Set<UUID> contributors = new HashSet<>();
     public Mine(UUID owner, Location location, String type) {
         if (owner == null) {
             throw new IllegalArgumentException("Owner cannot be null");
@@ -250,5 +253,19 @@ public class Mine {
     }
     public void allowAccess(UUID playerUUID) {
         getMineAccess().removeDeniedUser(playerUUID);
+    }
+    public Set<UUID> getContributors() {
+        return new HashSet<>(contributors);
+    }
+    public void addContributor(UUID uuid) {
+        if (uuid != null && !uuid.equals(owner)) {
+            contributors.add(uuid);
+        }
+    }
+    public void removeContributor(UUID uuid) {
+        contributors.remove(uuid);
+    }
+    public boolean isContributor(UUID uuid) {
+        return contributors.contains(uuid);
     }
 } 

@@ -7,11 +7,17 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldguard.WorldGuard;
+import com.sk89q.worldguard.protection.managers.RegionManager;
+import com.sk89q.worldguard.protection.regions.ProtectedRegion;
+
 import fr.ju.privateMines.managers.MineManager;
 import fr.ju.privateMines.models.Mine;
 import fr.ju.privateMines.utils.ColorUtil;
 import fr.ju.privateMines.utils.ConfigManager;
 import fr.ju.privateMines.utils.Permissions;
+
 public class MineVisitCommand implements SubCommand {
     private final MineManager mineManager;
     private final ConfigManager configManager;
@@ -45,11 +51,22 @@ public class MineVisitCommand implements SubCommand {
             player.sendMessage(configManager.getMessage("Messages.no-mine"));
             return true;
         }
-        if (!targetMine.isOpen()) {
+        if (!targetMine.isOpen() && !targetMine.getOwner().equals(player.getUniqueId())) {
             Map<String, String> replacements = new HashMap<>();
             replacements.put("%player%", targetPlayer.getName());
             player.sendMessage(configManager.getMessage("Messages.mine-closed", replacements));
             return true;
+        }
+        // Vérification : il faut être membre de la région (ou propriétaire)
+        if (!targetMine.getOwner().equals(player.getUniqueId())) {
+            org.bukkit.World world = targetMine.getLocation().getWorld();
+            RegionManager regionManager = WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(world));
+            String regionId = "mine-" + targetMine.getOwner().toString();
+            ProtectedRegion region = regionManager != null ? regionManager.getRegion(regionId) : null;
+            if (region == null || !region.getMembers().contains(player.getUniqueId())) {
+                player.sendMessage(ColorUtil.deserialize("&cVous devez être invité à cette mine via /mine add <joueur>."));
+                return true;
+            }
         }
         if (!targetMine.canPlayerAccess(player.getUniqueId())) {
             Map<String, String> replacements = new HashMap<>();

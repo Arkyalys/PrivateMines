@@ -66,11 +66,14 @@ public class MineMainGUI {
                     "",
                     "&eCliquez pour ouvrir les paramètres");
             inventory.setItem(23, settingsItem);
-            ItemStack visitorsItem = guiManager.createGuiItem(Material.PLAYER_HEAD, "&e👥 &bVisiteurs", 
-                    "&7Voir les statistiques des visiteurs",
-                    "",
-                    "&eCliquez pour voir les visiteurs");
-            inventory.setItem(24, visitorsItem);
+            ItemStack contributorsItem = guiManager.createGuiItem(
+                Material.PLAYER_HEAD,
+                "&e👥 &bContributeurs",
+                "&7Voir et gérer les contributeurs de votre mine",
+                "",
+                "&eCliquez pour gérer les contributeurs"
+            );
+            inventory.setItem(24, contributorsItem);
             ItemStack upgradeItem;
             if (plugin.getConfigManager().getConfig().getBoolean("Config.Gameplay.upgrades-enabled", true)) {
                 upgradeItem = guiManager.createGuiItem(Material.EXPERIENCE_BOTTLE, "&e⬆ &bAméliorer", 

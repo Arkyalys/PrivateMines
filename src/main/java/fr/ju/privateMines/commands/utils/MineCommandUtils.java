@@ -14,7 +14,6 @@ import fr.ju.privateMines.models.Mine;
 import fr.ju.privateMines.models.MineStats;
 import fr.ju.privateMines.utils.ColorUtil;
 import fr.ju.privateMines.utils.ConfigManager;
-import fr.ju.privateMines.utils.Permissions;
 public class MineCommandUtils {
     public static void showPlayerStats(PrivateMines plugin, MineManager mineManager, ConfigManager configManager, Player viewer, UUID ownerUUID) {
         Mine mine = mineManager.getMine(ownerUUID).orElse(null);
@@ -57,43 +56,23 @@ public class MineCommandUtils {
     }
     public static void sendHelp(PrivateMines plugin, MineManager mineManager, ConfigManager configManager, Player player) {
         player.sendMessage(ColorUtil.translateColors("&6&lPrivateMines &7- &fAvailable commands:"));
-        player.sendMessage(ColorUtil.translateColors("&7/jumine create &f- Create a mine"));
-        player.sendMessage(ColorUtil.translateColors("&7/jumine delete &f- Delete your mine"));
-        player.sendMessage(ColorUtil.translateColors("&7/jumine reset &f- Reset your mine"));
-        player.sendMessage(ColorUtil.translateColors("&7/jumine gui &f- Open the mine interface"));
-        player.sendMessage(ColorUtil.translateColors("&7/jumine expand &f- Expand your mine"));
-        player.sendMessage(ColorUtil.translateColors("&7/jumine upgrade &f- Upgrade the quality of ores (Admin)"));
-        if (player.hasPermission(Permissions.KICK)) {
-            player.sendMessage(ColorUtil.translateColors("&7/jumine kick <player> &f- Kick a player from your mine"));
-        }
-        if (player.hasPermission(Permissions.BAN)) {
-            player.sendMessage(ColorUtil.translateColors("&7/jumine ban <player> [duration] &f- Ban a player from your mine"));
-        }
-        if (player.hasPermission(Permissions.UNBAN)) {
-            player.sendMessage(ColorUtil.translateColors("&7/jumine unban <player> &f- Unban a player from your mine"));
-        }
-        if (player.hasPermission(Permissions.DENY)) {
-            player.sendMessage(ColorUtil.translateColors("&7/jumine deny <player> &f- Deny access to your mine"));
-        }
-        if (player.hasPermission(Permissions.ALLOW)) {
-            player.sendMessage(ColorUtil.translateColors("&7/jumine allow <player> &f- Allow access to your mine"));
-        }
-        if (player.hasPermission(Permissions.ADMIN_CREATE)) {
-            player.sendMessage(ColorUtil.translateColors("&7/jumine create <type> &f- Create a mine of a specific type (Admin)"));
-        }
-        player.sendMessage(ColorUtil.translateColors("&7/jumine settype <type> &f- Change your mine type"));
-        player.sendMessage(ColorUtil.translateColors("&7/jumine settier <player> <level> &f- Change the level of another player's mine"));
-        player.sendMessage(ColorUtil.translateColors("&7/jumine tax <amount> &f- Set the tax for your mine"));
-        player.sendMessage(ColorUtil.translateColors("&7/jumine teleport &f- Teleport to your mine"));
-        player.sendMessage(ColorUtil.translateColors("&7/jumine visit <player> &f- Visit another player's mine"));
-        player.sendMessage(ColorUtil.translateColors("&7/jumine stats [player|top] &f- View statistics"));
-        if (player.hasPermission(Permissions.ADMIN_PREGEN)) {
-            player.sendMessage(ColorUtil.translateColors("&f/jumine pregen <number> [type] &7- Pre-generate mines"));
-            if (player.hasPermission(Permissions.ADMIN_RELOAD)) {
-                player.sendMessage(ColorUtil.translateColors("&f/jumine reload &7- Reload plugin configuration"));
-                player.sendMessage(ColorUtil.translateColors("&f/jumine savestats &7- Manually save statistics"));
-            }
-        }
+        player.sendMessage(ColorUtil.translateColors("&7/mine create &f- Create your private mine"));
+        player.sendMessage(ColorUtil.translateColors("&7/mine delete &f- Delete your private mine"));
+        player.sendMessage(ColorUtil.translateColors("&7/mine reset &f- Reset your mine blocks"));
+        player.sendMessage(ColorUtil.translateColors("&7/mine expand &f- Expand the size of your mine"));
+        player.sendMessage(ColorUtil.translateColors("&7/mine upgrade &f- Upgrade your mine to the next tier"));
+        player.sendMessage(ColorUtil.translateColors("&7/mine settype <type> &f- Change your mine type"));
+        player.sendMessage(ColorUtil.translateColors("&7/mine settier <tier> &f- Change your mine tier (Admin)"));
+        player.sendMessage(ColorUtil.translateColors("&7/mine tax <percent> &f- Set the tax percentage of your mine"));
+        player.sendMessage(ColorUtil.translateColors("&7/mine teleport &f- Teleport to your mine"));
+        player.sendMessage(ColorUtil.translateColors("&7/mine tp &f- Shortcut for /mine teleport"));
+        player.sendMessage(ColorUtil.translateColors("&7/mine visit <player> &f- Visit another player's mine"));
+        player.sendMessage(ColorUtil.translateColors("&7/mine kick <player> &f- Kick a player from your mine"));
+        player.sendMessage(ColorUtil.translateColors("&7/mine ban <player> [duration] &f- Ban a player from your mine"));
+        player.sendMessage(ColorUtil.translateColors("&7/mine unban <player> &f- Unban a player from your mine"));
+        player.sendMessage(ColorUtil.translateColors("&7/mine gui &f- Open the mine management menu"));
+        player.sendMessage(ColorUtil.translateColors("&7/mine menu &f- Shortcut for /mine gui"));
+        player.sendMessage(ColorUtil.translateColors("&7/mine pregen <number> [type] &f- Pre-generate mines (Admin)"));
     }
     public static String formatDuration(long seconds) {
         if (seconds < 60) {
