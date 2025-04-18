@@ -2,6 +2,7 @@ package fr.ju.privateMines.commands;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+
 import fr.ju.privateMines.managers.MineManager;
 import fr.ju.privateMines.utils.ConfigManager;
 import fr.ju.privateMines.utils.Permissions;
@@ -15,7 +16,7 @@ public class MineCreateCommand implements SubCommand {
     @Override
     public boolean execute(Player player, String[] args, CommandSender sender, Command command, String label) {
         if (!player.hasPermission(Permissions.CREATE)) {
-            player.sendMessage(configManager.getMessage("Messages.no-permission"));
+            player.sendMessage(configManager.getMessage("mine-no-permission"));
             return true;
         }
         String mineType = "default";

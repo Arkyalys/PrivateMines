@@ -4,6 +4,7 @@ import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+
 import fr.ju.privateMines.managers.MineManager;
 import fr.ju.privateMines.utils.ConfigManager;
 import fr.ju.privateMines.utils.Permissions;
@@ -17,17 +18,21 @@ public class MineDeleteCommand implements SubCommand {
     @Override
     public boolean execute(Player player, String[] args, CommandSender sender, Command command, String label) {
         if (!player.hasPermission(Permissions.DELETE)) {
-            player.sendMessage(configManager.getMessage("Messages.no-permission"));
+            player.sendMessage(configManager.getMessage("mine-no-permission"));
+            return true;
+        }
+        if (!mineManager.hasMine(player)) {
+            player.sendMessage(configManager.getMessage("mine-no-mine"));
             return true;
         }
         mineManager.deleteMine(player);
         org.bukkit.World spawnWorld = Bukkit.getWorld("spawn");
-        if (spawnWorld != null) {
-            Location spawnLocation = new Location(spawnWorld, 540.5, 120.0, 5.5, 180, 0);
-            player.teleport(spawnLocation);
-        } else {
-            player.sendMessage(configManager.getMessage("Messages.spawn-world-not-found"));
+        if (spawnWorld == null) {
+            player.sendMessage(configManager.getMessage("mine-spawn-world-not-found"));
+            return true;
         }
+        Location spawnLocation = new Location(spawnWorld, 540.5, 120.0, 5.5, 180, 0);
+        player.teleport(spawnLocation);
         return true;
     }
 } 

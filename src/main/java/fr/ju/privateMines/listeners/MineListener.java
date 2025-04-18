@@ -155,7 +155,7 @@ public class MineListener implements Listener {
                         if (mine != null) {
                             player.teleport(mineManager.getBetterTeleportLocation(mine));
                         }
-                        player.sendMessage(configManager.getMessage("Messages.mine-assigned"));
+                        player.sendMessage(configManager.getMessage("mine-assigned"));
                         plugin.getLogger().info("============================================");
                         return;
                     }
@@ -183,7 +183,7 @@ public class MineListener implements Listener {
                         if (availableMine != null) {
                             player.teleport(mineManager.getBetterTeleportLocation(availableMine));
                         }
-                        player.sendMessage(configManager.getMessage("Messages.mine-assigned"));
+                        player.sendMessage(configManager.getMessage("mine-assigned"));
                         plugin.getLogger().info("============================================");
                         return;
                     }

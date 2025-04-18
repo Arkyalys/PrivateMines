@@ -23,36 +23,29 @@ public class MineKickCommand implements SubCommand {
     @Override
     public boolean execute(Player owner, String[] args, CommandSender sender, Command command, String label) {
         if (!owner.hasPermission(Permissions.KICK)) {
-            owner.sendMessage(configManager.getMessage("Messages.no-permission"));
+            owner.sendMessage(configManager.getMessage("mine-no-permission"));
             return true;
         }
         if (args.length < 2) {
-            owner.sendMessage("§cUsage: /" + label + " kick <player>");
+            owner.sendMessage(configManager.getMessage("mine-usage-kick"));
             return true;
         }
         Player target = Bukkit.getPlayer(args[1]);
         if (target == null) {
-            owner.sendMessage(configManager.getMessage("Messages.invalid-player"));
+            owner.sendMessage(configManager.getMessage("mine-invalid-player"));
             return true;
         }
         if (!mineManager.hasMine(owner)) {
-            owner.sendMessage(configManager.getMessage("Messages.no-mine"));
+            owner.sendMessage(configManager.getMessage("mine-no-mine"));
             return true;
         }
         if (owner.getUniqueId().equals(target.getUniqueId())) {
-            owner.sendMessage(configManager.getMessage("Messages.cannot-kick-self"));
+            owner.sendMessage(configManager.getMessage("mine-cannot-kick-self"));
             return true;
         }
         Mine mine = mineManager.getMine(owner).orElse(null);
         if (mine == null) {
-            owner.sendMessage(configManager.getMessage("Messages.no-mine"));
-            return true;
-        }
-        World mineWorld = mine.getLocation().getWorld();
-        if (!target.getWorld().equals(mineWorld)) {
-            Map<String, String> replacements = new HashMap<>();
-            replacements.put("%player%", target.getName());
-            owner.sendMessage(configManager.getMessage("Messages.player-not-in-mine", replacements));
+            owner.sendMessage(configManager.getMessage("mine-no-mine"));
             return true;
         }
         boolean inMine = false;
@@ -70,7 +63,7 @@ public class MineKickCommand implements SubCommand {
         if (!inMine) {
             Map<String, String> replacements = new HashMap<>();
             replacements.put("%player%", target.getName());
-            owner.sendMessage(configManager.getMessage("Messages.player-not-in-mine", replacements));
+            owner.sendMessage(configManager.getMessage("mine-player-not-in-mine", replacements));
             return true;
         }
         World spawnWorld = Bukkit.getWorld("spawn");
@@ -82,10 +75,10 @@ public class MineKickCommand implements SubCommand {
         }
         Map<String, String> ownerReplacements = new HashMap<>();
         ownerReplacements.put("%player%", target.getName());
-        owner.sendMessage(configManager.getMessage("Messages.player-kicked", ownerReplacements));
+        owner.sendMessage(configManager.getMessage("mine-player-kicked", ownerReplacements));
         Map<String, String> targetReplacements = new HashMap<>();
         targetReplacements.put("%owner%", owner.getName());
-        target.sendMessage(configManager.getMessage("Messages.you-were-kicked", targetReplacements));
+        target.sendMessage(configManager.getMessage("mine-you-were-kicked", targetReplacements));
         return true;
     }
 } 

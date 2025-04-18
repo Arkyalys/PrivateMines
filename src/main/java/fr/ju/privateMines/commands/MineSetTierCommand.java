@@ -5,7 +5,6 @@ import org.bukkit.entity.Player;
 
 import fr.ju.privateMines.managers.MineManager;
 import fr.ju.privateMines.models.Mine;
-import fr.ju.privateMines.utils.ColorUtil;
 import fr.ju.privateMines.utils.ConfigManager;
 import fr.ju.privateMines.utils.Permissions;
 public class MineSetTierCommand implements SubCommand {
@@ -18,34 +17,34 @@ public class MineSetTierCommand implements SubCommand {
     @Override
     public boolean execute(Player player, String[] args, CommandSender sender, Command command, String label) {
         if (!player.hasPermission(Permissions.ADMIN_SET_TIER)) {
-            player.sendMessage(configManager.getMessage("Messages.no-permission"));
+            player.sendMessage(configManager.getMessage("mine-no-permission"));
             return true;
         }
         if (args.length < 3) {
-            player.sendMessage(ColorUtil.translateColors("&cUsage: /jumine settier <player> <level>"));
+            player.sendMessage(configManager.getMessage("mine-usage-settier"));
             return true;
         }
         Player tierTargetPlayer = player.getServer().getPlayer(args[1]);
         if (tierTargetPlayer == null) {
-            player.sendMessage(configManager.getMessage("Messages.invalid-player"));
+            player.sendMessage(configManager.getMessage("mine-invalid-player"));
             return true;
         }
         try {
             int tier = Integer.parseInt(args[2]);
             if (tier <= 0) {
-                player.sendMessage(ColorUtil.translateColors("&cThe level must be greater than 0"));
+                player.sendMessage(configManager.getMessage("mine-invalid-tier"));
                 return true;
             }
             Mine mine = mineManager.getMine(tierTargetPlayer.getUniqueId()).orElse(null);
             if (mine == null) {
-                player.sendMessage(configManager.getMessage("Messages.no-mine"));
+                player.sendMessage(configManager.getMessage("mine-no-mine"));
                 return true;
             }
             mine.setTier(tier);
             mineManager.resetMine(tierTargetPlayer);
-            player.sendMessage(configManager.getMessage("Messages.mine-tier-set"));
+            player.sendMessage(configManager.getMessage("mine-tier-set"));
         } catch (NumberFormatException e) {
-            player.sendMessage(ColorUtil.translateColors("&cThe level must be a valid number"));
+            player.sendMessage(configManager.getMessage("mine-invalid-tier"));
         }
         return true;
     }

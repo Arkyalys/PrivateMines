@@ -2,19 +2,14 @@ package fr.ju.privateMines.commands;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import com.sk89q.worldedit.bukkit.BukkitAdapter;
-import com.sk89q.worldguard.WorldGuard;
-import com.sk89q.worldguard.protection.managers.RegionManager;
-import com.sk89q.worldguard.protection.regions.ProtectedRegion;
-
 import fr.ju.privateMines.managers.MineManager;
 import fr.ju.privateMines.models.Mine;
-import fr.ju.privateMines.utils.ColorUtil;
 import fr.ju.privateMines.utils.ConfigManager;
 import fr.ju.privateMines.utils.Permissions;
 
@@ -28,73 +23,55 @@ public class MineVisitCommand implements SubCommand {
     @Override
     public boolean execute(Player player, String[] args, CommandSender sender, Command command, String label) {
         if (!player.hasPermission(Permissions.TELEPORT)) {
-            player.sendMessage(configManager.getMessage("Messages.no-permission"));
+            player.sendMessage(configManager.getMessage("mine-no-permission"));
             return true;
         }
         if (args.length < 2) {
-            player.sendMessage(ColorUtil.deserialize("&cUtilisation: /" + label + " visit <joueur>"));
+            player.sendMessage(configManager.getMessage("mine-usage-visit"));
             return true;
         }
-        Player targetPlayer = player.getServer().getPlayer(args[1]);
+        Player targetPlayer = Bukkit.getPlayer(args[1]);
         if (targetPlayer == null) {
-            player.sendMessage(configManager.getMessage("Messages.invalid-player"));
-            return true;
-        }
-        if (!mineManager.hasMine(targetPlayer)) {
-            Map<String, String> replacements = new HashMap<>();
-            replacements.put("%player%", targetPlayer.getName());
-            player.sendMessage(configManager.getMessage("Messages.no-other-mine", replacements));
+            player.sendMessage(configManager.getMessage("mine-invalid-player"));
             return true;
         }
         Mine targetMine = mineManager.getMine(targetPlayer).orElse(null);
         if (targetMine == null) {
-            player.sendMessage(configManager.getMessage("Messages.no-mine"));
+            Map<String, String> replacements = new HashMap<>();
+            replacements.put("%player%", targetPlayer.getName());
+            player.sendMessage(configManager.getMessage("mine-no-other-mine", replacements));
             return true;
         }
         if (!targetMine.isOpen() && !targetMine.getOwner().equals(player.getUniqueId())) {
             Map<String, String> replacements = new HashMap<>();
             replacements.put("%player%", targetPlayer.getName());
-            player.sendMessage(configManager.getMessage("Messages.mine-closed", replacements));
+            player.sendMessage(configManager.getMessage("mine-closed", replacements));
             return true;
         }
-        // Vérification : il faut être membre de la région (ou propriétaire)
-        if (!targetMine.getOwner().equals(player.getUniqueId())) {
-            org.bukkit.World world = targetMine.getLocation().getWorld();
-            RegionManager regionManager = WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(world));
-            String regionId = "mine-" + targetMine.getOwner().toString();
-            ProtectedRegion region = regionManager != null ? regionManager.getRegion(regionId) : null;
-            if (region == null || !region.getMembers().contains(player.getUniqueId())) {
-                player.sendMessage(ColorUtil.deserialize("&cVous devez être invité à cette mine via /mine add <joueur>."));
-                return true;
-            }
-        }
-        if (!targetMine.canPlayerAccess(player.getUniqueId())) {
+        if (targetMine.getMineAccess().isBanned(player.getUniqueId())) {
             Map<String, String> replacements = new HashMap<>();
             replacements.put("%player%", targetPlayer.getName());
-            if (targetMine.getMineAccess().isBanned(player.getUniqueId())) {
-                player.sendMessage(configManager.getMessage("Messages.you-are-banned", replacements));
-            } else {
-                player.sendMessage(configManager.getMessage("Messages.you-are-denied", replacements));
-            }
+            player.sendMessage(configManager.getMessage("mine-you-are-banned", replacements));
+            return true;
+        }
+        if (targetMine.getMineAccess().isDenied(player.getUniqueId())) {
+            Map<String, String> replacements = new HashMap<>();
+            replacements.put("%player%", targetPlayer.getName());
+            player.sendMessage(configManager.getMessage("mine-you-are-denied", replacements));
             return true;
         }
         Location targetLocation = mineManager.getBetterTeleportLocation(targetMine);
         if (targetLocation == null) {
-            player.sendMessage(ColorUtil.deserialize("&cImpossible de déterminer un point de téléportation sûr. Contactez un administrateur."));
+            player.sendMessage(configManager.getMessage("mine-teleport-error"));
             return true;
         }
         player.teleport(targetLocation);
         Map<String, String> replacements = new HashMap<>();
         replacements.put("%player%", targetPlayer.getName());
-        player.sendMessage(configManager.getMessage("Messages.teleported-to-other-mine", replacements));
-        if (targetPlayer.isOnline()) {
-            Map<String, String> ownerReplacements = new HashMap<>();
-            ownerReplacements.put("%player%", player.getName());
-            targetPlayer.sendMessage(configManager.getMessage("Messages.player-visiting-mine", ownerReplacements));
-        }
-        try {
-            targetMine.addVisit(player.getUniqueId());
-        } catch (Exception ignored) {}
+        player.sendMessage(configManager.getMessage("mine-visit-success", replacements));
+        replacements = new HashMap<>();
+        replacements.put("%player%", player.getName());
+        targetPlayer.sendMessage(configManager.getMessage("mine-player-visiting-mine", replacements));
         return true;
     }
 } 

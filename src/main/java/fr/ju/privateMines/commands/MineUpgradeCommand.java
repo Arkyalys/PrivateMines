@@ -20,20 +20,20 @@ public class MineUpgradeCommand implements SubCommand {
     @Override
     public boolean execute(Player player, String[] args, CommandSender sender, Command command, String label) {
         if (!player.hasPermission(Permissions.ADMIN_UPGRADE)) {
-            player.sendMessage(configManager.getMessage("Messages.no-permission"));
+            player.sendMessage(configManager.getMessage("mine-no-permission"));
             return true;
         }
         Mine mine = mineManager.getMine(player).orElse(null);
         if (mine == null) {
-            player.sendMessage(configManager.getMessage("Messages.no-mine"));
+            player.sendMessage(configManager.getMessage("mine-no-mine"));
             return true;
         }
         if (mineManager.upgradeMine(player)) {
             Map<String, String> replacements = new HashMap<>();
             replacements.put("%tier%", String.valueOf(mine.getTier()));
-            player.sendMessage(configManager.getMessage("Messages.mine-upgraded", replacements));
+            player.sendMessage(configManager.getMessage("mine-upgraded", replacements));
         } else {
-            player.sendMessage(configManager.getMessage("Messages.upgrade-failed"));
+            player.sendMessage(configManager.getMessage("mine-upgrade-failed"));
         }
         return true;
     }

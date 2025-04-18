@@ -66,65 +66,60 @@ public class MineCommand implements CommandExecutor {
         boolean isPlayer = sender instanceof Player;
         if (args.length > 0 && args[0].equalsIgnoreCase("admin")) {
             if (!sender.hasPermission(Permissions.ADMIN)) {
-                 sender.sendMessage(configManager.getMessage("Messages.no-permission"));
+                 sender.sendMessage(configManager.getMessage("mine-no-permission"));
                  return true;
             }
             if (args.length >= 2 && args[1].equalsIgnoreCase("reset")) {
                  if (!sender.hasPermission(Permissions.ADMIN_FULL_RESET)) {
-                     sender.sendMessage(configManager.getMessage("Messages.no-permission"));
+                     sender.sendMessage(configManager.getMessage("mine-no-permission"));
                      return true;
                  }
                  UUID senderId = isPlayer ? ((Player) sender).getUniqueId() : Console.UUID;
                  if (args.length == 3 && args[2].equalsIgnoreCase("confirm")) {
                      if (pendingResetConfirmation.contains(senderId)) {
                          pendingResetConfirmation.remove(senderId);
-                         sender.sendMessage(ColorUtil.deserialize("&cRéinitialisation complète en cours... NE PAS REDÉMARRER LE SERVEUR."));
+                         sender.sendMessage(configManager.getMessage("mine-reset-in-progress"));
                          performFullReset(sender, label);
                          return true;
                      } else {
-                         sender.sendMessage(ColorUtil.deserialize("&cVous n'avez pas de réinitialisation en attente de confirmation ou elle a expiré."));
+                         sender.sendMessage(configManager.getMessage("mine-reset-no-pending"));
                          return true;
                      }
                  } else {
-                     sender.sendMessage(ColorUtil.deserialize("&c&lATTENTION ! &cCette commande va supprimer TOUTES les mines,"));
-                     sender.sendMessage(ColorUtil.deserialize("&cleurs régions WorldGuard associées (si applicable),"));
-                     sender.sendMessage(ColorUtil.deserialize("&cle monde des mines dédié (" + mineWorldManager.getMineWorldName() + "),"));
-                     sender.sendMessage(ColorUtil.deserialize("&cet les fichiers de données du plugin (`data.yml`, `stats.yml`)."));
-                     sender.sendMessage(ColorUtil.deserialize("&cCette action est IRRÉVERSIBLE."));
-                     sender.sendMessage(ColorUtil.deserialize("&ePour confirmer, tapez &f/" + label + " admin reset confirm &edans les 30 secondes."));
+                     sender.sendMessage(configManager.getMessage("mine-reset-warning").replace("%world%", mineWorldManager.getMineWorldName()));
+                     sender.sendMessage(configManager.getMessage("mine-reset-confirm").replace("%command%", label));
                      pendingResetConfirmation.add(senderId);
                      Bukkit.getScheduler().runTaskLater(plugin, () -> pendingResetConfirmation.remove(senderId), 30 * 20L);
                      return true;
                  }
             }
-            else if (args.length >= 2 && args[1].equalsIgnoreCase("gui")) {
-                sender.sendMessage(ColorUtil.deserialize("&aInstalling GUI system..."));
+            if (args.length >= 2 && args[1].equalsIgnoreCase("gui")) {
+                if (plugin.getGUIManager() != null) {
+                    sender.sendMessage(configManager.getMessage("mine-gui-already-installed"));
+                    return true;
+                }
+                sender.sendMessage(configManager.getMessage("mine-gui-installing"));
                 try {
-                    if (plugin.getGUIManager() == null) {
-                        java.lang.reflect.Field field = PrivateMines.class.getDeclaredField("guiManager");
-                        field.setAccessible(true);
-                        field.set(plugin, new fr.ju.privateMines.utils.GUIManager(plugin));
-                        sender.sendMessage(ColorUtil.deserialize("&aGUI Manager initialized."));
-                    }
+                    java.lang.reflect.Field field = PrivateMines.class.getDeclaredField("guiManager");
+                    field.setAccessible(true);
+                    field.set(plugin, new fr.ju.privateMines.utils.GUIManager(plugin));
+                    sender.sendMessage(configManager.getMessage("mine-gui-installed"));
                     plugin.getServer().getPluginManager().registerEvents(new fr.ju.privateMines.listeners.GUIListener(plugin), plugin);
-                    sender.sendMessage(ColorUtil.deserialize("&aGUI system installed successfully!"));
-                    sender.sendMessage(ColorUtil.deserialize("&aPlayers can now use &f/jumine gui &aor &f/jumine menu &ato access the interface."));
+                    sender.sendMessage(configManager.getMessage("mine-gui-system-installed"));
+                    sender.sendMessage(configManager.getMessage("mine-gui-usage"));
                 } catch (Exception e) {
-                    sender.sendMessage(ColorUtil.deserialize("&cError installing GUI system: " + e.getMessage()));
+                    sender.sendMessage(configManager.getMessage("mine-gui-install-error").replace("%error%", e.getMessage()));
                     plugin.getLogger().severe("Error installing GUI system: " + e.getMessage());
                     e.printStackTrace();
                 }
                 return true;
             }
-            else {
-                 sender.sendMessage(ColorUtil.deserialize("&cUsage:"));
-                 sender.sendMessage(ColorUtil.deserialize("&c/" + label + " admin reset - Reset all mines"));
-                 sender.sendMessage(ColorUtil.deserialize("&c/" + label + " admin gui - Install GUI system"));
-                 return true;
-            }
+            sender.sendMessage(configManager.getMessage("mine-usage-admin-reset").replace("%command%", label));
+            sender.sendMessage(configManager.getMessage("mine-usage-admin-gui").replace("%command%", label));
+            return true;
         }
         if (!isPlayer) {
-            sender.sendMessage(configManager.getMessage("Messages.only-players"));
+            sender.sendMessage(configManager.getMessage("mine-only-players"));
             return true;
         }
         Player player = (Player) sender;
@@ -156,11 +151,11 @@ public class MineCommand implements CommandExecutor {
                 break;
             case "pregen":
                 if (!player.hasPermission(Permissions.ADMIN_PREGEN)) {
-                    player.sendMessage(configManager.getMessage("Messages.no-permission"));
+                    player.sendMessage(configManager.getMessage("mine-no-permission"));
                     return true;
                 }
                 if (args.length < 2) {
-                    player.sendMessage(ColorUtil.translateColors("&cUsage: /mine pregen <number> [type]"));
+                    player.sendMessage(configManager.getMessage("mine-usage-pregen"));
                     return true;
                 }
                 try {
@@ -168,20 +163,20 @@ public class MineCommand implements CommandExecutor {
                     String type = args.length > 2 ? args[2] : "default";
                     mineManager.pregenMines(player, count, type);
                 } catch (NumberFormatException e) {
-                    player.sendMessage(ColorUtil.translateColors("&cThe number must be a valid integer."));
+                    player.sendMessage(configManager.getMessage("mine-invalid-number"));
                 }
                 break;
             case "savestats":
                 if (!player.hasPermission(Permissions.ADMIN_RELOAD)) {
-                    player.sendMessage(configManager.getMessage("Messages.no-permission"));
+                    player.sendMessage(configManager.getMessage("mine-no-permission"));
                     return true;
                 }
-                player.sendMessage(ColorUtil.deserialize("&6Saving statistics..."));
+                player.sendMessage(configManager.getMessage("mine-stats-saving"));
                 if (plugin.getStatsManager() != null) {
                     plugin.getStatsManager().saveStats();
-                    player.sendMessage(ColorUtil.deserialize("&aStatistics have been successfully saved!"));
+                    player.sendMessage(configManager.getMessage("mine-stats-saved"));
                 } else {
-                    player.sendMessage(ColorUtil.deserialize("&cThe stats manager is not enabled."));
+                    player.sendMessage(configManager.getMessage("mine-stats-not-enabled"));
                 }
                 break;
             case "stats":
@@ -192,7 +187,7 @@ public class MineCommand implements CommandExecutor {
                     }
                     Player target = Bukkit.getPlayer(args[1]);
                     if (target == null) {
-                        player.sendMessage(configManager.getMessage("Messages.invalid-player"));
+                        player.sendMessage(configManager.getMessage("mine-invalid-player"));
                         return true;
                     }
                     showPlayerStats(player, target.getUniqueId());
@@ -202,19 +197,19 @@ public class MineCommand implements CommandExecutor {
                 break;
             case "reload":
                 if (!player.hasPermission(Permissions.ADMIN_RELOAD)) {
-                    player.sendMessage(configManager.getMessage("Messages.no-permission"));
+                    player.sendMessage(configManager.getMessage("mine-no-permission"));
                     return true;
                 }
-                player.sendMessage(ColorUtil.translateColors("&6Reloading plugin..."));
+                player.sendMessage(configManager.getMessage("mine-reload-start"));
                 if (plugin.reloadPlugin()) {
-                    player.sendMessage(ColorUtil.translateColors("&aThe plugin has been successfully reloaded!"));
+                    player.sendMessage(configManager.getMessage("mine-reload-success"));
                 } else {
-                    player.sendMessage(ColorUtil.translateColors("&cError while reloading the plugin, check the console for more details."));
+                    player.sendMessage(configManager.getMessage("mine-reload-failed"));
                 }
                 break;
             case "stats-sync":
                 if (!player.hasPermission("privateMines.admin")) {
-                    player.sendMessage(configManager.getMessage("Messages.no-permission"));
+                    player.sendMessage(configManager.getMessage("mine-no-permission"));
                     return true;
                 }
                 if (args.length > 1) {
@@ -271,7 +266,7 @@ public class MineCommand implements CommandExecutor {
                 player.sendMessage(ColorUtil.translateColors("&a" + target.getName() + " est maintenant contributeur de votre mine !"));
                 return true;
             default:
-                sendHelp(player);
+                player.sendMessage(configManager.getMessage("mine-usage-unknown"));
                 break;
         }
         return true;
@@ -290,19 +285,19 @@ public class MineCommand implements CommandExecutor {
     }
     private boolean performFullReset(CommandSender sender, String label) {
         try {
-            sender.sendMessage(configManager.getMessage("Messages.admin-reset-step1"));
+            sender.sendMessage(configManager.getMessage("mine-reset-step1"));
             List<UUID> mineOwners = new ArrayList<>(mineManager.mineMemoryService.getPlayerMines().keySet());
             int mineCount = mineOwners.size();
             for (UUID ownerId : mineOwners) {
                 mineManager.removeMine(ownerId);
             }
-            sender.sendMessage(configManager.getMessage("Messages.admin-reset-step2"));
+            sender.sendMessage(configManager.getMessage("mine-reset-step2"));
             String worldName = mineWorldManager.getMineWorldName();
             File worldFolder = new File(plugin.getServer().getWorldContainer(), worldName);
             World world = plugin.getServer().getWorld(worldName);
             if (world != null) {
                 for (Player playerInWorld : world.getPlayers()) {
-                    playerInWorld.sendMessage(configManager.getMessage("Messages.mine-world-reset"));
+                    playerInWorld.sendMessage(configManager.getMessage("mine-world-reset"));
                     World spawnWorld = plugin.getServer().getWorlds().get(0);
                     playerInWorld.teleport(spawnWorld.getSpawnLocation());
                 }
@@ -310,42 +305,42 @@ public class MineCommand implements CommandExecutor {
                 if (unloaded) {
                     Map<String, String> replacements = new HashMap<>();
                     replacements.put("%world%", worldName);
-                    sender.sendMessage(configManager.getMessage("Messages.admin-reset-world-unloaded", replacements));
+                    sender.sendMessage(configManager.getMessage("mine-reset-world-unloaded", replacements));
                     try {
                         FileUtils.deleteDirectory(worldFolder);
-                        sender.sendMessage(configManager.getMessage("Messages.admin-reset-world-deleted", replacements));
+                        sender.sendMessage(configManager.getMessage("mine-reset-world-deleted", replacements));
                     } catch (IOException e) {
                         replacements.put("%error%", e.getMessage());
-                        sender.sendMessage(configManager.getMessage("Messages.admin-reset-world-delete-error", replacements));
+                        sender.sendMessage(configManager.getMessage("mine-reset-world-delete-error", replacements));
                     }
                 } else {
                     Map<String, String> replacements = new HashMap<>();
                     replacements.put("%world%", worldName);
-                    sender.sendMessage(configManager.getMessage("Messages.admin-reset-world-unload-error", replacements));
+                    sender.sendMessage(configManager.getMessage("mine-reset-world-unload-error", replacements));
                 }
             } else {
                 Map<String, String> replacements = new HashMap<>();
                 replacements.put("%world%", worldName);
-                sender.sendMessage(configManager.getMessage("Messages.admin-reset-world-not-loaded", replacements));
+                sender.sendMessage(configManager.getMessage("mine-reset-world-not-loaded", replacements));
             }
-            sender.sendMessage(configManager.getMessage("Messages.admin-reset-step3"));
+            sender.sendMessage(configManager.getMessage("mine-reset-step3"));
             File dataFile = new File(plugin.getDataFolder(), "data.yml");
             if (dataFile.exists() && dataFile.delete()) {
-                sender.sendMessage(configManager.getMessage("Messages.admin-reset-data-deleted"));
+                sender.sendMessage(configManager.getMessage("mine-reset-data-deleted"));
             } else {
-                sender.sendMessage(configManager.getMessage("Messages.admin-reset-data-error"));
+                sender.sendMessage(configManager.getMessage("mine-reset-data-error"));
             }
             File statsFile = new File(plugin.getDataFolder(), "stats.yml");
             if (statsFile.exists() && statsFile.delete()) {
-                sender.sendMessage(configManager.getMessage("Messages.admin-reset-stats-deleted"));
+                sender.sendMessage(configManager.getMessage("mine-reset-stats-deleted"));
             } else {
-                sender.sendMessage(configManager.getMessage("Messages.admin-reset-stats-error"));
+                sender.sendMessage(configManager.getMessage("mine-reset-stats-error"));
             }
-            sender.sendMessage(configManager.getMessage("Messages.admin-reset-step4"));
+            sender.sendMessage(configManager.getMessage("mine-reset-step4"));
             plugin.getCacheManager().clear();
             plugin.reloadPlugin();
-            sender.sendMessage(configManager.getMessage("Messages.admin-reset-completed"));
-            sender.sendMessage(configManager.getMessage("Messages.admin-reset-restart"));
+            sender.sendMessage(configManager.getMessage("mine-reset-completed"));
+            sender.sendMessage(configManager.getMessage("mine-reset-restart"));
             return true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -354,23 +349,23 @@ public class MineCommand implements CommandExecutor {
     }
     private void kickPlayerFromMine(Player owner, Player target) {
         if (!mineManager.hasMine(owner)) {
-            owner.sendMessage(configManager.getMessage("Messages.no-mine"));
+            owner.sendMessage(configManager.getMessage("mine-no-mine"));
             return;
         }
         if (owner.getUniqueId().equals(target.getUniqueId())) {
-            owner.sendMessage(configManager.getMessage("Messages.cannot-kick-self"));
+            owner.sendMessage(configManager.getMessage("mine-cannot-kick-self"));
             return;
         }
         Mine mine = mineManager.getMine(owner).orElse(null);
         if (mine == null) {
-            owner.sendMessage(configManager.getMessage("Messages.no-mine"));
+            owner.sendMessage(configManager.getMessage("mine-no-mine"));
             return;
         }
         World mineWorld = mine.getLocation().getWorld();
         if (!target.getWorld().equals(mineWorld)) {
             Map<String, String> replacements = new HashMap<>();
             replacements.put("%player%", target.getName());
-            owner.sendMessage(configManager.getMessage("Messages.player-not-in-mine", replacements));
+            owner.sendMessage(configManager.getMessage("mine-player-not-in-mine", replacements));
             return;
         }
         if (mine.hasMineArea()) {
@@ -382,7 +377,7 @@ public class MineCommand implements CommandExecutor {
                 targetZ < mine.getMinZ() || targetZ > mine.getMaxZ()) {
                 Map<String, String> replacements = new HashMap<>();
                 replacements.put("%player%", target.getName());
-                owner.sendMessage(configManager.getMessage("Messages.player-not-in-mine", replacements));
+                owner.sendMessage(configManager.getMessage("mine-player-not-in-mine", replacements));
                 return;
             }
         } else if (mine.hasSchematicBounds()) {
@@ -394,7 +389,7 @@ public class MineCommand implements CommandExecutor {
                 targetZ < mine.getSchematicMinZ() || targetZ > mine.getSchematicMaxZ()) {
                 Map<String, String> replacements = new HashMap<>();
                 replacements.put("%player%", target.getName());
-                owner.sendMessage(configManager.getMessage("Messages.player-not-in-mine", replacements));
+                owner.sendMessage(configManager.getMessage("mine-player-not-in-mine", replacements));
                 return;
             }
         }
@@ -404,34 +399,34 @@ public class MineCommand implements CommandExecutor {
             target.teleport(spawnLocation);
             Map<String, String> ownerReplacements = new HashMap<>();
             ownerReplacements.put("%player%", target.getName());
-            owner.sendMessage(configManager.getMessage("Messages.player-kicked", ownerReplacements));
+            owner.sendMessage(configManager.getMessage("mine-player-kicked", ownerReplacements));
             Map<String, String> targetReplacements = new HashMap<>();
             targetReplacements.put("%owner%", owner.getName());
-            target.sendMessage(configManager.getMessage("Messages.you-were-kicked", targetReplacements));
+            target.sendMessage(configManager.getMessage("mine-you-were-kicked", targetReplacements));
         } else {
             target.teleport(Bukkit.getWorlds().get(0).getSpawnLocation());
             Map<String, String> ownerReplacements = new HashMap<>();
             ownerReplacements.put("%player%", target.getName());
-            owner.sendMessage(configManager.getMessage("Messages.player-kicked", ownerReplacements));
+            owner.sendMessage(configManager.getMessage("mine-player-kicked", ownerReplacements));
             Map<String, String> targetReplacements = new HashMap<>();
             targetReplacements.put("%owner%", owner.getName());
-            target.sendMessage(configManager.getMessage("Messages.you-were-kicked", targetReplacements));
+            target.sendMessage(configManager.getMessage("mine-you-were-kicked", targetReplacements));
             plugin.getLogger().warning("Le monde 'spawn' n'a pas été trouvé. Le joueur " + target.getName() + 
                 " a été téléporté au spawn du monde par défaut.");
         }
     }
     private void banPlayerFromMine(Player owner, Player target, long duration) {
         if (!mineManager.hasMine(owner)) {
-            owner.sendMessage(configManager.getMessage("Messages.no-mine"));
+            owner.sendMessage(configManager.getMessage("mine-no-mine"));
             return;
         }
         if (owner.getUniqueId().equals(target.getUniqueId())) {
-            owner.sendMessage(configManager.getMessage("Messages.cannot-ban-self"));
+            owner.sendMessage(configManager.getMessage("mine-cannot-ban-self"));
             return;
         }
         Mine mine = mineManager.getMine(owner).orElse(null);
         if (mine == null) {
-            owner.sendMessage(configManager.getMessage("Messages.no-mine"));
+            owner.sendMessage(configManager.getMessage("mine-no-mine"));
             return;
         }
         mine.banPlayer(target.getUniqueId(), duration);
@@ -471,24 +466,24 @@ public class MineCommand implements CommandExecutor {
         Map<String, String> ownerReplacements = new HashMap<>();
         ownerReplacements.put("%player%", target.getName());
         ownerReplacements.put("%duration%", formattedDuration);
-        owner.sendMessage(configManager.getMessage("Messages.player-banned", ownerReplacements));
+        owner.sendMessage(configManager.getMessage("mine-player-banned", ownerReplacements));
         Map<String, String> targetReplacements = new HashMap<>();
         targetReplacements.put("%owner%", owner.getName());
         targetReplacements.put("%duration%", formattedDuration);
-        target.sendMessage(configManager.getMessage("Messages.you-were-banned", targetReplacements));
+        target.sendMessage(configManager.getMessage("mine-you-were-banned", targetReplacements));
     }
     private void banPlayerPermanently(Player owner, Player target) {
         if (!mineManager.hasMine(owner)) {
-            owner.sendMessage(configManager.getMessage("Messages.no-mine"));
+            owner.sendMessage(configManager.getMessage("mine-no-mine"));
             return;
         }
         if (owner.getUniqueId().equals(target.getUniqueId())) {
-            owner.sendMessage(configManager.getMessage("Messages.cannot-ban-self"));
+            owner.sendMessage(configManager.getMessage("mine-cannot-ban-self"));
             return;
         }
         Mine mine = mineManager.getMine(owner).orElse(null);
         if (mine == null) {
-            owner.sendMessage(configManager.getMessage("Messages.no-mine"));
+            owner.sendMessage(configManager.getMessage("mine-no-mine"));
             return;
         }
         mine.banPlayerPermanently(target.getUniqueId());
@@ -526,51 +521,51 @@ public class MineCommand implements CommandExecutor {
         }
         Map<String, String> ownerReplacements = new HashMap<>();
         ownerReplacements.put("%player%", target.getName());
-        owner.sendMessage(configManager.getMessage("Messages.player-banned-permanently", ownerReplacements));
+        owner.sendMessage(configManager.getMessage("mine-player-banned-permanently", ownerReplacements));
         Map<String, String> targetReplacements = new HashMap<>();
         targetReplacements.put("%owner%", owner.getName());
-        target.sendMessage(configManager.getMessage("Messages.you-were-banned-permanently", targetReplacements));
+        target.sendMessage(configManager.getMessage("mine-you-were-banned-permanently", targetReplacements));
     }
     private void unbanPlayerFromMine(Player owner, OfflinePlayer target) {
         if (!mineManager.hasMine(owner)) {
-            owner.sendMessage(configManager.getMessage("Messages.no-mine"));
+            owner.sendMessage(configManager.getMessage("mine-no-mine"));
             return;
         }
         Mine mine = mineManager.getMine(owner).orElse(null);
         if (mine == null) {
-            owner.sendMessage(configManager.getMessage("Messages.no-mine"));
+            owner.sendMessage(configManager.getMessage("mine-no-mine"));
             return;
         }
         if (!mine.getMineAccess().isBanned(target.getUniqueId())) {
             Map<String, String> replacements = new HashMap<>();
             replacements.put("%player%", target.getName() != null ? target.getName() : target.getUniqueId().toString());
-            owner.sendMessage(configManager.getMessage("Messages.player-not-banned", replacements));
+            owner.sendMessage(configManager.getMessage("mine-player-not-banned", replacements));
             return;
         }
         mine.unbanPlayer(target.getUniqueId());
         mineManager.saveMine(mine);
         Map<String, String> ownerReplacements = new HashMap<>();
         ownerReplacements.put("%player%", target.getName() != null ? target.getName() : target.getUniqueId().toString());
-        owner.sendMessage(configManager.getMessage("Messages.player-unbanned", ownerReplacements));
+        owner.sendMessage(configManager.getMessage("mine-player-unbanned", ownerReplacements));
         if (target.isOnline()) {
             Player onlineTarget = target.getPlayer();
             Map<String, String> targetReplacements = new HashMap<>();
             targetReplacements.put("%owner%", owner.getName());
-            onlineTarget.sendMessage(configManager.getMessage("Messages.you-were-unbanned", targetReplacements));
+            onlineTarget.sendMessage(configManager.getMessage("mine-you-were-unbanned", targetReplacements));
         }
     }
     private void denyPlayerAccess(Player owner, Player target) {
         if (!mineManager.hasMine(owner)) {
-            owner.sendMessage(configManager.getMessage("Messages.no-mine"));
+            owner.sendMessage(configManager.getMessage("mine-no-mine"));
             return;
         }
         if (owner.getUniqueId().equals(target.getUniqueId())) {
-            owner.sendMessage(configManager.getMessage("Messages.cannot-deny-self"));
+            owner.sendMessage(configManager.getMessage("mine-cannot-deny-self"));
             return;
         }
         Mine mine = mineManager.getMine(owner).orElse(null);
         if (mine == null) {
-            owner.sendMessage(configManager.getMessage("Messages.no-mine"));
+            owner.sendMessage(configManager.getMessage("mine-no-mine"));
             return;
         }
         mine.denyAccess(target.getUniqueId());
@@ -608,37 +603,37 @@ public class MineCommand implements CommandExecutor {
         }
         Map<String, String> ownerReplacements = new HashMap<>();
         ownerReplacements.put("%player%", target.getName());
-        owner.sendMessage(configManager.getMessage("Messages.player-denied", ownerReplacements));
+        owner.sendMessage(configManager.getMessage("mine-player-denied", ownerReplacements));
         Map<String, String> targetReplacements = new HashMap<>();
         targetReplacements.put("%owner%", owner.getName());
-        target.sendMessage(configManager.getMessage("Messages.you-were-denied", targetReplacements));
+        target.sendMessage(configManager.getMessage("mine-you-were-denied", targetReplacements));
     }
     private void allowPlayerAccess(Player owner, OfflinePlayer target) {
         if (!mineManager.hasMine(owner)) {
-            owner.sendMessage(configManager.getMessage("Messages.no-mine"));
+            owner.sendMessage(configManager.getMessage("mine-no-mine"));
             return;
         }
         Mine mine = mineManager.getMine(owner).orElse(null);
         if (mine == null) {
-            owner.sendMessage(configManager.getMessage("Messages.no-mine"));
+            owner.sendMessage(configManager.getMessage("mine-no-mine"));
             return;
         }
         if (!mine.getMineAccess().isDenied(target.getUniqueId())) {
             Map<String, String> replacements = new HashMap<>();
             replacements.put("%player%", target.getName() != null ? target.getName() : target.getUniqueId().toString());
-            owner.sendMessage(configManager.getMessage("Messages.player-not-denied", replacements));
+            owner.sendMessage(configManager.getMessage("mine-player-not-denied", replacements));
             return;
         }
         mine.allowAccess(target.getUniqueId());
         mineManager.saveMine(mine);
         Map<String, String> ownerReplacements = new HashMap<>();
         ownerReplacements.put("%player%", target.getName() != null ? target.getName() : target.getUniqueId().toString());
-        owner.sendMessage(configManager.getMessage("Messages.player-allowed", ownerReplacements));
+        owner.sendMessage(configManager.getMessage("mine-player-allowed", ownerReplacements));
         if (target.isOnline()) {
             Player onlineTarget = target.getPlayer();
             Map<String, String> targetReplacements = new HashMap<>();
             targetReplacements.put("%owner%", owner.getName());
-            onlineTarget.sendMessage(configManager.getMessage("Messages.you-were-allowed", targetReplacements));
+            onlineTarget.sendMessage(configManager.getMessage("mine-you-were-allowed", targetReplacements));
         }
     }
     private String formatDuration(long seconds) {

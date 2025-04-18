@@ -6,7 +6,6 @@ import org.bukkit.entity.Player;
 
 import fr.ju.privateMines.managers.MineManager;
 import fr.ju.privateMines.models.Mine;
-import fr.ju.privateMines.utils.ColorUtil;
 import fr.ju.privateMines.utils.ConfigManager;
 import fr.ju.privateMines.utils.Permissions;
 public class MineTeleportCommand implements SubCommand {
@@ -19,21 +18,21 @@ public class MineTeleportCommand implements SubCommand {
     @Override
     public boolean execute(Player player, String[] args, CommandSender sender, Command command, String label) {
         if (!player.hasPermission(Permissions.TELEPORT)) {
-            player.sendMessage(configManager.getMessage("Messages.no-permission"));
+            player.sendMessage(configManager.getMessage("mine-no-permission"));
             return true;
         }
         Mine mine = mineManager.getMine(player).orElse(null);
         if (mine != null) {
             Location tpLocation = mineManager.getBetterTeleportLocation(mine);
             if (tpLocation == null) {
-                player.sendMessage(ColorUtil.deserialize("&cCould not determine a safe teleport location for your mine. Contact an admin."));
+                player.sendMessage(configManager.getMessage("mine-teleport-error"));
                 return true;
             }
             player.teleport(tpLocation);
-            player.sendMessage(configManager.getMessage("Messages.teleported-to-mine"));
+            player.sendMessage(configManager.getMessage("mine-teleport"));
             mineManager.saveMineData(player);
         } else {
-            player.sendMessage(configManager.getMessage("Messages.no-mine"));
+            player.sendMessage(configManager.getMessage("mine-no-mine"));
         }
         return true;
     }

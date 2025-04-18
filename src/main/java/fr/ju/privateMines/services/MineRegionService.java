@@ -49,6 +49,10 @@ public class MineRegionService {
         region.setFlag(Flags.PVP, StateFlag.State.DENY);
         region.setFlag(Flags.MOB_SPAWNING, StateFlag.State.DENY);
         region.setFlag(Flags.CHEST_ACCESS, StateFlag.State.ALLOW);
+        StateFlag invincibleFlag = (StateFlag) WorldGuard.getInstance().getFlagRegistry().get("invincible");
+        if (invincibleFlag != null) {
+            region.setFlag(invincibleFlag, StateFlag.State.ALLOW);
+        }
         region.getOwners().addPlayer(mine.getOwner());
         regionManager.addRegion(region);
         BlockVector3[] boundsToUse = schematicBounds;

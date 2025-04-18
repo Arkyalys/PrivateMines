@@ -1,9 +1,11 @@
 package fr.ju.privateMines.commands;
 import java.util.HashMap;
 import java.util.Map;
+
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+
 import fr.ju.privateMines.managers.MineManager;
 import fr.ju.privateMines.utils.ConfigManager;
 import fr.ju.privateMines.utils.Permissions;
@@ -17,14 +19,14 @@ public class MineTaxCommand implements SubCommand {
     @Override
     public boolean execute(Player player, String[] args, CommandSender sender, Command command, String label) {
         if (!player.hasPermission(Permissions.SET_TAX)) {
-            player.sendMessage(configManager.getMessage("Messages.no-permission"));
+            player.sendMessage(configManager.getMessage("mine-no-permission"));
             return true;
         }
         if (args.length < 2) {
             Map<String, String> replacements = new HashMap<>();
             int maxTax = configManager.getConfig().getInt("Config.Gameplay.max-tax", 100);
             replacements.put("%max-tax%", String.valueOf(maxTax));
-            player.sendMessage(configManager.getMessage("Messages.invalid-tax", replacements));
+            player.sendMessage(configManager.getMessage("mine-invalid-tax", replacements));
             return true;
         }
         try {
@@ -34,7 +36,7 @@ public class MineTaxCommand implements SubCommand {
             Map<String, String> replacements = new HashMap<>();
             int maxTax = configManager.getConfig().getInt("Config.Gameplay.max-tax", 100);
             replacements.put("%max-tax%", String.valueOf(maxTax));
-            player.sendMessage(configManager.getMessage("Messages.invalid-tax", replacements));
+            player.sendMessage(configManager.getMessage("mine-invalid-tax", replacements));
         }
         return true;
     }
