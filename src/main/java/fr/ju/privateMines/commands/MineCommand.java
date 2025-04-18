@@ -11,8 +11,6 @@ import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -34,7 +32,6 @@ public class MineCommand implements CommandExecutor {
     private final ConfigManager configManager;
     private final MineWorldManager mineWorldManager;
     private final Set<UUID> pendingResetConfirmation = new HashSet<>();
-    private Map.Entry<UUID, Long> pendingReset = null;
     private final Map<String, SubCommand> subCommands = new HashMap<>();
     private static class Console {
         public static final UUID UUID = java.util.UUID.fromString("00000000-0000-0000-0000-000000000000");
@@ -277,9 +274,6 @@ public class MineCommand implements CommandExecutor {
     private void showTopStats(Player viewer) {
         MineCommandUtils.showTopStats(plugin, mineManager, viewer);
     }
-    private String formatTimestamp(long timestamp) {
-        return MineCommandUtils.formatTimestamp(timestamp);
-    }
     private void sendHelp(Player player) {
         MineCommandUtils.sendHelp(plugin, mineManager, configManager, player);
     }
@@ -287,7 +281,6 @@ public class MineCommand implements CommandExecutor {
         try {
             sender.sendMessage(configManager.getMessage("mine-reset-step1"));
             List<UUID> mineOwners = new ArrayList<>(mineManager.mineMemoryService.getPlayerMines().keySet());
-            int mineCount = mineOwners.size();
             for (UUID ownerId : mineOwners) {
                 mineManager.removeMine(ownerId);
             }
@@ -346,300 +339,5 @@ public class MineCommand implements CommandExecutor {
             e.printStackTrace();
             return false;
         }
-    }
-    private void kickPlayerFromMine(Player owner, Player target) {
-        if (!mineManager.hasMine(owner)) {
-            owner.sendMessage(configManager.getMessage("mine-no-mine"));
-            return;
-        }
-        if (owner.getUniqueId().equals(target.getUniqueId())) {
-            owner.sendMessage(configManager.getMessage("mine-cannot-kick-self"));
-            return;
-        }
-        Mine mine = mineManager.getMine(owner).orElse(null);
-        if (mine == null) {
-            owner.sendMessage(configManager.getMessage("mine-no-mine"));
-            return;
-        }
-        World mineWorld = mine.getLocation().getWorld();
-        if (!target.getWorld().equals(mineWorld)) {
-            Map<String, String> replacements = new HashMap<>();
-            replacements.put("%player%", target.getName());
-            owner.sendMessage(configManager.getMessage("mine-player-not-in-mine", replacements));
-            return;
-        }
-        if (mine.hasMineArea()) {
-            int targetX = target.getLocation().getBlockX();
-            int targetY = target.getLocation().getBlockY();
-            int targetZ = target.getLocation().getBlockZ();
-            if (targetX < mine.getMinX() || targetX > mine.getMaxX() ||
-                targetY < mine.getMinY() || targetY > mine.getMaxY() ||
-                targetZ < mine.getMinZ() || targetZ > mine.getMaxZ()) {
-                Map<String, String> replacements = new HashMap<>();
-                replacements.put("%player%", target.getName());
-                owner.sendMessage(configManager.getMessage("mine-player-not-in-mine", replacements));
-                return;
-            }
-        } else if (mine.hasSchematicBounds()) {
-            double targetX = target.getLocation().getX();
-            double targetY = target.getLocation().getY();
-            double targetZ = target.getLocation().getZ();
-            if (targetX < mine.getSchematicMinX() || targetX > mine.getSchematicMaxX() ||
-                targetY < mine.getSchematicMinY() || targetY > mine.getSchematicMaxY() ||
-                targetZ < mine.getSchematicMinZ() || targetZ > mine.getSchematicMaxZ()) {
-                Map<String, String> replacements = new HashMap<>();
-                replacements.put("%player%", target.getName());
-                owner.sendMessage(configManager.getMessage("mine-player-not-in-mine", replacements));
-                return;
-            }
-        }
-        World spawnWorld = Bukkit.getWorld("spawn");
-        if (spawnWorld != null) {
-            Location spawnLocation = new Location(spawnWorld, 540.5, 120.0, 5.5, 180, 0); 
-            target.teleport(spawnLocation);
-            Map<String, String> ownerReplacements = new HashMap<>();
-            ownerReplacements.put("%player%", target.getName());
-            owner.sendMessage(configManager.getMessage("mine-player-kicked", ownerReplacements));
-            Map<String, String> targetReplacements = new HashMap<>();
-            targetReplacements.put("%owner%", owner.getName());
-            target.sendMessage(configManager.getMessage("mine-you-were-kicked", targetReplacements));
-        } else {
-            target.teleport(Bukkit.getWorlds().get(0).getSpawnLocation());
-            Map<String, String> ownerReplacements = new HashMap<>();
-            ownerReplacements.put("%player%", target.getName());
-            owner.sendMessage(configManager.getMessage("mine-player-kicked", ownerReplacements));
-            Map<String, String> targetReplacements = new HashMap<>();
-            targetReplacements.put("%owner%", owner.getName());
-            target.sendMessage(configManager.getMessage("mine-you-were-kicked", targetReplacements));
-            plugin.getLogger().warning("Le monde 'spawn' n'a pas été trouvé. Le joueur " + target.getName() + 
-                " a été téléporté au spawn du monde par défaut.");
-        }
-    }
-    private void banPlayerFromMine(Player owner, Player target, long duration) {
-        if (!mineManager.hasMine(owner)) {
-            owner.sendMessage(configManager.getMessage("mine-no-mine"));
-            return;
-        }
-        if (owner.getUniqueId().equals(target.getUniqueId())) {
-            owner.sendMessage(configManager.getMessage("mine-cannot-ban-self"));
-            return;
-        }
-        Mine mine = mineManager.getMine(owner).orElse(null);
-        if (mine == null) {
-            owner.sendMessage(configManager.getMessage("mine-no-mine"));
-            return;
-        }
-        mine.banPlayer(target.getUniqueId(), duration);
-        mineManager.saveMine(mine);
-        if (target.getWorld().equals(mine.getLocation().getWorld())) {
-            boolean inMine = false;
-            if (mine.hasMineArea()) {
-                int targetX = target.getLocation().getBlockX();
-                int targetY = target.getLocation().getBlockY();
-                int targetZ = target.getLocation().getBlockZ();
-                if (targetX >= mine.getMinX() && targetX <= mine.getMaxX() &&
-                    targetY >= mine.getMinY() && targetY <= mine.getMaxY() &&
-                    targetZ >= mine.getMinZ() && targetZ <= mine.getMaxZ()) {
-                    inMine = true;
-                }
-            } else if (mine.hasSchematicBounds()) {
-                double targetX = target.getLocation().getX();
-                double targetY = target.getLocation().getY();
-                double targetZ = target.getLocation().getZ();
-                if (targetX >= mine.getSchematicMinX() && targetX <= mine.getSchematicMaxX() &&
-                    targetY >= mine.getSchematicMinY() && targetY <= mine.getSchematicMaxY() &&
-                    targetZ >= mine.getSchematicMinZ() && targetZ <= mine.getSchematicMaxZ()) {
-                    inMine = true;
-                }
-            }
-            if (inMine) {
-                World spawnWorld = Bukkit.getWorld("spawn");
-                if (spawnWorld != null) {
-                    Location spawnLocation = new Location(spawnWorld, 540.5, 120.0, 5.5, 180, 0); 
-                    target.teleport(spawnLocation);
-                } else {
-                    target.teleport(Bukkit.getWorlds().get(0).getSpawnLocation());
-                }
-            }
-        }
-        String formattedDuration = formatDuration(duration);
-        Map<String, String> ownerReplacements = new HashMap<>();
-        ownerReplacements.put("%player%", target.getName());
-        ownerReplacements.put("%duration%", formattedDuration);
-        owner.sendMessage(configManager.getMessage("mine-player-banned", ownerReplacements));
-        Map<String, String> targetReplacements = new HashMap<>();
-        targetReplacements.put("%owner%", owner.getName());
-        targetReplacements.put("%duration%", formattedDuration);
-        target.sendMessage(configManager.getMessage("mine-you-were-banned", targetReplacements));
-    }
-    private void banPlayerPermanently(Player owner, Player target) {
-        if (!mineManager.hasMine(owner)) {
-            owner.sendMessage(configManager.getMessage("mine-no-mine"));
-            return;
-        }
-        if (owner.getUniqueId().equals(target.getUniqueId())) {
-            owner.sendMessage(configManager.getMessage("mine-cannot-ban-self"));
-            return;
-        }
-        Mine mine = mineManager.getMine(owner).orElse(null);
-        if (mine == null) {
-            owner.sendMessage(configManager.getMessage("mine-no-mine"));
-            return;
-        }
-        mine.banPlayerPermanently(target.getUniqueId());
-        mineManager.saveMine(mine);
-        if (target.getWorld().equals(mine.getLocation().getWorld())) {
-            boolean inMine = false;
-            if (mine.hasMineArea()) {
-                int targetX = target.getLocation().getBlockX();
-                int targetY = target.getLocation().getBlockY();
-                int targetZ = target.getLocation().getBlockZ();
-                if (targetX >= mine.getMinX() && targetX <= mine.getMaxX() &&
-                    targetY >= mine.getMinY() && targetY <= mine.getMaxY() &&
-                    targetZ >= mine.getMinZ() && targetZ <= mine.getMaxZ()) {
-                    inMine = true;
-                }
-            } else if (mine.hasSchematicBounds()) {
-                double targetX = target.getLocation().getX();
-                double targetY = target.getLocation().getY();
-                double targetZ = target.getLocation().getZ();
-                if (targetX >= mine.getSchematicMinX() && targetX <= mine.getSchematicMaxX() &&
-                    targetY >= mine.getSchematicMinY() && targetY <= mine.getSchematicMaxY() &&
-                    targetZ >= mine.getSchematicMinZ() && targetZ <= mine.getSchematicMaxZ()) {
-                    inMine = true;
-                }
-            }
-            if (inMine) {
-                World spawnWorld = Bukkit.getWorld("spawn");
-                if (spawnWorld != null) {
-                    Location spawnLocation = new Location(spawnWorld, 540.5, 120.0, 5.5, 180, 0); 
-                    target.teleport(spawnLocation);
-                } else {
-                    target.teleport(Bukkit.getWorlds().get(0).getSpawnLocation());
-                }
-            }
-        }
-        Map<String, String> ownerReplacements = new HashMap<>();
-        ownerReplacements.put("%player%", target.getName());
-        owner.sendMessage(configManager.getMessage("mine-player-banned-permanently", ownerReplacements));
-        Map<String, String> targetReplacements = new HashMap<>();
-        targetReplacements.put("%owner%", owner.getName());
-        target.sendMessage(configManager.getMessage("mine-you-were-banned-permanently", targetReplacements));
-    }
-    private void unbanPlayerFromMine(Player owner, OfflinePlayer target) {
-        if (!mineManager.hasMine(owner)) {
-            owner.sendMessage(configManager.getMessage("mine-no-mine"));
-            return;
-        }
-        Mine mine = mineManager.getMine(owner).orElse(null);
-        if (mine == null) {
-            owner.sendMessage(configManager.getMessage("mine-no-mine"));
-            return;
-        }
-        if (!mine.getMineAccess().isBanned(target.getUniqueId())) {
-            Map<String, String> replacements = new HashMap<>();
-            replacements.put("%player%", target.getName() != null ? target.getName() : target.getUniqueId().toString());
-            owner.sendMessage(configManager.getMessage("mine-player-not-banned", replacements));
-            return;
-        }
-        mine.unbanPlayer(target.getUniqueId());
-        mineManager.saveMine(mine);
-        Map<String, String> ownerReplacements = new HashMap<>();
-        ownerReplacements.put("%player%", target.getName() != null ? target.getName() : target.getUniqueId().toString());
-        owner.sendMessage(configManager.getMessage("mine-player-unbanned", ownerReplacements));
-        if (target.isOnline()) {
-            Player onlineTarget = target.getPlayer();
-            Map<String, String> targetReplacements = new HashMap<>();
-            targetReplacements.put("%owner%", owner.getName());
-            onlineTarget.sendMessage(configManager.getMessage("mine-you-were-unbanned", targetReplacements));
-        }
-    }
-    private void denyPlayerAccess(Player owner, Player target) {
-        if (!mineManager.hasMine(owner)) {
-            owner.sendMessage(configManager.getMessage("mine-no-mine"));
-            return;
-        }
-        if (owner.getUniqueId().equals(target.getUniqueId())) {
-            owner.sendMessage(configManager.getMessage("mine-cannot-deny-self"));
-            return;
-        }
-        Mine mine = mineManager.getMine(owner).orElse(null);
-        if (mine == null) {
-            owner.sendMessage(configManager.getMessage("mine-no-mine"));
-            return;
-        }
-        mine.denyAccess(target.getUniqueId());
-        mineManager.saveMine(mine);
-        if (target.getWorld().equals(mine.getLocation().getWorld())) {
-            boolean inMine = false;
-            if (mine.hasMineArea()) {
-                int targetX = target.getLocation().getBlockX();
-                int targetY = target.getLocation().getBlockY();
-                int targetZ = target.getLocation().getBlockZ();
-                if (targetX >= mine.getMinX() && targetX <= mine.getMaxX() &&
-                    targetY >= mine.getMinY() && targetY <= mine.getMaxY() &&
-                    targetZ >= mine.getMinZ() && targetZ <= mine.getMaxZ()) {
-                    inMine = true;
-                }
-            } else if (mine.hasSchematicBounds()) {
-                double targetX = target.getLocation().getX();
-                double targetY = target.getLocation().getY();
-                double targetZ = target.getLocation().getZ();
-                if (targetX >= mine.getSchematicMinX() && targetX <= mine.getSchematicMaxX() &&
-                    targetY >= mine.getSchematicMinY() && targetY <= mine.getSchematicMaxY() &&
-                    targetZ >= mine.getSchematicMinZ() && targetZ <= mine.getSchematicMaxZ()) {
-                    inMine = true;
-                }
-            }
-            if (inMine) {
-                World spawnWorld = Bukkit.getWorld("spawn");
-                if (spawnWorld != null) {
-                    Location spawnLocation = new Location(spawnWorld, 540.5, 120.0, 5.5, 180, 0); 
-                    target.teleport(spawnLocation);
-                } else {
-                    target.teleport(Bukkit.getWorlds().get(0).getSpawnLocation());
-                }
-            }
-        }
-        Map<String, String> ownerReplacements = new HashMap<>();
-        ownerReplacements.put("%player%", target.getName());
-        owner.sendMessage(configManager.getMessage("mine-player-denied", ownerReplacements));
-        Map<String, String> targetReplacements = new HashMap<>();
-        targetReplacements.put("%owner%", owner.getName());
-        target.sendMessage(configManager.getMessage("mine-you-were-denied", targetReplacements));
-    }
-    private void allowPlayerAccess(Player owner, OfflinePlayer target) {
-        if (!mineManager.hasMine(owner)) {
-            owner.sendMessage(configManager.getMessage("mine-no-mine"));
-            return;
-        }
-        Mine mine = mineManager.getMine(owner).orElse(null);
-        if (mine == null) {
-            owner.sendMessage(configManager.getMessage("mine-no-mine"));
-            return;
-        }
-        if (!mine.getMineAccess().isDenied(target.getUniqueId())) {
-            Map<String, String> replacements = new HashMap<>();
-            replacements.put("%player%", target.getName() != null ? target.getName() : target.getUniqueId().toString());
-            owner.sendMessage(configManager.getMessage("mine-player-not-denied", replacements));
-            return;
-        }
-        mine.allowAccess(target.getUniqueId());
-        mineManager.saveMine(mine);
-        Map<String, String> ownerReplacements = new HashMap<>();
-        ownerReplacements.put("%player%", target.getName() != null ? target.getName() : target.getUniqueId().toString());
-        owner.sendMessage(configManager.getMessage("mine-player-allowed", ownerReplacements));
-        if (target.isOnline()) {
-            Player onlineTarget = target.getPlayer();
-            Map<String, String> targetReplacements = new HashMap<>();
-            targetReplacements.put("%owner%", owner.getName());
-            onlineTarget.sendMessage(configManager.getMessage("mine-you-were-allowed", targetReplacements));
-        }
-    }
-    private String formatDuration(long seconds) {
-        return MineCommandUtils.formatDuration(seconds);
-    }
-    private long parseDuration(String durationStr) {
-        return MineCommandUtils.parseDuration(durationStr);
     }
 } 

@@ -15,6 +15,7 @@ import fr.ju.privateMines.PrivateMines;
 import fr.ju.privateMines.models.Mine;
 import fr.ju.privateMines.utils.ColorUtil;
 import fr.ju.privateMines.utils.GUIManager;
+import net.kyori.adventure.text.Component;
 public class MineCompositionGUI {
     private static final String GUI_TITLE = "&8■ &bComposition de la Mine &8■";
     private static final String INVENTORY_TYPE = "mine_composition";
@@ -30,7 +31,7 @@ public class MineCompositionGUI {
             player.sendMessage(ColorUtil.translateColors("&cErreur lors de la récupération de votre mine."));
             return;
         }
-        Inventory inventory = Bukkit.createInventory(null, 54, ColorUtil.translateColors(GUI_TITLE)); 
+        Inventory inventory = Bukkit.createInventory(null, 54, Component.text(ColorUtil.translateColors(GUI_TITLE))); 
         List<String> titleLore = new ArrayList<>();
         titleLore.add("&7Voici la liste complète des blocs");
         titleLore.add("&7qui composent votre mine et leur");
@@ -70,11 +71,11 @@ public class MineCompositionGUI {
                 ItemStack blockItem = new ItemStack(material);
                 ItemMeta meta = blockItem.getItemMeta();
                 if (meta != null) {
-                    meta.setDisplayName(ColorUtil.translateColors("&b" + formatMaterialName(material.name())));
-                    List<String> translatedLore = blockLore.stream()
-                            .map(ColorUtil::translateColors)
-                            .collect(Collectors.toList());
-                    meta.setLore(translatedLore);
+                    meta.displayName(Component.text(ColorUtil.translateColors("&b" + formatMaterialName(material.name()))));
+                    List<Component> loreComponents = blockLore.stream()
+                        .map(line -> Component.text(ColorUtil.translateColors(line)))
+                        .collect(Collectors.toList());
+                    meta.lore(loreComponents);
                     blockItem.setItemMeta(meta);
                 }
                 inventory.setItem(slot, blockItem);
