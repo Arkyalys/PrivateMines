@@ -14,6 +14,7 @@ import fr.ju.privateMines.PrivateMines;
 import fr.ju.privateMines.models.Mine;
 import fr.ju.privateMines.utils.ColorUtil;
 import fr.ju.privateMines.utils.GUIManager;
+import net.kyori.adventure.text.Component;
 public class MineExpandGUI {
     private static final String GUI_TITLE = "&8■ &bProgression de Mine &8■";
     private static final String INVENTORY_TYPE = "mine_expand";
@@ -31,7 +32,7 @@ public class MineExpandGUI {
             return;
         }
         Mine mine = mineOpt.get();
-        Inventory inventory = Bukkit.createInventory(null, 36, ColorUtil.translateColors(GUI_TITLE)); 
+        Inventory inventory = Bukkit.createInventory(null, 36, Component.text(ColorUtil.translateColors(GUI_TITLE))); 
         int maxSize = plugin.getConfigManager().getConfig().getInt("Config.Mines.max-size", 100);
         List<String> currentLore = new ArrayList<>();
         currentLore.add("&7Votre mine est actuellement de");

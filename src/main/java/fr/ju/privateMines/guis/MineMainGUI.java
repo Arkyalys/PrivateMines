@@ -13,6 +13,7 @@ import fr.ju.privateMines.models.Mine;
 import fr.ju.privateMines.models.MineStats;
 import fr.ju.privateMines.utils.ColorUtil;
 import fr.ju.privateMines.utils.GUIManager;
+import net.kyori.adventure.text.Component;
 public class MineMainGUI {
     private static final String GUI_TITLE = "&8■ &bGestion de Mine &8■";
     private static final String INVENTORY_TYPE = "mine_main";
@@ -20,7 +21,7 @@ public class MineMainGUI {
         PrivateMines plugin = PrivateMines.getInstance();
         GUIManager guiManager = plugin.getGUIManager();
         int size = 45; 
-        Inventory inventory = Bukkit.createInventory(null, size, ColorUtil.translateColors(GUI_TITLE));
+        Inventory inventory = Bukkit.createInventory(null, size, Component.text(ColorUtil.translateColors(GUI_TITLE)));
         boolean hasMine = plugin.getMineManager().hasMine(player);
         if (hasMine) {
             Mine mine = plugin.getMineManager().getMine(player).orElse(null);
@@ -137,11 +138,5 @@ public class MineMainGUI {
         int baseCost = plugin.getConfigManager().getConfig().getInt("Config.Gameplay.upgrade-cost", 30);
         int multiplier = plugin.getConfigManager().getConfig().getInt("Config.Gameplay.upgrade-cost-multiplier", 2);
         return baseCost * (int)Math.pow(multiplier, currentTier - 1);
-    }
-    private static int getExpandCost(int currentSize) {
-        PrivateMines plugin = PrivateMines.getInstance();
-        int baseCost = plugin.getConfigManager().getConfig().getInt("Config.Gameplay.expand-cost", 15);
-        int multiplier = plugin.getConfigManager().getConfig().getInt("Config.Gameplay.expand-cost-multiplier", 2);
-        return baseCost * (int)Math.pow(multiplier, currentSize - 1);
     }
 } 
