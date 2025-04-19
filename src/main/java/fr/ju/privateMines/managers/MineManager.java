@@ -31,8 +31,6 @@ public class MineManager {
     private final MineAreaDetector areaDetector;
     private final SchematicManager schematicManager;
     private final MineGenerationService mineGenerationService;
-    private final MineExpansionService mineExpansionService;
-    private final MineTeleportService mineTeleportService;
     private final MineResetService mineResetService;
     private final MineTypeService mineTypeService;
     private final MineTaxService mineTaxService;
@@ -51,8 +49,6 @@ public class MineManager {
         this.areaDetector = new MineAreaDetector(plugin);
         this.schematicManager = new SchematicManager(plugin);
         this.mineGenerationService = new MineGenerationService(plugin, protectionManager, areaDetector, schematicManager);
-        this.mineExpansionService = new MineExpansionService(plugin, protectionManager);
-        this.mineTeleportService = new MineTeleportService(plugin);
         this.mineResetService = new MineResetService(plugin);
         this.mineTypeService = new MineTypeService(plugin);
         this.mineTaxService = new MineTaxService(plugin, this);
@@ -148,7 +144,7 @@ public class MineManager {
         }
         Mine mine = new Mine(player.getUniqueId(), location, type);
         mine.setBlocks(mineTypes.get(type));
-        player.sendActionBar("§eCréation de la mine en cours...");
+        player.sendActionBar(net.kyori.adventure.text.Component.text("§eCréation de la mine en cours..."));
         mineGenerationService.generateMineAsync(mine, success -> {
             if (success) {
                 debug("[DEBUG] Mine generation successful for " + player.getName() + ". Adding to map..."); 
@@ -164,7 +160,7 @@ public class MineManager {
                 }
                 saveMineData(player);
                 debug("[DEBUG] Called saveMineData for " + player.getName()); 
-                player.sendActionBar("§aMine créée avec succès !");
+                player.sendActionBar(net.kyori.adventure.text.Component.text("§aMine créée avec succès !"));
                 player.playSound(player.getLocation(), org.bukkit.Sound.BLOCK_BEACON_ACTIVATE, 1.0f, 1.2f);
                 player.sendMessage(getMessage("Messages.mine-created"));
                 player.sendMessage(getMessage("Messages.teleported-to-mine-after-creation"));
@@ -173,7 +169,7 @@ public class MineManager {
                 player.showTitle(title);
             } else {
                 plugin.getLogger().warning("Échec de la génération de la mine pour " + player.getName());
-                player.sendActionBar("§cErreur lors de la création de la mine !");
+                player.sendActionBar(net.kyori.adventure.text.Component.text("§cErreur lors de la création de la mine !"));
                 player.sendMessage(getMessage("Messages.mine-creation-failed"));
                 player.sendMessage(ColorUtil.deserialize("&cAn error occurred while creating your mine. Contact an admin."));
             }
@@ -211,7 +207,6 @@ public class MineManager {
                    mine.getLocation().getZ() + "]");
             debug("[DEBUG] Zone de la mine: (" + mine.getMinX() + "," + mine.getMinY() + "," + mine.getMinZ() + 
                    ") à (" + mine.getMaxX() + "," + mine.getMaxY() + "," + mine.getMaxZ() + ")");
-            int centerX = (mine.getMinX() + mine.getMaxX()) / 2;
             int centerZ = (mine.getMinZ() + mine.getMaxZ()) / 2;
             int teleportX = mine.getMinX() - 2; 
             int teleportZ = centerZ; 

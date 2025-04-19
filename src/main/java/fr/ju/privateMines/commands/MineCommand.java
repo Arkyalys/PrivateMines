@@ -262,6 +262,15 @@ public class MineCommand implements CommandExecutor {
                 mineManager.getMineProtectionManager().addMemberToMineRegion(player.getUniqueId(), target.getUniqueId());
                 player.sendMessage(ColorUtil.translateColors("&a" + target.getName() + " est maintenant contributeur de votre mine !"));
                 return true;
+            case "debug":
+                if (args.length < 2 || (!args[1].equalsIgnoreCase("on") && !args[1].equalsIgnoreCase("off"))) {
+                    player.sendMessage("§eUsage: /mine debug on|off");
+                    return true;
+                }
+                boolean enable = args[1].equalsIgnoreCase("on");
+                fr.ju.privateMines.PrivateMines.setDebugMode(enable);
+                player.sendMessage(enable ? "§aDebug mode enabled." : "§cDebug mode disabled.");
+                return true;
             default:
                 player.sendMessage(configManager.getMessage("mine-usage-unknown"));
                 break;

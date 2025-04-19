@@ -2,15 +2,14 @@ package fr.ju.privateMines.services;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
 import fr.ju.privateMines.PrivateMines;
 import fr.ju.privateMines.managers.StatsManager;
 import fr.ju.privateMines.models.Mine;
 public class StatsRankingService {
     private final PrivateMines plugin;
-    private final StatsManager statsManager;
     public StatsRankingService(PrivateMines plugin, StatsManager statsManager) {
         this.plugin = plugin;
-        this.statsManager = statsManager;
     }
     public List<Mine> getTopMines() {
         Collection<Mine> allMines = plugin.getMineManager().getAllMines();

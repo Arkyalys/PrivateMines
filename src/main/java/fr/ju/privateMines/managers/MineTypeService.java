@@ -1,14 +1,14 @@
 package fr.ju.privateMines.managers;
 import java.util.HashMap;
 import java.util.Map;
+
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
+
 import fr.ju.privateMines.PrivateMines;
 import fr.ju.privateMines.utils.ConfigManager;
 public class MineTypeService {
-    private final PrivateMines plugin;
     public MineTypeService(PrivateMines plugin) {
-        this.plugin = plugin;
     }
     public void loadMineTypes(Map<String, Map<Material, Double>> mineTypes, ConfigManager configManager) {
         ConfigurationSection typesSection = configManager.getConfig().getConfigurationSection("Config.Mines.default.types");

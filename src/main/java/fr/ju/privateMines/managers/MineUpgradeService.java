@@ -33,11 +33,6 @@ public class MineUpgradeService {
             return false;
         }
         int currentTier = mine.getTier();
-        int maxTier = plugin.getConfigManager().getConfig().getInt("Config.Gameplay.max-tier", 3);
-        if (currentTier >= maxTier) {
-            player.sendMessage(ColorUtil.deserialize("&cVotre mine a déjà atteint le palier maximal!"));
-            return false;
-        }
         int nextTier = currentTier + 1;
         if (!mineManager.getMineTiers().containsKey(nextTier)) {
             player.sendMessage(ColorUtil.deserialize("&cLe palier suivant n'est pas disponible."));
@@ -52,7 +47,7 @@ public class MineUpgradeService {
         player.sendMessage(ColorUtil.deserialize("&aVotre mine a été améliorée au palier &e" + nextTier + "&a!"));
         Title title = Title.title(
             Component.text(ColorUtil.translateColors("&6&lMine améliorée")),
-            Component.text(ColorUtil.translateColors("&eNouveau palier: " + nextTier + "/" + maxTier)),
+            Component.text(ColorUtil.translateColors("&eNouveau palier: " + nextTier)),
             Title.Times.times(Duration.ofMillis(500), Duration.ofMillis(3500), Duration.ofMillis(1000))
         );
         player.showTitle(title);

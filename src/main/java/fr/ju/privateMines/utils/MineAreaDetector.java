@@ -4,53 +4,53 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
+
 import fr.ju.privateMines.PrivateMines;
 import fr.ju.privateMines.models.Mine;
 public class MineAreaDetector {
-    private final PrivateMines plugin;
     public MineAreaDetector(PrivateMines plugin) {
-        this.plugin = plugin;
     }
     public boolean detectMineArea(Mine mine) {
         Location center = mine.getLocation();
         Location topRail = null;
         Location bottomRail = null;
-        plugin.getLogger().info("Starting marker detection for mine at " + center.toString());
+        PrivateMines.debugLog("Starting marker detection for mine at " + center.toString());
         int searchRadius = 150;
-        plugin.getLogger().info("Searching for rails in a radius of " + searchRadius + " blocks...");
-        plugin.getLogger().info("Searching for powered rails...");
+        PrivateMines.debugLog("Searching for rails in a radius of " + searchRadius + " blocks...");
+        PrivateMines.debugLog("Searching for powered rails...");
         Location[] railLocations = searchForMarkers(center, searchRadius, Material.POWERED_RAIL, "powered rail");
         if (railLocations != null) {
             topRail = railLocations[0];
             bottomRail = railLocations[1];
             return processFoundMarkers(mine, topRail, bottomRail);
         }
-        plugin.getLogger().info("No powered rail found, searching for regular rails...");
+        PrivateMines.debugLog("No powered rail found, searching for regular rails...");
         railLocations = searchForMarkers(center, searchRadius, Material.RAIL, "regular rail");
         if (railLocations != null) {
             topRail = railLocations[0];
             bottomRail = railLocations[1];
             return processFoundMarkers(mine, topRail, bottomRail);
         }
-        plugin.getLogger().info("No regular rail found, searching for detector rails...");
+        PrivateMines.debugLog("No regular rail found, searching for detector rails...");
         railLocations = searchForMarkers(center, searchRadius, Material.DETECTOR_RAIL, "detector rail");
         if (railLocations != null) {
             topRail = railLocations[0];
             bottomRail = railLocations[1];
             return processFoundMarkers(mine, topRail, bottomRail);
         }
-        plugin.getLogger().info("No detector rail found, searching for redstone blocks...");
+        PrivateMines.debugLog("No detector rail found, searching for redstone blocks...");
         railLocations = searchForMarkers(center, searchRadius, Material.REDSTONE_BLOCK, "redstone block");
         if (railLocations != null) {
             topRail = railLocations[0];
             bottomRail = railLocations[1];
             return processFoundMarkers(mine, topRail, bottomRail);
         }
-        plugin.getLogger().warning("No marker found in the mine after thorough search!");
+        PrivateMines.debugLog("No marker found in the mine after thorough search!");
         return false;
     }
     private Location[] searchForMarkers(Location center, int searchRadius,
@@ -92,7 +92,7 @@ public class MineAreaDetector {
     }
     private boolean processFoundMarkers(Mine mine, Location topRail, Location bottomRail) {
         if (topRail == null || bottomRail == null) {
-            plugin.getLogger().warning("Incomplete markers!");
+            PrivateMines.debugLog("Incomplete markers!");
             return false;
         }
         int minX = Math.min(topRail.getBlockX(), bottomRail.getBlockX());
@@ -102,7 +102,7 @@ public class MineAreaDetector {
         int minZ = Math.min(topRail.getBlockZ(), bottomRail.getBlockZ());
         int maxZ = Math.max(topRail.getBlockZ(), bottomRail.getBlockZ());
         mine.setMineArea(minX, minY, minZ, maxX, maxY, maxZ);
-        plugin.getLogger().info("[DEBUG] Mine area set, totalBlocks=" + 
+        PrivateMines.debugLog("[DEBUG] Mine area set, totalBlocks=" + 
                               mine.getStats().getTotalBlocks() + ", blocksMined=" + 
                               mine.getStats().getBlocksMined());
         fillMineWithOres(mine, minX, minY, minZ, maxX, maxY, maxZ);

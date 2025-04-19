@@ -14,14 +14,10 @@ public class MineStatsListener implements Listener {
     private final PrivateMines plugin;
     private final MineManager mineManager;
     private final StatsManager statsManager;
-    private final boolean autoResetEnabled;
-    private final String autoResetMessage;
     public MineStatsListener(PrivateMines plugin) {
         this.plugin = plugin;
         this.mineManager = plugin.getMineManager();
         this.statsManager = plugin.getStatsManager();
-        this.autoResetEnabled = false;
-        this.autoResetMessage = "";
     }
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event) {

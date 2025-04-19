@@ -68,7 +68,7 @@ public class MinePregenService {
                             bar.append(j < filled ? "§a█" : "§7█");
                         }
                         String actionBar = "§ePré-génération : §a" + currentIndex + "/" + count + " §8[" + bar + "§8] §a" + percent + "%";
-                        player.sendActionBar(actionBar);
+                        player.sendActionBar(net.kyori.adventure.text.Component.text(actionBar));
                         if (currentIndex % 5 == 0 || currentIndex == count) {
                             player.sendMessage(ColorUtil.deserialize("&6Progression: &e" + currentIndex + "/" + count + " &6(&a" + successes.get() + " succès&6, &c" + failures.get() + " échecs&6)"));
                         }

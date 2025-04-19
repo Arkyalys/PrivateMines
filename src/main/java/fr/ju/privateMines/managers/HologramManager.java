@@ -4,11 +4,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+
 import org.bukkit.Location;
+
 import fr.ju.privateMines.PrivateMines;
 import fr.ju.privateMines.models.Mine;
 import fr.ju.privateMines.models.MineStats;
-import fr.ju.privateMines.services.HologramContentService;
 import fr.ju.privateMines.services.HologramCreationService;
 import fr.ju.privateMines.services.HologramDeleteService;
 import fr.ju.privateMines.services.HologramUpdateService;
@@ -18,14 +19,12 @@ public class HologramManager {
     private final HologramCreationService hologramCreationService;
     private final HologramDeleteService hologramDeleteService;
     private final HologramUpdateService hologramUpdateService;
-    private final HologramContentService hologramContentService;
     public HologramManager(PrivateMines plugin) {
         this.plugin = plugin;
         this.mineHolograms = new HashMap<>();
         this.hologramCreationService = new HologramCreationService(plugin, this);
         this.hologramDeleteService = new HologramDeleteService(plugin, this);
         this.hologramUpdateService = new HologramUpdateService(plugin, this);
-        this.hologramContentService = new HologramContentService(plugin, this);
     }
     public void createOrUpdateHologram(Mine mine) {
         if (mine == null || !mine.hasMineArea()) {
@@ -90,7 +89,6 @@ public class HologramManager {
         }
         int resetThreshold = plugin.getConfigManager().getConfig().getInt("Gameplay.auto-reset.threshold", 65);
         int percentageMined = stats.getPercentageMined();
-        int percentageToReset = Math.min(100, (percentageMined * 100) / resetThreshold);
         String progressBar = createProgressBar(percentageMined);
         List<String> allLines = new java.util.ArrayList<>();
         allLines.add("&6&l✦ &f&lMine Privée &6&l✦");

@@ -13,12 +13,10 @@ import fr.ju.privateMines.utils.ColorUtil;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
 public class MineResetService {
-    private final PrivateMines plugin;
     public MineResetService(PrivateMines plugin) {
-        this.plugin = plugin;
     }
     public void resetMine(UUID uuid, MineManager mineManager, PrivateMines plugin, Map<Integer, Map<Material, Double>> mineTiers) {
-        plugin.getLogger().info("[Reset Debug] Début de resetMine pour UUID: " + uuid);
+        PrivateMines.debugLog("[Reset Debug] Début de resetMine pour UUID: " + uuid);
         if (!mineManager.hasMine(uuid)) {
             plugin.getLogger().warning("[Reset Debug] resetMine annulé: le joueur n'a pas de mine.");
             return;
@@ -35,10 +33,10 @@ public class MineResetService {
         }
         Map<Material, Double> mineBlocks;
         int tier = mine.getTier();
-        plugin.getLogger().info("[Reset Debug] Palier (tier) de la mine: " + tier);
+        PrivateMines.debugLog("[Reset Debug] Palier (tier) de la mine: " + tier);
         if (mineTiers != null && mineTiers.containsKey(tier)) {
             mineBlocks = mineTiers.get(tier);
-            plugin.getLogger().info("[Reset Debug] Utilisation des blocs du palier " + tier + ": " + (mineBlocks != null ? mineBlocks.toString() : "null"));
+            PrivateMines.debugLog("[Reset Debug] Utilisation des blocs du palier " + tier + ": " + (mineBlocks != null ? mineBlocks.toString() : "null"));
             if (mineBlocks == null || mineBlocks.isEmpty()) {
                 plugin.getLogger().warning("[Reset Debug] Les blocs pour le palier " + tier + " sont nuls ou vides, même si la clé existe ! Vérifiez la configuration.");
                 mineBlocks = mine.getBlocks();
@@ -57,13 +55,13 @@ public class MineResetService {
             return;
         }
         if (mine.hasMineArea()) {
-            plugin.getLogger().info("[Reset Debug] La mine a une zone définie (hasMineArea=true).");
+            PrivateMines.debugLog("[Reset Debug] La mine a une zone définie (hasMineArea=true).");
             mine.calculateTotalBlocks();
-            plugin.getLogger().info("[Reset Debug] Nombre total de blocs calculé: " + mine.getStats().getTotalBlocks());
+            PrivateMines.debugLog("[Reset Debug] Nombre total de blocs calculé: " + mine.getStats().getTotalBlocks());
             mine.reset();
-            plugin.getLogger().info("[Reset Debug] Statistiques de la mine réinitialisées (mine.reset() appelé).");
+            PrivateMines.debugLog("[Reset Debug] Statistiques de la mine réinitialisées (mine.reset() appelé).");
             try {
-                plugin.getLogger().info("[Reset Debug] Utilisation de FAWE pour réinitialiser la mine: " + "(" + mine.getMinX() + "," + mine.getMinY() + "," + mine.getMinZ() + ") à " + "(" + mine.getMaxX() + "," + mine.getMaxY() + "," + mine.getMaxZ() + ")");
+                PrivateMines.debugLog("[Reset Debug] Utilisation de FAWE pour réinitialiser la mine: " + "(" + mine.getMinX() + "," + mine.getMinY() + "," + mine.getMinZ() + ") à " + "(" + mine.getMaxX() + "," + mine.getMaxY() + "," + mine.getMaxZ() + ")");
                 com.sk89q.worldedit.world.World weWorld = com.sk89q.worldedit.bukkit.BukkitAdapter.adapt(world);
                 com.sk89q.worldedit.EditSession editSession = com.sk89q.worldedit.WorldEdit.getInstance().newEditSession(weWorld);
                 com.sk89q.worldedit.function.pattern.RandomPattern pattern = new com.sk89q.worldedit.function.pattern.RandomPattern();
@@ -79,8 +77,8 @@ public class MineResetService {
                     com.sk89q.worldedit.math.BlockVector3.at(mine.getMaxX(), mine.getMaxY(), mine.getMaxZ())
                 );
                 int blocksChanged = editSession.setBlocks(region, pattern);
-                editSession.flushSession();
-                plugin.getLogger().info("[Reset Debug] Mine réinitialisée avec FAWE. " + blocksChanged + " blocs modifiés.");
+                editSession.close();
+                PrivateMines.debugLog("[Reset Debug] Mine réinitialisée avec FAWE. " + blocksChanged + " blocs modifiés.");
             } catch (Exception e) {
                 plugin.getLogger().severe("[Reset Debug] Erreur critique lors de la réinitialisation avec FAWE: " + e.getMessage());
                 e.printStackTrace();
@@ -91,9 +89,9 @@ public class MineResetService {
         }
         if (plugin.getStatsManager() != null) {
             plugin.getStatsManager().onMineReset(mine);
-            plugin.getLogger().info("[Reset Debug] StatsManager notifié de la réinitialisation.");
+            PrivateMines.debugLog("[Reset Debug] StatsManager notifié de la réinitialisation.");
             mine.synchronizeStats();
-            plugin.getLogger().info("[Reset Debug] Synchronisation des statistiques effectuée après reset");
+            PrivateMines.debugLog("[Reset Debug] Synchronisation des statistiques effectuée après reset");
         }
         if (plugin.getHologramManager() != null) {
             Mine mineHolo = mineManager.getMine(uuid).orElse(null);
@@ -101,16 +99,9 @@ public class MineResetService {
                 plugin.getHologramManager().createOrUpdateHologram(mineHolo);
             }
         }
-        Player owner = plugin.getServer().getPlayer(uuid);
         // SUPPRESSION de la téléportation automatique ici
         // if (owner != null && owner.isOnline()) {
-        //     Location tpLoc = mineManager.getBetterTeleportLocation(mine);
-        //     if (tpLoc != null) {
-        //         owner.teleport(tpLoc);
-        //         owner.sendMessage(plugin.getConfigManager().getMessage("Messages.teleported-to-mine"));
-        //     }
-        // }
-        plugin.getLogger().info("[Reset Debug] Fin de resetMine pour UUID: " + uuid);
+        PrivateMines.debugLog("[Reset Debug] Fin de resetMine pour UUID: " + uuid);
     }
     public void resetMine(Player player, MineManager mineManager, PrivateMines plugin, Map<Integer, Map<Material, Double>> mineTiers) {
         if (!mineManager.hasMine(player)) {

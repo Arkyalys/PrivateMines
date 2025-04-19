@@ -147,7 +147,6 @@ public class PrivateMines extends JavaPlugin {
             }
             cacheManager.clear();
             // Unregister all listeners
-            org.bukkit.plugin.PluginManager pm = getServer().getPluginManager();
             org.bukkit.event.HandlerList.unregisterAll(this);
             errorHandler.logInfo("All listeners unregistered.");
             // Cancel all plugin tasks
@@ -215,5 +214,8 @@ public class PrivateMines extends JavaPlugin {
     }
     public static void setDebugMode(boolean debug) {
         debugMode = debug;
+    }
+    public static void debugLog(String message) {
+        if (isDebugMode()) getInstance().getLogger().info(message);
     }
 }

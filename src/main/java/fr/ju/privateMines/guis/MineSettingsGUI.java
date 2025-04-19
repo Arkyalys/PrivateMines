@@ -13,6 +13,7 @@ import fr.ju.privateMines.PrivateMines;
 import fr.ju.privateMines.models.Mine;
 import fr.ju.privateMines.utils.ColorUtil;
 import fr.ju.privateMines.utils.GUIManager;
+import net.kyori.adventure.text.Component;
 public class MineSettingsGUI {
     private static final String GUI_TITLE = "&8■ &bParamètres de Mine &8■";
     private static final String INVENTORY_TYPE = "mine_settings";
@@ -28,7 +29,7 @@ public class MineSettingsGUI {
             player.sendMessage(ColorUtil.translateColors("&cErreur lors de la récupération de votre mine."));
             return;
         }
-        Inventory inventory = Bukkit.createInventory(null, 36, ColorUtil.translateColors(GUI_TITLE)); 
+        Inventory inventory = Bukkit.createInventory(null, 36, Component.text(ColorUtil.translateColors(GUI_TITLE))); 
         List<String> typeLore = new ArrayList<>();
         typeLore.add("&7Type actuel: &b" + mine.getType());
         typeLore.add("");

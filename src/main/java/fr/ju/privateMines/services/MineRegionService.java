@@ -16,12 +16,10 @@ import fr.ju.privateMines.managers.MineProtectionManager;
 import fr.ju.privateMines.models.Mine;
 public class MineRegionService {
     private final PrivateMines plugin;
-    private final MineProtectionManager mineProtectionManager;
     private final String regionPrefix = "mine-";
     private final String fullMinePrefix = "fullmine-";
     public MineRegionService(PrivateMines plugin, MineProtectionManager mineProtectionManager) {
         this.plugin = plugin;
-        this.mineProtectionManager = mineProtectionManager;
     }
     public void protectMine(Mine mine, BlockVector3[] schematicBounds) {
         World world = mine.getLocation().getWorld();

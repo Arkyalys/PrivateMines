@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -12,7 +13,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryType;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -27,6 +27,8 @@ import fr.ju.privateMines.guis.MineTypeGUI;
 import fr.ju.privateMines.guis.MineVisitorsGUI;
 import fr.ju.privateMines.models.Mine;
 import fr.ju.privateMines.utils.ColorUtil;
+import io.papermc.paper.event.player.AsyncChatEvent;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 
 public class GUIListener implements Listener {
     private final PrivateMines plugin;
@@ -84,11 +86,11 @@ public class GUIListener implements Listener {
         plugin.getGUIManager().unregisterOpenInventory(player);
     }
     @EventHandler
-    public void onPlayerChat(AsyncPlayerChatEvent event) {
+    public void onPlayerChat(AsyncChatEvent event) {
         Player player = event.getPlayer();
         if (!awaitingContributorChat.containsKey(player.getUniqueId())) return;
         event.setCancelled(true);
-        String msg = event.getMessage().trim();
+        String msg = PlainTextComponentSerializer.plainText().serialize(event.message()).trim();
         if (msg.equalsIgnoreCase("/cancel")) {
             player.sendMessage(ColorUtil.translateColors("&cAjout de contributeur annulé."));
             awaitingContributorChat.remove(player.getUniqueId());
@@ -303,7 +305,9 @@ public class GUIListener implements Listener {
         if (meta == null) return;
         String type = null;
         if (meta.hasLore()) {
-            List<String> lore = meta.getLore();
+            List<String> lore = meta.lore() != null
+                ? meta.lore().stream().map(component -> PlainTextComponentSerializer.plainText().serialize(component)).collect(Collectors.toList())
+                : new ArrayList<>();
             for (String line : lore) {
                 if (line.startsWith(ColorUtil.translateColors("&7Type: &b"))) {
                     type = line.substring(ColorUtil.translateColors("&7Type: &b").length());
@@ -409,7 +413,10 @@ public class GUIListener implements Listener {
                 player.sendMessage("[DEBUG] Pas de papier dans le slot 2");
                 return;
             }
-            String pseudo = result.getItemMeta() != null ? result.getItemMeta().getDisplayName() : null;
+            String pseudo = null;
+            if (result.getItemMeta() != null && result.getItemMeta().hasDisplayName()) {
+                pseudo = PlainTextComponentSerializer.plainText().serialize(result.getItemMeta().displayName());
+            }
             player.sendMessage("[DEBUG] Pseudo saisi: " + pseudo);
             if (pseudo == null || pseudo.trim().isEmpty() || pseudo.equals("Entrer le pseudo")) {
                 player.sendMessage(ColorUtil.translateColors("&cPseudo invalide."));

@@ -1,6 +1,8 @@
 package fr.ju.privateMines.services;
 import java.util.List;
+
 import org.bukkit.Location;
+
 import eu.decentsoftware.holograms.api.DHAPI;
 import eu.decentsoftware.holograms.api.holograms.Hologram;
 import fr.ju.privateMines.PrivateMines;
@@ -8,10 +10,8 @@ import fr.ju.privateMines.managers.HologramManager;
 import fr.ju.privateMines.models.Mine;
 public class HologramCreationService {
     private final PrivateMines plugin;
-    private final HologramManager hologramManager;
     public HologramCreationService(PrivateMines plugin, HologramManager hologramManager) {
         this.plugin = plugin;
-        this.hologramManager = hologramManager;
     }
     public void createOrUpdateSingleHologram(Mine mine, String holoName, Location holoLocation, List<String> holoLines) {
         Hologram existingHologram = DHAPI.getHologram(holoName);

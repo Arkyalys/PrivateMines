@@ -2,15 +2,18 @@ package fr.ju.privateMines.guis;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+
 import fr.ju.privateMines.PrivateMines;
 import fr.ju.privateMines.utils.ColorUtil;
 import fr.ju.privateMines.utils.GUIManager;
+import net.kyori.adventure.text.Component;
 public class MineTypeGUI {
     private static final String GUI_TITLE = "&8■ &bTypes de Mine &8■";
     private static final String INVENTORY_TYPE = "mine_type";
@@ -30,7 +33,7 @@ public class MineTypeGUI {
         Set<String> mineTypes = typesSection.getKeys(false);
         int size = ((mineTypes.size() / 9) + 1) * 9 + 18; 
         size = Math.min(54, Math.max(36, size)); 
-        Inventory inventory = Bukkit.createInventory(null, size, ColorUtil.translateColors(GUI_TITLE));
+        Inventory inventory = Bukkit.createInventory(null, size, Component.text(ColorUtil.translateColors(GUI_TITLE)));
         String title = isChangingType ? "&e⚙ &bChangement de Type" : "&e+ &bCréation de Mine";
         String desc = isChangingType ? 
                 "&7Choisissez le nouveau type de votre mine" : 

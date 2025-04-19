@@ -21,50 +21,50 @@ public class MinePersistenceService {
         this.plugin = plugin;
     }
     public void saveMineData(Player player, MineManager mineManager) {
-        plugin.getLogger().info("[DEBUG-MINE] Sauvegarde des données pour " + player.getName() + " (UUID: " + player.getUniqueId() + ")");
+        PrivateMines.debugLog("[DEBUG-MINE] Sauvegarde des données pour " + player.getName() + " (UUID: " + player.getUniqueId() + ")");
         if (!mineManager.hasMine(player)) {
-            plugin.getLogger().warning("[DEBUG-MINE] Tentative de sauvegarder les données pour un joueur sans mine: " + player.getName());
+            PrivateMines.debugLog("[DEBUG-MINE] Tentative de sauvegarder les données pour un joueur sans mine: " + player.getName());
             return;
         }
         Mine mine = mineManager.getMine(player).orElse(null);
         if (mine == null) {
-            plugin.getLogger().severe("[DEBUG-MINE] Mine null alors que hasMine retourne true pour: " + player.getName());
+            PrivateMines.debugLog("[DEBUG-MINE] Mine null alors que hasMine retourne true pour: " + player.getName());
             return;
         }
         saveMine(mine, mineManager);
-        plugin.getLogger().info("[DEBUG-MINE] Sauvegarde terminée pour " + player.getName());
+        PrivateMines.debugLog("[DEBUG-MINE] Sauvegarde terminée pour " + player.getName());
         try {
             plugin.getConfigManager().saveData();
-            plugin.getLogger().info("[DEBUG-MINE] Fichier data.yml sauvegardé avec succès");
+            PrivateMines.debugLog("[DEBUG-MINE] Fichier data.yml sauvegardé avec succès");
         } catch (Exception e) {
-            plugin.getLogger().severe("[DEBUG-MINE] Erreur lors de la sauvegarde du fichier data.yml: " + e.getMessage());
+            PrivateMines.debugLog("[DEBUG-MINE] Erreur lors de la sauvegarde du fichier data.yml: " + e.getMessage());
             e.printStackTrace();
         }
     }
     public void saveMine(Mine mine, MineManager mineManager) {
         String uuid = mine.getOwner().toString();
-        plugin.getLogger().info("[DEBUG-MINE] Sauvegarde de la mine pour UUID: " + uuid);
+        PrivateMines.debugLog("[DEBUG-MINE] Sauvegarde de la mine pour UUID: " + uuid);
         ConfigManager configManager = plugin.getConfigManager();
         ConfigurationSection mineSection = configManager.getData().createSection("mines." + uuid);
         if (mine.getLocation() == null) {
-            plugin.getLogger().severe("[DEBUG-MINE] Location est null pour la mine de UUID: " + uuid);
+            PrivateMines.debugLog("[DEBUG-MINE] Location est null pour la mine de UUID: " + uuid);
             return;
         }
         if (mine.getLocation().getWorld() == null) {
-            plugin.getLogger().severe("[DEBUG-MINE] Monde est null pour la mine de UUID: " + uuid);
+            PrivateMines.debugLog("[DEBUG-MINE] Monde est null pour la mine de UUID: " + uuid);
             if (plugin.getMineWorldManager() != null && plugin.getMineWorldManager().getMineWorld() != null) {
                 Location newLoc = mine.getLocation().clone();
                 newLoc.setWorld(plugin.getMineWorldManager().getMineWorld());
                 mine.setLocation(newLoc);
-                plugin.getLogger().info("[DEBUG-MINE] Monde défini sur le monde par défaut: " + newLoc.getWorld().getName());
+                PrivateMines.debugLog("[DEBUG-MINE] Monde défini sur le monde par défaut: " + newLoc.getWorld().getName());
             } else {
-                plugin.getLogger().severe("[DEBUG-MINE] Impossible de définir un monde par défaut, la sauvegarde peut être incomplète");
+                PrivateMines.debugLog("[DEBUG-MINE] Impossible de définir un monde par défaut, la sauvegarde peut être incomplète");
             }
         }
         if (mine.getLocation().getWorld() != null) {
             mineSection.set("location.world", mine.getLocation().getWorld().getName());
         } else {
-            plugin.getLogger().severe("[DEBUG-MINE] Impossible de sauvegarder le nom du monde (est toujours null)");
+            PrivateMines.debugLog("[DEBUG-MINE] Impossible de sauvegarder le nom du monde (est toujours null)");
         }
         mineSection.set("location.x", mine.getLocation().getX());
         mineSection.set("location.y", mine.getLocation().getY());
@@ -80,7 +80,7 @@ public class MinePersistenceService {
                 mineSection.set("teleport.world", mine.getTeleportLocation().getWorld().getName());
             } else if (mine.getLocation().getWorld() != null) {
                 mineSection.set("teleport.world", mine.getLocation().getWorld().getName());
-                plugin.getLogger().warning("[DEBUG-MINE] Le monde du point de téléportation est null, utilisation du monde principal de la mine");
+                PrivateMines.debugLog("[DEBUG-MINE] Le monde du point de téléportation est null, utilisation du monde principal de la mine");
             }
             mineSection.set("teleport.x", mine.getTeleportLocation().getX());
             mineSection.set("teleport.y", mine.getTeleportLocation().getY());
@@ -139,7 +139,7 @@ public class MinePersistenceService {
                 UUID bannedUser = UUID.fromString(uuidString);
                 access.addPermanentBan(bannedUser);
             } catch (IllegalArgumentException e) {
-                plugin.getLogger().warning("Invalid UUID in permanent bans: " + uuidString);
+                PrivateMines.debugLog("Invalid UUID in permanent bans: " + uuidString);
             }
         }
         if (mineSection.contains("access.temp-bans")) {
@@ -153,7 +153,7 @@ public class MinePersistenceService {
                         access.addTemporaryBan(bannedUser, remainingTime);
                     }
                 } catch (IllegalArgumentException e) {
-                    plugin.getLogger().warning("Invalid UUID in temporary bans: " + uuidString);
+                    PrivateMines.debugLog("Invalid UUID in temporary bans: " + uuidString);
                 }
             }
         }
@@ -163,56 +163,56 @@ public class MinePersistenceService {
                 UUID deniedUser = UUID.fromString(uuidString);
                 access.addDeniedUser(deniedUser);
             } catch (IllegalArgumentException e) {
-                plugin.getLogger().warning("Invalid UUID in denied users: " + uuidString);
+                PrivateMines.debugLog("Invalid UUID in denied users: " + uuidString);
             }
         }
     }
     public void loadMineData(MineManager mineManager, ConfigManager configManager, PrivateMines plugin, MineProtectionManager protectionManager, Map<String, Map<Material, Double>> mineTypes) {
-        plugin.getLogger().info("Chargement des données des mines...");
+        PrivateMines.debugLog("Chargement des données des mines...");
         configManager.reloadData();
         mineManager.mineMemoryService.clearPlayerMines();
         ConfigurationSection minesSection = configManager.getData().getConfigurationSection("mines");
         if (minesSection == null) {
-            plugin.getLogger().info("Aucune donnée de mine trouvée.");
+            PrivateMines.debugLog("Aucune donnée de mine trouvée.");
             return;
         }
         int count = 0;
         int errorCount = 0;
-        plugin.getLogger().info("UUIDs trouvés dans le fichier de données: " + String.join(", ", minesSection.getKeys(false)));
+        PrivateMines.debugLog("UUIDs trouvés dans le fichier de données: " + String.join(", ", minesSection.getKeys(false)));
         for (String key : minesSection.getKeys(false)) {
             try {
-                plugin.getLogger().info("Tentative de chargement de la mine pour UUID: " + key);
+                PrivateMines.debugLog("Tentative de chargement de la mine pour UUID: " + key);
                 ConfigurationSection mineSection = minesSection.getConfigurationSection(key);
                 if (mineSection == null) {
-                    plugin.getLogger().warning("Section de configuration nulle pour UUID: " + key);
+                    PrivateMines.debugLog("Section de configuration nulle pour UUID: " + key);
                     continue;
                 }
                 UUID ownerUUID;
                 try {
                     ownerUUID = UUID.fromString(key);
                 } catch (IllegalArgumentException e) {
-                    plugin.getLogger().severe("UUID invalide: " + key + " - " + e.getMessage());
+                    PrivateMines.debugLog("UUID invalide: " + key + " - " + e.getMessage());
                     errorCount++;
                     continue;
                 }
                 String worldName = mineSection.getString("location.world");
                 if (worldName == null) {
-                    plugin.getLogger().severe("Nom du monde manquant pour UUID: " + key);
+                    PrivateMines.debugLog("Nom du monde manquant pour UUID: " + key);
                     errorCount++;
                     continue;
                 }
                 World world = plugin.getServer().getWorld(worldName);
                 if (world == null) {
-                    plugin.getLogger().warning("Le monde '" + worldName + "' n'existe pas pour la mine de " + key + ". Création du monde...");
+                    PrivateMines.debugLog("Le monde '" + worldName + "' n'existe pas pour la mine de " + key + ". Création du monde...");
                     if (plugin.getMineWorldManager() != null) {
                         world = plugin.getMineWorldManager().getMineWorld();
                         if (world == null) {
-                            plugin.getLogger().severe("Impossible de créer le monde. La mine de " + key + " ne sera pas chargée.");
+                            PrivateMines.debugLog("Impossible de créer le monde. La mine de " + key + " ne sera pas chargée.");
                             errorCount++;
                             continue;
                         }
                     } else {
-                        plugin.getLogger().severe("MineWorldManager non disponible. La mine de " + key + " ne sera pas chargée.");
+                        PrivateMines.debugLog("MineWorldManager non disponible. La mine de " + key + " ne sera pas chargée.");
                         errorCount++;
                         continue;
                     }
@@ -221,7 +221,7 @@ public class MinePersistenceService {
                 double y = mineSection.getDouble("location.y");
                 double z = mineSection.getDouble("location.z");
                 Location location = new Location(world, x, y, z);
-                plugin.getLogger().info("Position de la mine pour UUID " + key + ": " + world.getName() + ", " + x + ", " + y + ", " + z);
+                PrivateMines.debugLog("Position de la mine pour UUID " + key + ": " + world.getName() + ", " + x + ", " + y + ", " + z);
                 String type = mineSection.getString("type", "default");
                 Mine mine = new Mine(ownerUUID, location, type);
                 mine.setSize(mineSection.getInt("size", 1));
@@ -248,7 +248,7 @@ public class MinePersistenceService {
                     int maxY = mineSection.getInt("area.maxY");
                     int maxZ = mineSection.getInt("area.maxZ");
                     mine.setMineArea(minX, minY, minZ, maxX, maxY, maxZ);
-                    plugin.getLogger().info("Zone de la mine définie: " + minX + "," + minY + "," + minZ + " à " + maxX + "," + maxY + "," + maxZ);
+                    PrivateMines.debugLog("Zone de la mine définie: " + minX + "," + minY + "," + minZ + " à " + maxX + "," + maxY + "," + maxZ);
                 }
                 if (mineSection.contains("schematic")) {
                     double minX = mineSection.getDouble("schematic.minX");
@@ -258,7 +258,7 @@ public class MinePersistenceService {
                     double maxY = mineSection.getDouble("schematic.maxY");
                     double maxZ = mineSection.getDouble("schematic.maxZ");
                     mine.setSchematicBounds(minX, minY, minZ, maxX, maxY, maxZ);
-                    plugin.getLogger().info("[DEBUG-LOAD] Bounds schematic pour la mine " + key + " : min=(" + minX + ", " + minY + ", " + minZ + "), max=(" + maxX + ", " + maxY + ", " + maxZ + ")");
+                    PrivateMines.debugLog("[DEBUG-LOAD] Bounds schematic pour la mine " + key + " : min=(" + minX + ", " + minY + ", " + minZ + "), max=(" + maxX + ", " + maxY + ", " + maxZ + ")");
                 }
                 if (mineSection.contains("blocks")) {
                     ConfigurationSection blocksSection = mineSection.getConfigurationSection("blocks");
@@ -269,7 +269,7 @@ public class MinePersistenceService {
                             double chance = blocksSection.getDouble(materialName);
                             blocks.put(material, chance);
                         } catch (IllegalArgumentException e) {
-                            plugin.getLogger().warning("Type de bloc invalide: " + materialName);
+                            PrivateMines.debugLog("Type de bloc invalide: " + materialName);
                         }
                     }
                     mine.setBlocks(blocks);
@@ -281,8 +281,8 @@ public class MinePersistenceService {
                 loadAccessData(mine, mineSection);
                 mineManager.addMineToMap(ownerUUID, mine);
                 count++;
-                plugin.getLogger().info("Mine chargée avec succès pour UUID: " + key);
-                plugin.getLogger().info("UUID " + ownerUUID + " ajouté à la map. Taille actuelle: " + mineManager.mineMemoryService.getPlayerMines().size());
+                PrivateMines.debugLog("Mine chargée avec succès pour UUID: " + key);
+                PrivateMines.debugLog("UUID " + ownerUUID + " ajouté à la map. Taille actuelle: " + mineManager.mineMemoryService.getPlayerMines().size());
                 if (protectionManager != null) {
                     protectionManager.protectMine(mine, null);
                 }
@@ -290,20 +290,20 @@ public class MinePersistenceService {
                     plugin.getStatsManager().syncMineStats(mine);
                 }
             } catch (Exception e) {
-                plugin.getLogger().severe("Erreur lors du chargement de la mine " + key + ": " + e.getMessage());
+                PrivateMines.debugLog("Erreur lors du chargement de la mine " + key + ": " + e.getMessage());
                 e.printStackTrace();
                 errorCount++;
             }
         }
-        plugin.getLogger().info(count + " mines ont été chargées avec succès. " + errorCount + " mines ont échoué au chargement.");
+        PrivateMines.debugLog(count + " mines ont été chargées avec succès. " + errorCount + " mines ont échoué au chargement.");
         StringBuilder uuids = new StringBuilder("UUIDs des mines en mémoire: ");
         for (UUID uuid : mineManager.mineMemoryService.getPlayerMines().keySet()) {
             uuids.append(uuid.toString()).append(", ");
         }
-        plugin.getLogger().info(uuids.toString());
+        PrivateMines.debugLog(uuids.toString());
     }
     public void saveAllMineData(MineManager mineManager, ConfigManager configManager, PrivateMines plugin) {
-        plugin.getLogger().info("Sauvegarde des données de toutes les mines (" + mineManager.mineMemoryService.getPlayerMines().size() + " mines)...");
+        PrivateMines.debugLog("Sauvegarde des données de toutes les mines (" + mineManager.mineMemoryService.getPlayerMines().size() + " mines)...");
         if (plugin.getConfigManager().getData().contains("mines")) {
             plugin.getConfigManager().getData().set("mines", null);
         }
@@ -312,7 +312,7 @@ public class MinePersistenceService {
             UUID ownerId = entry.getKey();
             Mine mine = entry.getValue();
             if (mine == null || mine.getLocation() == null || mine.getLocation().getWorld() == null) {
-                plugin.getLogger().warning("Mine invalide détectée pour l'UUID " + ownerId + ". Ignorée lors de la sauvegarde.");
+                PrivateMines.debugLog("Mine invalide détectée pour l'UUID " + ownerId + ". Ignorée lors de la sauvegarde.");
                 continue;
             }
             String path = "mines." + ownerId.toString();
@@ -358,6 +358,6 @@ public class MinePersistenceService {
             savedCount++;
         }
         plugin.getConfigManager().saveData();
-        plugin.getLogger().info("Sauvegarde terminée. " + savedCount + " mines enregistrées.");
+        PrivateMines.debugLog("Sauvegarde terminée. " + savedCount + " mines enregistrées.");
     }
 } 

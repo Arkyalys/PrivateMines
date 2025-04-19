@@ -4,17 +4,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+
 import fr.ju.privateMines.PrivateMines;
 public class GUIManager {
-    private final PrivateMines plugin;
     private final Map<UUID, String> openInventories;
     public GUIManager(PrivateMines plugin) {
-        this.plugin = plugin;
         this.openInventories = new HashMap<>();
     }
     public void registerOpenInventory(Player player, String inventoryType) {
@@ -30,12 +30,16 @@ public class GUIManager {
         ItemStack item = new ItemStack(material, 1);
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
-            meta.setDisplayName(ColorUtil.translateColors(name));
+            meta.displayName(net.kyori.adventure.text.Component.text(ColorUtil.translateColors(name)));
             List<String> coloredLore = new ArrayList<>();
             for (String line : lore) {
                 coloredLore.add(ColorUtil.translateColors(line));
             }
-            meta.setLore(coloredLore);
+            java.util.List<net.kyori.adventure.text.Component> adventureLore = new java.util.ArrayList<>();
+            for (String line : coloredLore) {
+                adventureLore.add(net.kyori.adventure.text.Component.text(line));
+            }
+            meta.lore(adventureLore);
             item.setItemMeta(meta);
         }
         return item;

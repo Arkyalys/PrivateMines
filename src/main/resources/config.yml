@@ -127,25 +127,608 @@ Config:
       tiers:
          1:
             blocks:
-               STONE: 0.7
-               COAL_ORE: 0.15
-               IRON_ORE: 0.1
-               GOLD_ORE: 0.05
+               STONE: 0.25
+               COAL_ORE: 0.25
+               IRON_ORE: 0.25
+               GOLD_ORE: 0.25
          2:
             blocks:
-               STONE: 0.6
-               COAL_ORE: 0.15
-               IRON_ORE: 0.15
-               GOLD_ORE: 0.08
-               DIAMOND_ORE: 0.02
+               STONE: 0.2
+               COAL_ORE: 0.2
+               IRON_ORE: 0.2
+               GOLD_ORE: 0.2
+               DIAMOND_ORE: 0.2
          3:
             blocks:
-               STONE: 0.5
-               COAL_ORE: 0.15
-               IRON_ORE: 0.15
-               GOLD_ORE: 0.1
-               DIAMOND_ORE: 0.07
-               EMERALD_ORE: 0.03
+               STONE: 0.2
+               IRON_ORE: 0.2
+               GOLD_ORE: 0.2
+               DIAMOND_ORE: 0.2
+               EMERALD_ORE: 0.2
+         4:
+            blocks:
+               DEEPSLATE: 0.25
+               DEEPSLATE_IRON_ORE: 0.25
+               DEEPSLATE_GOLD_ORE: 0.25
+               DEEPSLATE_COAL_ORE: 0.25
+         5:
+            blocks:
+               DEEPSLATE: 0.3333
+               DEEPSLATE_DIAMOND_ORE: 0.3333
+               DEEPSLATE_EMERALD_ORE: 0.3333
+         6:
+            blocks:
+               STONE: 0.25
+               COAL_ORE: 0.25
+               IRON_ORE: 0.25
+               GOLD_ORE: 0.25
+         7:
+            blocks:
+               STONE: 0.2
+               COAL_ORE: 0.2
+               IRON_ORE: 0.2
+               GOLD_ORE: 0.2
+               DIAMOND_ORE: 0.2
+         8:
+            blocks:
+               STONE: 0.2
+               IRON_ORE: 0.2
+               GOLD_ORE: 0.2
+               DIAMOND_ORE: 0.2
+               EMERALD_ORE: 0.2
+         9:
+            blocks:
+               DEEPSLATE: 0.25
+               DEEPSLATE_IRON_ORE: 0.25
+               DEEPSLATE_GOLD_ORE: 0.25
+               DEEPSLATE_COAL_ORE: 0.25
+         10:
+            blocks:
+               DEEPSLATE: 0.3333
+               DEEPSLATE_DIAMOND_ORE: 0.3333
+               DEEPSLATE_EMERALD_ORE: 0.3333
+         11:
+            blocks:
+               STONE: 0.25
+               COAL_ORE: 0.25
+               IRON_ORE: 0.25
+               GOLD_ORE: 0.25
+         12:
+            blocks:
+               STONE: 0.2
+               COAL_ORE: 0.2
+               IRON_ORE: 0.2
+               GOLD_ORE: 0.2
+               DIAMOND_ORE: 0.2
+         13:
+            blocks:
+               STONE: 0.2
+               IRON_ORE: 0.2
+               GOLD_ORE: 0.2
+               DIAMOND_ORE: 0.2
+               EMERALD_ORE: 0.2
+         14:
+            blocks:
+               DEEPSLATE: 0.25
+               DEEPSLATE_IRON_ORE: 0.25
+               DEEPSLATE_GOLD_ORE: 0.25
+               DEEPSLATE_COAL_ORE: 0.25
+         15:
+            blocks:
+               DEEPSLATE: 0.3333
+               DEEPSLATE_DIAMOND_ORE: 0.3333
+               DEEPSLATE_EMERALD_ORE: 0.3333
+         16:
+            blocks:
+               STONE: 0.25
+               COAL_ORE: 0.25
+               IRON_ORE: 0.25
+               GOLD_ORE: 0.25
+         17:
+            blocks:
+               STONE: 0.2
+               COAL_ORE: 0.2
+               IRON_ORE: 0.2
+               GOLD_ORE: 0.2
+               DIAMOND_ORE: 0.2
+         18:
+            blocks:
+               STONE: 0.2
+               IRON_ORE: 0.2
+               GOLD_ORE: 0.2
+               DIAMOND_ORE: 0.2
+               EMERALD_ORE: 0.2
+         19:
+            blocks:
+               DEEPSLATE: 0.25
+               DEEPSLATE_IRON_ORE: 0.25
+               DEEPSLATE_GOLD_ORE: 0.25
+               DEEPSLATE_COAL_ORE: 0.25
+         20:
+            blocks:
+               DEEPSLATE: 0.3333
+               DEEPSLATE_DIAMOND_ORE: 0.3333
+               DEEPSLATE_EMERALD_ORE: 0.3333
+         21:
+            blocks:
+               BLACKSTONE: 0.25
+               NETHER_GOLD_ORE: 0.25
+               NETHER_QUARTZ_ORE: 0.25
+               GILDED_BLACKSTONE: 0.25
+         22:
+            blocks:
+               BLACKSTONE: 0.25
+               NETHER_GOLD_ORE: 0.25
+               NETHER_QUARTZ_ORE: 0.25
+               GILDED_BLACKSTONE: 0.25
+         23:
+            blocks:
+               BLACKSTONE: 0.25
+               NETHER_GOLD_ORE: 0.25
+               NETHER_QUARTZ_ORE: 0.25
+               GILDED_BLACKSTONE: 0.25
+         24:
+            blocks:
+               BLACKSTONE: 0.25
+               NETHER_GOLD_ORE: 0.25
+               NETHER_QUARTZ_ORE: 0.25
+               GILDED_BLACKSTONE: 0.25
+         25:
+            blocks:
+               BLACKSTONE: 0.25
+               NETHER_GOLD_ORE: 0.25
+               NETHER_QUARTZ_ORE: 0.25
+               GILDED_BLACKSTONE: 0.25
+         26:
+            blocks:
+               BLACKSTONE: 0.25
+               NETHER_GOLD_ORE: 0.25
+               NETHER_QUARTZ_ORE: 0.25
+               GILDED_BLACKSTONE: 0.25
+         27:
+            blocks:
+               BLACKSTONE: 0.25
+               NETHER_GOLD_ORE: 0.25
+               NETHER_QUARTZ_ORE: 0.25
+               GILDED_BLACKSTONE: 0.25
+         28:
+            blocks:
+               BLACKSTONE: 0.25
+               NETHER_GOLD_ORE: 0.25
+               NETHER_QUARTZ_ORE: 0.25
+               GILDED_BLACKSTONE: 0.25
+         29:
+            blocks:
+               BLACKSTONE: 0.25
+               NETHER_GOLD_ORE: 0.25
+               NETHER_QUARTZ_ORE: 0.25
+               GILDED_BLACKSTONE: 0.25
+         30:
+            blocks:
+               BLACKSTONE: 0.25
+               NETHER_GOLD_ORE: 0.25
+               NETHER_QUARTZ_ORE: 0.25
+               GILDED_BLACKSTONE: 0.25
+         31:
+            blocks:
+               END_STONE: 0.25
+               PURPUR_BLOCK: 0.25
+               AMETHYST_BLOCK: 0.25
+               BUDDING_AMETHYST: 0.25
+         32:
+            blocks:
+               END_STONE: 0.25
+               PURPUR_BLOCK: 0.25
+               AMETHYST_BLOCK: 0.25
+               BUDDING_AMETHYST: 0.25
+         33:
+            blocks:
+               END_STONE: 0.25
+               PURPUR_BLOCK: 0.25
+               AMETHYST_BLOCK: 0.25
+               BUDDING_AMETHYST: 0.25
+         34:
+            blocks:
+               END_STONE: 0.25
+               PURPUR_BLOCK: 0.25
+               AMETHYST_BLOCK: 0.25
+               BUDDING_AMETHYST: 0.25
+         35:
+            blocks:
+               END_STONE: 0.25
+               PURPUR_BLOCK: 0.25
+               AMETHYST_BLOCK: 0.25
+               BUDDING_AMETHYST: 0.25
+         36:
+            blocks:
+               END_STONE: 0.25
+               PURPUR_BLOCK: 0.25
+               AMETHYST_BLOCK: 0.25
+               BUDDING_AMETHYST: 0.25
+         37:
+            blocks:
+               END_STONE: 0.25
+               PURPUR_BLOCK: 0.25
+               AMETHYST_BLOCK: 0.25
+               BUDDING_AMETHYST: 0.25
+         38:
+            blocks:
+               END_STONE: 0.25
+               PURPUR_BLOCK: 0.25
+               AMETHYST_BLOCK: 0.25
+               BUDDING_AMETHYST: 0.25
+         39:
+            blocks:
+               END_STONE: 0.25
+               PURPUR_BLOCK: 0.25
+               AMETHYST_BLOCK: 0.25
+               BUDDING_AMETHYST: 0.25
+         40:
+            blocks:
+               END_STONE: 0.25
+               PURPUR_BLOCK: 0.25
+               AMETHYST_BLOCK: 0.25
+               BUDDING_AMETHYST: 0.25
+         41:
+            blocks:
+               OBSIDIAN: 0.25
+               CRYING_OBSIDIAN: 0.25
+               DIAMOND_BLOCK: 0.25
+               EMERALD_BLOCK: 0.25
+         42:
+            blocks:
+               OBSIDIAN: 0.25
+               CRYING_OBSIDIAN: 0.25
+               DIAMOND_BLOCK: 0.25
+               EMERALD_BLOCK: 0.25
+         43:
+            blocks:
+               OBSIDIAN: 0.25
+               CRYING_OBSIDIAN: 0.25
+               DIAMOND_BLOCK: 0.25
+               EMERALD_BLOCK: 0.25
+         44:
+            blocks:
+               OBSIDIAN: 0.25
+               CRYING_OBSIDIAN: 0.25
+               DIAMOND_BLOCK: 0.25
+               EMERALD_BLOCK: 0.25
+         45:
+            blocks:
+               OBSIDIAN: 0.25
+               CRYING_OBSIDIAN: 0.25
+               DIAMOND_BLOCK: 0.25
+               EMERALD_BLOCK: 0.25
+         46:
+            blocks:
+               OBSIDIAN: 0.25
+               CRYING_OBSIDIAN: 0.25
+               DIAMOND_BLOCK: 0.25
+               EMERALD_BLOCK: 0.25
+         47:
+            blocks:
+               OBSIDIAN: 0.25
+               CRYING_OBSIDIAN: 0.25
+               DIAMOND_BLOCK: 0.25
+               EMERALD_BLOCK: 0.25
+         48:
+            blocks:
+               OBSIDIAN: 0.25
+               CRYING_OBSIDIAN: 0.25
+               DIAMOND_BLOCK: 0.25
+               EMERALD_BLOCK: 0.25
+         49:
+            blocks:
+               OBSIDIAN: 0.25
+               CRYING_OBSIDIAN: 0.25
+               DIAMOND_BLOCK: 0.25
+               EMERALD_BLOCK: 0.25
+         50:
+            blocks:
+               OBSIDIAN: 0.25
+               CRYING_OBSIDIAN: 0.25
+               DIAMOND_BLOCK: 0.25
+               EMERALD_BLOCK: 0.25
+         51:
+            blocks:
+               ANCIENT_DEBRIS: 0.25
+               NETHERITE_BLOCK: 0.25
+               DIAMOND_BLOCK: 0.25
+               AMETHYST_BLOCK: 0.25
+         52:
+            blocks:
+               ANCIENT_DEBRIS: 0.25
+               NETHERITE_BLOCK: 0.25
+               DIAMOND_BLOCK: 0.25
+               AMETHYST_BLOCK: 0.25
+         53:
+            blocks:
+               ANCIENT_DEBRIS: 0.25
+               NETHERITE_BLOCK: 0.25
+               DIAMOND_BLOCK: 0.25
+               AMETHYST_BLOCK: 0.25
+         54:
+            blocks:
+               ANCIENT_DEBRIS: 0.25
+               NETHERITE_BLOCK: 0.25
+               DIAMOND_BLOCK: 0.25
+               AMETHYST_BLOCK: 0.25
+         55:
+            blocks:
+               ANCIENT_DEBRIS: 0.25
+               NETHERITE_BLOCK: 0.25
+               DIAMOND_BLOCK: 0.25
+               AMETHYST_BLOCK: 0.25
+         56:
+            blocks:
+               ANCIENT_DEBRIS: 0.25
+               NETHERITE_BLOCK: 0.25
+               DIAMOND_BLOCK: 0.25
+               AMETHYST_BLOCK: 0.25
+         57:
+            blocks:
+               ANCIENT_DEBRIS: 0.25
+               NETHERITE_BLOCK: 0.25
+               DIAMOND_BLOCK: 0.25
+               AMETHYST_BLOCK: 0.25
+         58:
+            blocks:
+               ANCIENT_DEBRIS: 0.25
+               NETHERITE_BLOCK: 0.25
+               DIAMOND_BLOCK: 0.25
+               AMETHYST_BLOCK: 0.25
+         59:
+            blocks:
+               ANCIENT_DEBRIS: 0.25
+               NETHERITE_BLOCK: 0.25
+               DIAMOND_BLOCK: 0.25
+               AMETHYST_BLOCK: 0.25
+         60:
+            blocks:
+               ANCIENT_DEBRIS: 0.25
+               NETHERITE_BLOCK: 0.25
+               DIAMOND_BLOCK: 0.25
+               AMETHYST_BLOCK: 0.25
+         61:
+            blocks:
+               COMMAND_BLOCK: 0.25
+               STRUCTURE_BLOCK: 0.25
+               JIGSAW: 0.25
+               BARRIER: 0.25
+         62:
+            blocks:
+               BEACON: 0.25
+               DRAGON_EGG: 0.25
+               END_PORTAL_FRAME: 0.25
+               NETHERITE_BLOCK: 0.25
+         63:
+            blocks:
+               COMMAND_BLOCK: 0.25
+               STRUCTURE_BLOCK: 0.25
+               JIGSAW: 0.25
+               BARRIER: 0.25
+         64:
+            blocks:
+               BEACON: 0.25
+               DRAGON_EGG: 0.25
+               END_PORTAL_FRAME: 0.25
+               NETHERITE_BLOCK: 0.25
+         65:
+            blocks:
+               COMMAND_BLOCK: 0.25
+               STRUCTURE_BLOCK: 0.25
+               JIGSAW: 0.25
+               BARRIER: 0.25
+         66:
+            blocks:
+               BEACON: 0.25
+               DRAGON_EGG: 0.25
+               END_PORTAL_FRAME: 0.25
+               NETHERITE_BLOCK: 0.25
+         67:
+            blocks:
+               COMMAND_BLOCK: 0.25
+               STRUCTURE_BLOCK: 0.25
+               JIGSAW: 0.25
+               BARRIER: 0.25
+         68:
+            blocks:
+               BEACON: 0.25
+               DRAGON_EGG: 0.25
+               END_PORTAL_FRAME: 0.25
+               NETHERITE_BLOCK: 0.25
+         69:
+            blocks:
+               COMMAND_BLOCK: 0.25
+               STRUCTURE_BLOCK: 0.25
+               JIGSAW: 0.25
+               BARRIER: 0.25
+         70:
+            blocks:
+               BEACON: 0.25
+               DRAGON_EGG: 0.25
+               END_PORTAL_FRAME: 0.25
+               NETHERITE_BLOCK: 0.25
+         71:
+            blocks:
+               COMMAND_BLOCK: 0.25
+               STRUCTURE_BLOCK: 0.25
+               JIGSAW: 0.25
+               BARRIER: 0.25
+         72:
+            blocks:
+               BEACON: 0.25
+               DRAGON_EGG: 0.25
+               END_PORTAL_FRAME: 0.25
+               NETHERITE_BLOCK: 0.25
+         73:
+            blocks:
+               COMMAND_BLOCK: 0.25
+               STRUCTURE_BLOCK: 0.25
+               JIGSAW: 0.25
+               BARRIER: 0.25
+         74:
+            blocks:
+               BEACON: 0.25
+               DRAGON_EGG: 0.25
+               END_PORTAL_FRAME: 0.25
+               NETHERITE_BLOCK: 0.25
+         75:
+            blocks:
+               COMMAND_BLOCK: 0.25
+               STRUCTURE_BLOCK: 0.25
+               JIGSAW: 0.25
+               BARRIER: 0.25
+         76:
+            blocks:
+               BEACON: 0.25
+               DRAGON_EGG: 0.25
+               END_PORTAL_FRAME: 0.25
+               NETHERITE_BLOCK: 0.25
+         77:
+            blocks:
+               COMMAND_BLOCK: 0.25
+               STRUCTURE_BLOCK: 0.25
+               JIGSAW: 0.25
+               BARRIER: 0.25
+         78:
+            blocks:
+               BEACON: 0.25
+               DRAGON_EGG: 0.25
+               END_PORTAL_FRAME: 0.25
+               NETHERITE_BLOCK: 0.25
+         79:
+            blocks:
+               COMMAND_BLOCK: 0.25
+               STRUCTURE_BLOCK: 0.25
+               JIGSAW: 0.25
+               BARRIER: 0.25
+         80:
+            blocks:
+               BEACON: 0.25
+               DRAGON_EGG: 0.25
+               END_PORTAL_FRAME: 0.25
+               NETHERITE_BLOCK: 0.25
+         81:
+            blocks:
+               COMMAND_BLOCK: 0.25
+               STRUCTURE_BLOCK: 0.25
+               JIGSAW: 0.25
+               BARRIER: 0.25
+         82:
+            blocks:
+               BEACON: 0.25
+               DRAGON_EGG: 0.25
+               END_PORTAL_FRAME: 0.25
+               NETHERITE_BLOCK: 0.25
+         83:
+            blocks:
+               COMMAND_BLOCK: 0.25
+               STRUCTURE_BLOCK: 0.25
+               JIGSAW: 0.25
+               BARRIER: 0.25
+         84:
+            blocks:
+               BEACON: 0.25
+               DRAGON_EGG: 0.25
+               END_PORTAL_FRAME: 0.25
+               NETHERITE_BLOCK: 0.25
+         85:
+            blocks:
+               COMMAND_BLOCK: 0.25
+               STRUCTURE_BLOCK: 0.25
+               JIGSAW: 0.25
+               BARRIER: 0.25
+         86:
+            blocks:
+               BEACON: 0.25
+               DRAGON_EGG: 0.25
+               END_PORTAL_FRAME: 0.25
+               NETHERITE_BLOCK: 0.25
+         87:
+            blocks:
+               COMMAND_BLOCK: 0.25
+               STRUCTURE_BLOCK: 0.25
+               JIGSAW: 0.25
+               BARRIER: 0.25
+         88:
+            blocks:
+               BEACON: 0.25
+               DRAGON_EGG: 0.25
+               END_PORTAL_FRAME: 0.25
+               NETHERITE_BLOCK: 0.25
+         89:
+            blocks:
+               COMMAND_BLOCK: 0.25
+               STRUCTURE_BLOCK: 0.25
+               JIGSAW: 0.25
+               BARRIER: 0.25
+         90:
+            blocks:
+               BEACON: 0.25
+               DRAGON_EGG: 0.25
+               END_PORTAL_FRAME: 0.25
+               NETHERITE_BLOCK: 0.25
+         91:
+            blocks:
+               COMMAND_BLOCK: 0.25
+               STRUCTURE_BLOCK: 0.25
+               JIGSAW: 0.25
+               BARRIER: 0.25
+         92:
+            blocks:
+               BEACON: 0.25
+               DRAGON_EGG: 0.25
+               END_PORTAL_FRAME: 0.25
+               NETHERITE_BLOCK: 0.25
+         93:
+            blocks:
+               COMMAND_BLOCK: 0.25
+               STRUCTURE_BLOCK: 0.25
+               JIGSAW: 0.25
+               BARRIER: 0.25
+         94:
+            blocks:
+               BEACON: 0.25
+               DRAGON_EGG: 0.25
+               END_PORTAL_FRAME: 0.25
+               NETHERITE_BLOCK: 0.25
+         95:
+            blocks:
+               COMMAND_BLOCK: 0.25
+               STRUCTURE_BLOCK: 0.25
+               JIGSAW: 0.25
+               BARRIER: 0.25
+         96:
+            blocks:
+               BEACON: 0.25
+               DRAGON_EGG: 0.25
+               END_PORTAL_FRAME: 0.25
+               NETHERITE_BLOCK: 0.25
+         97:
+            blocks:
+               COMMAND_BLOCK: 0.25
+               STRUCTURE_BLOCK: 0.25
+               JIGSAW: 0.25
+               BARRIER: 0.25
+         98:
+            blocks:
+               BEACON: 0.25
+               DRAGON_EGG: 0.25
+               END_PORTAL_FRAME: 0.25
+               NETHERITE_BLOCK: 0.25
+         99:
+            blocks:
+               COMMAND_BLOCK: 0.25
+               STRUCTURE_BLOCK: 0.25
+               JIGSAW: 0.25
+               BARRIER: 0.25
+         100:
+            blocks:
+               BEACON: 0.25
+               DRAGON_EGG: 0.25
+               END_PORTAL_FRAME: 0.25
+               NETHERITE_BLOCK: 0.25
 
 # Configuration des statistiques
 Statistics:

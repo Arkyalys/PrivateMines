@@ -14,14 +14,12 @@ public class MineGenerationService {
     private final PrivateMines plugin;
     private final ConfigManager configManager;
     private final MineProtectionManager protectionManager;
-    private final MineAreaDetector areaDetector;
     private final SchematicManager schematicManager;
     private final MineAreaService mineAreaService;
     public MineGenerationService(PrivateMines plugin, MineProtectionManager protectionManager, MineAreaDetector areaDetector, SchematicManager schematicManager) {
         this.plugin = plugin;
         this.configManager = plugin.getConfigManager();
         this.protectionManager = protectionManager;
-        this.areaDetector = areaDetector;
         this.schematicManager = schematicManager;
         this.mineAreaService = new MineAreaService(plugin, areaDetector, protectionManager);
     }
@@ -66,7 +64,7 @@ public class MineGenerationService {
                 plugin.getHologramManager().createOrUpdateHologram(mine);
             }
             // Fin
-            player.sendActionBar("§aMine créée avec succès !");
+            player.sendActionBar(net.kyori.adventure.text.Component.text("§aMine créée avec succès !"));
             callback.accept(true);
         });
     }
@@ -79,7 +77,7 @@ public class MineGenerationService {
             bar.append(j < filled ? "§a█" : "§7█");
         }
         String actionBar = "§eCréation de la mine : §8[" + bar + "§8] §a" + percent + "% §7- " + label;
-        player.sendActionBar(actionBar);
+        player.sendActionBar(net.kyori.adventure.text.Component.text(actionBar));
     }
     public boolean generateMine(Mine mine) {
         final boolean[] result = new boolean[1];
