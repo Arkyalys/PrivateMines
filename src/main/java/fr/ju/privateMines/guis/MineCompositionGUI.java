@@ -60,7 +60,7 @@ public class MineCompositionGUI {
                 double percentage = entry.getValue();
                 List<String> blockLore = new ArrayList<>();
                 blockLore.add("&7Pourcentage: &b" + String.format("%.1f", percentage) + "%");
-                blockLore.add("&7Type: &b" + formatMaterialName(material.name()));
+                blockLore.add("&7Type: &b" + GUIManager.formatMaterialName(material.name()));
                 if (material.isBlock()) {
                     blockLore.add("&7Catégorie: &bBloc solide");
                 } else if (material.name().contains("ORE")) {
@@ -71,7 +71,7 @@ public class MineCompositionGUI {
                 ItemStack blockItem = new ItemStack(material);
                 ItemMeta meta = blockItem.getItemMeta();
                 if (meta != null) {
-                    meta.displayName(Component.text(ColorUtil.translateColors("&b" + formatMaterialName(material.name()))));
+                    meta.displayName(Component.text(ColorUtil.translateColors("&b" + GUIManager.formatMaterialName(material.name()))));
                     List<Component> loreComponents = blockLore.stream()
                         .map(line -> Component.text(ColorUtil.translateColors(line)))
                         .collect(Collectors.toList());
@@ -93,17 +93,5 @@ public class MineCompositionGUI {
         guiManager.fillEmptySlots(inventory);
         player.openInventory(inventory);
         guiManager.registerOpenInventory(player, INVENTORY_TYPE);
-    }
-    private static String formatMaterialName(String materialName) {
-        String[] parts = materialName.toLowerCase().split("_");
-        StringBuilder builder = new StringBuilder();
-        for (String part : parts) {
-            if (part.length() > 0) {
-                builder.append(Character.toUpperCase(part.charAt(0)))
-                       .append(part.substring(1))
-                       .append(" ");
-            }
-        }
-        return builder.toString().trim();
     }
 } 

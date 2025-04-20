@@ -47,7 +47,7 @@ public class MineStatsGUI {
         progressLore.add("&7Blocs minés: &b" + stats.getBlocksMined() + "&7/&b" + stats.getTotalBlocks());
         progressLore.add("&7Progression: &b" + stats.getPercentageMined() + "%");
         progressLore.add("");
-        progressLore.add(createProgressBar(stats.getPercentageMined()));
+        progressLore.add(GUIManager.createProgressBar(stats.getPercentageMined()));
         ItemStack progressItem = guiManager.createGuiItem(Material.DIAMOND_PICKAXE, "&e📊 &bProgression du Minage", progressLore);
         inventory.setItem(12, progressItem);
         List<String> resetLore = new ArrayList<>();
@@ -94,7 +94,7 @@ public class MineStatsGUI {
             .sorted(Map.Entry.<Material, Double>comparingByValue().reversed())
             .limit(5) 
             .forEach(entry -> {
-                String blockName = formatMaterialName(entry.getKey().name());
+                String blockName = GUIManager.formatMaterialName(entry.getKey().name());
                 double percentage = entry.getValue();
                 blocksLore.add("&7- &b" + blockName + "&7: &b" + String.format("%.1f", percentage) + "%");
             });
@@ -112,33 +112,5 @@ public class MineStatsGUI {
         guiManager.fillEmptySlots(inventory);
         player.openInventory(inventory);
         guiManager.registerOpenInventory(player, INVENTORY_TYPE);
-    }
-    private static String createProgressBar(int percentage) {
-        int barLength = 20; 
-        int filledBars = (int) Math.round(percentage / 100.0 * barLength);
-        StringBuilder barBuilder = new StringBuilder("&a");
-        for (int i = 0; i < filledBars; i++) {
-            barBuilder.append("█");
-        }
-        if (filledBars < barLength) {
-            barBuilder.append("&7");
-            for (int i = filledBars; i < barLength; i++) {
-                barBuilder.append("█");
-            }
-        }
-        barBuilder.append(" &f").append(percentage).append("%");
-        return ColorUtil.translateColors(barBuilder.toString());
-    }
-    private static String formatMaterialName(String materialName) {
-        String[] parts = materialName.toLowerCase().split("_");
-        StringBuilder builder = new StringBuilder();
-        for (String part : parts) {
-            if (part.length() > 0) {
-                builder.append(Character.toUpperCase(part.charAt(0)))
-                       .append(part.substring(1))
-                       .append(" ");
-            }
-        }
-        return builder.toString().trim();
     }
 } 

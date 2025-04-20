@@ -46,7 +46,7 @@ public class MineExpandGUI {
         ItemStack currentItem = guiManager.createGuiItem(Material.GOLDEN_PICKAXE, "&e⚒ &bTaille Actuelle: &a" + mine.getSize(), currentLore);
         inventory.setItem(4, currentItem);
         int progressPercentage = (mine.getSize() * 100) / maxSize;
-        String progressBar = createProgressBar(progressPercentage);
+        String progressBar = GUIManager.createProgressBar(progressPercentage);
         List<String> progressLore = new ArrayList<>();
         progressLore.add(progressBar);
         progressLore.add("");
@@ -130,25 +130,5 @@ public class MineExpandGUI {
         player.openInventory(inventory);
         player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 1.5f);
         guiManager.registerOpenInventory(player, INVENTORY_TYPE);
-    }
-    private static String createProgressBar(int percentage) {
-        PrivateMines plugin = PrivateMines.getInstance();
-        String completedColor = plugin.getConfigManager().getConfig().getString("Config.Gameplay.progress-bars.completed-color", "&a");
-        String remainingColor = plugin.getConfigManager().getConfig().getString("Config.Gameplay.progress-bars.remaining-color", "&7");
-        String borderColor = plugin.getConfigManager().getConfig().getString("Config.Gameplay.progress-bars.border-color", "&8");
-        String character = plugin.getConfigManager().getConfig().getString("Config.Gameplay.progress-bars.character", "■");
-        int length = plugin.getConfigManager().getConfig().getInt("Config.Gameplay.progress-bars.length", 20);
-        int completedBars = (int) Math.round(percentage / (100.0 / length));
-        int remainingBars = length - completedBars;
-        StringBuilder progressBar = new StringBuilder();
-        progressBar.append(borderColor).append("[");
-        for (int i = 0; i < completedBars; i++) {
-            progressBar.append(completedColor).append(character);
-        }
-        for (int i = 0; i < remainingBars; i++) {
-            progressBar.append(remainingColor).append(character);
-        }
-        progressBar.append(borderColor).append("]");
-        return progressBar.toString();
     }
 } 

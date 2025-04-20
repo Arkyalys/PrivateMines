@@ -52,13 +52,13 @@ public class MineTypeGUI {
                 lore.add("&7Composition:");
                 for (String materialName : blocksSection.getKeys(false)) {
                     double chance = blocksSection.getDouble(materialName);
-                    String formattedName = formatMaterialName(materialName);
+                    String formattedName = GUIManager.formatMaterialName(materialName);
                     lore.add("&7- &b" + formattedName + "&7: &b" + String.format("%.1f", chance) + "%");
                 }
             }
             lore.add("");
             lore.add("&eCliquez pour sélectionner");
-            ItemStack typeItem = guiManager.createGuiItem(displayMaterial, "&e🧱 &b" + formatMaterialName(type), lore);
+            ItemStack typeItem = guiManager.createGuiItem(displayMaterial, "&e🧱 &b" + GUIManager.formatMaterialName(type), lore);
             inventory.setItem(slot, typeItem);
             slot++;
         }
@@ -97,17 +97,5 @@ public class MineTypeGUI {
             return commonMaterial;
         }
         return Material.STONE;
-    }
-    private static String formatMaterialName(String name) {
-        String[] parts = name.toLowerCase().split("_");
-        StringBuilder builder = new StringBuilder();
-        for (String part : parts) {
-            if (part.length() > 0) {
-                builder.append(Character.toUpperCase(part.charAt(0)))
-                       .append(part.substring(1))
-                       .append(" ");
-            }
-        }
-        return builder.toString().trim();
     }
 } 

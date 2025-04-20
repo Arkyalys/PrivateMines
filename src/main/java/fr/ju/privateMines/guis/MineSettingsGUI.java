@@ -80,7 +80,7 @@ public class MineSettingsGUI {
             .sorted(Map.Entry.<Material, Double>comparingByValue().reversed())
             .limit(8) 
             .forEach(entry -> {
-                String blockName = formatMaterialName(entry.getKey().name());
+                String blockName = GUIManager.formatMaterialName(entry.getKey().name());
                 double percentage = entry.getValue();
                 compositionLore.add("&7- &b" + blockName + "&7: &b" + String.format("%.1f", percentage) + "%");
             });
@@ -115,17 +115,5 @@ public class MineSettingsGUI {
         guiManager.fillEmptySlots(inventory);
         player.openInventory(inventory);
         guiManager.registerOpenInventory(player, INVENTORY_TYPE);
-    }
-    private static String formatMaterialName(String materialName) {
-        String[] parts = materialName.toLowerCase().split("_");
-        StringBuilder builder = new StringBuilder();
-        for (String part : parts) {
-            if (part.length() > 0) {
-                builder.append(Character.toUpperCase(part.charAt(0)))
-                       .append(part.substring(1))
-                       .append(" ");
-            }
-        }
-        return builder.toString().trim();
     }
 } 
