@@ -75,7 +75,7 @@ public class MineVisitorsGUI {
             inventory.setItem(slot, contributorItem);
         }
         // Bouton pour ajouter un contributeur
-        ItemStack addItem = guiManager.createGuiItem(Material.EMERALD, "&aAjouter un contributeur", Arrays.asList("&7Cliquez pour ajouter un joueur comme contributeur.", "&7Utilisez /mine add <joueur> pour l'ajouter."));
+        ItemStack addItem = guiManager.createGuiItem(Material.EMERALD, "&aAjouter un contributeur", Arrays.asList("&7Cliquez pour ajouter un joueur comme contributeur.", "&7Un menu s'ouvrira pour entrer le pseudo."));
         inventory.setItem(6, addItem);
         if (page > 0) {
             ItemStack previousItem = guiManager.createGuiItem(Material.ARROW, "&e◀ &bPage précédente", "&7Aller à la page " + page);

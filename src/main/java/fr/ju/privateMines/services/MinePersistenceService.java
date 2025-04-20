@@ -13,7 +13,6 @@ import fr.ju.privateMines.PrivateMines;
 import fr.ju.privateMines.managers.MineManager;
 import fr.ju.privateMines.managers.MineProtectionManager;
 import fr.ju.privateMines.models.Mine;
-import fr.ju.privateMines.models.MineAccess;
 import fr.ju.privateMines.utils.ConfigManager;
 public class MinePersistenceService {
     private final PrivateMines plugin;
@@ -112,60 +111,10 @@ public class MinePersistenceService {
         plugin.getConfigManager().saveData();
     }
     public void saveAccessData(Mine mine, ConfigurationSection mineSection) {
-        MineAccess access = mine.getMineAccess();
-        java.util.List<String> permanentBans = new java.util.ArrayList<>();
-        for (UUID bannedUser : access.getPermanentBannedUsers()) {
-            permanentBans.add(bannedUser.toString());
-        }
-        mineSection.set("access.permanent-bans", permanentBans);
-        ConfigurationSection tempBansSection = mineSection.createSection("access.temp-bans");
-        for (Map.Entry<UUID, Long> entry : access.getTemporaryBannedUsers().entrySet()) {
-            tempBansSection.set(entry.getKey().toString(), entry.getValue());
-        }
-        java.util.List<String> deniedUsers = new java.util.ArrayList<>();
-        for (UUID deniedUser : access.getDeniedUsers()) {
-            deniedUsers.add(deniedUser.toString());
-        }
-        mineSection.set("access.denied-users", deniedUsers);
+        // Supprimer toute la logique liée à la persistance des bans/denys dans les mines
     }
     public void loadAccessData(Mine mine, ConfigurationSection mineSection) {
-        if (mineSection == null || !mineSection.contains("access")) {
-            return;
-        }
-        MineAccess access = mine.getMineAccess();
-        java.util.List<String> permanentBans = mineSection.getStringList("access.permanent-bans");
-        for (String uuidString : permanentBans) {
-            try {
-                UUID bannedUser = UUID.fromString(uuidString);
-                access.addPermanentBan(bannedUser);
-            } catch (IllegalArgumentException e) {
-                PrivateMines.debugLog("Invalid UUID in permanent bans: " + uuidString);
-            }
-        }
-        if (mineSection.contains("access.temp-bans")) {
-            ConfigurationSection tempBansSection = mineSection.getConfigurationSection("access.temp-bans");
-            for (String uuidString : tempBansSection.getKeys(false)) {
-                try {
-                    UUID bannedUser = UUID.fromString(uuidString);
-                    long expiration = tempBansSection.getLong(uuidString);
-                    if (expiration > System.currentTimeMillis()) {
-                        long remainingTime = (expiration - System.currentTimeMillis()) / 1000;
-                        access.addTemporaryBan(bannedUser, remainingTime);
-                    }
-                } catch (IllegalArgumentException e) {
-                    PrivateMines.debugLog("Invalid UUID in temporary bans: " + uuidString);
-                }
-            }
-        }
-        java.util.List<String> deniedUsers = mineSection.getStringList("access.denied-users");
-        for (String uuidString : deniedUsers) {
-            try {
-                UUID deniedUser = UUID.fromString(uuidString);
-                access.addDeniedUser(deniedUser);
-            } catch (IllegalArgumentException e) {
-                PrivateMines.debugLog("Invalid UUID in denied users: " + uuidString);
-            }
-        }
+        // Supprimer toute la logique liée à la persistance des bans/denys dans les mines
     }
     public void loadMineData(MineManager mineManager, ConfigManager configManager, PrivateMines plugin, MineProtectionManager protectionManager, Map<String, Map<Material, Double>> mineTypes) {
         PrivateMines.debugLog("Chargement des données des mines...");

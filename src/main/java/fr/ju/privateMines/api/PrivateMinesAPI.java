@@ -1,9 +1,7 @@
 package fr.ju.privateMines.api;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 import org.bukkit.Location;
@@ -14,7 +12,6 @@ import org.bukkit.entity.Player;
 import fr.ju.privateMines.PrivateMines;
 import fr.ju.privateMines.models.Mine;
 import fr.ju.privateMines.models.MineAccess;
-import fr.ju.privateMines.models.MineStats;
 
 public class PrivateMinesAPI {
     private static PrivateMinesAPI instance;
@@ -66,21 +63,6 @@ public class PrivateMinesAPI {
 
     // Accès et permissions
     public MineAccess getMineAccess(Player player) { Mine mine = getMine(player); return mine != null ? mine.getMineAccess() : null; }
-    public boolean isBanned(Player owner, UUID target) { Mine mine = getMine(owner); return mine != null && mine.getMineAccess().isBanned(target); }
-    public boolean isDenied(Player owner, UUID target) { Mine mine = getMine(owner); return mine != null && mine.getMineAccess().isDenied(target); }
-    public void banPlayer(Player owner, UUID target, long durationSeconds) { Mine mine = getMine(owner); if (mine != null) mine.banPlayer(target, durationSeconds); }
-    public void banPlayerPermanently(Player owner, UUID target) { Mine mine = getMine(owner); if (mine != null) mine.banPlayerPermanently(target); }
-    public void unbanPlayer(Player owner, UUID target) { Mine mine = getMine(owner); if (mine != null) mine.unbanPlayer(target); }
-    public void denyAccess(Player owner, UUID target) { Mine mine = getMine(owner); if (mine != null) mine.denyAccess(target); }
-    public void allowAccess(Player owner, UUID target) { Mine mine = getMine(owner); if (mine != null) mine.allowAccess(target); }
-    public Set<UUID> getDeniedUsers(Player owner) { Mine mine = getMine(owner); return mine != null ? mine.getMineAccess().getDeniedUsers() : Collections.emptySet(); }
-    public Set<UUID> getPermanentBannedUsers(Player owner) { Mine mine = getMine(owner); return mine != null ? mine.getMineAccess().getPermanentBannedUsers() : Collections.emptySet(); }
-    public Map<UUID, Long> getTemporaryBannedUsers(Player owner) { Mine mine = getMine(owner); return mine != null ? mine.getMineAccess().getTemporaryBannedUsers() : Collections.emptyMap(); }
-
-    // Stats
-    public MineStats getMineStats(Player player) { Mine mine = getMine(player); return mine != null ? mine.getStats() : null; }
-    public MineStats getMineStats(UUID uuid) { Mine mine = getMine(uuid); return mine != null ? mine.getStats() : null; }
-    public boolean incrementBlocksMined(Player player) { Mine mine = getMine(player); return mine != null && mine.incrementBlocksMined(40); }
     public void addVisit(Player owner, UUID visitor) { Mine mine = getMine(owner); if (mine != null) mine.addVisit(visitor); }
     public List<Mine> getTopMines() { return plugin.getStatsManager().getTopMines(); }
     public void saveStats() { plugin.getStatsManager().saveStats(); }

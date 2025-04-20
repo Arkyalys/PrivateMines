@@ -48,18 +48,6 @@ public class MineVisitCommand implements SubCommand {
             player.sendMessage(configManager.getMessage("mine-closed", replacements));
             return true;
         }
-        if (targetMine.getMineAccess().isBanned(player.getUniqueId())) {
-            Map<String, String> replacements = new HashMap<>();
-            replacements.put("%player%", targetPlayer.getName());
-            player.sendMessage(configManager.getMessage("mine-you-are-banned", replacements));
-            return true;
-        }
-        if (targetMine.getMineAccess().isDenied(player.getUniqueId())) {
-            Map<String, String> replacements = new HashMap<>();
-            replacements.put("%player%", targetPlayer.getName());
-            player.sendMessage(configManager.getMessage("mine-you-are-denied", replacements));
-            return true;
-        }
         Location targetLocation = mineManager.getBetterTeleportLocation(targetMine);
         if (targetLocation == null) {
             player.sendMessage(configManager.getMessage("mine-teleport-error"));
