@@ -8,11 +8,6 @@ public class Permissions {
     public static final String SET_TYPE = "privatemines.settype";
     public static final String SET_TAX = "privatemines.settax";
     public static final String TELEPORT = "privatemines.teleport";
-    public static final String KICK = "privatemines.kick";
-    public static final String BAN = "privatemines.ban";
-    public static final String UNBAN = "privatemines.unban";
-    public static final String DENY = "privatemines.deny";
-    public static final String ALLOW = "privatemines.allow";
     public static final String ADMIN = "privatemines.admin";
     public static final String ADMIN_CREATE = "privatemines.admin.create";
     public static final String ADMIN_DELETE = "privatemines.admin.delete";
@@ -25,9 +20,4 @@ public class Permissions {
     public static final String ADMIN_SET_TIER = "privatemines.admin.settier";
     public static final String ADMIN_RELOAD = "privatemines.admin.reload";
     public static final String ADMIN_FULL_RESET = "privatemines.admin.fullreset";
-    public static final String ADMIN_KICK = "privatemines.admin.kick";
-    public static final String ADMIN_BAN = "privatemines.admin.ban";
-    public static final String ADMIN_UNBAN = "privatemines.admin.unban";
-    public static final String ADMIN_DENY = "privatemines.admin.deny";
-    public static final String ADMIN_ALLOW = "privatemines.admin.allow";
 } 

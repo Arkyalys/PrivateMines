@@ -52,11 +52,6 @@ public class MineCommand implements CommandExecutor {
         subCommands.put("teleport", new MineTeleportCommand(mineManager, configManager));
         subCommands.put("tp", new MineTeleportCommand(mineManager, configManager));
         subCommands.put("visit", new MineVisitCommand(mineManager, configManager));
-        subCommands.put("kick", new MineKickCommand(mineManager, configManager));
-        subCommands.put("ban", new MineBanCommand(mineManager, configManager));
-        subCommands.put("unban", new MineUnbanCommand(mineManager, configManager));
-        subCommands.put("deny", new MineDenyCommand(mineManager, configManager));
-        subCommands.put("allow", new MineAllowCommand(mineManager, configManager));
     }
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
@@ -136,11 +131,6 @@ public class MineCommand implements CommandExecutor {
             case "teleport":
             case "tp":
             case "visit":
-            case "kick":
-            case "ban":
-            case "unban":
-            case "deny":
-            case "allow":
                 return subCommands.get(args[0].toLowerCase()).execute(player, args, sender, command, label);
             case "gui":
             case "menu":
@@ -247,20 +237,37 @@ public class MineCommand implements CommandExecutor {
                 return true;
             case "add":
                 if (args.length < 2) {
-                    player.sendMessage(ColorUtil.translateColors("&cUtilisation: /mine add <joueur>"));
+                    player.sendMessage(ColorUtil.translateColors("&cUsage: /mine add <player>"));
                     return true;
                 }
-                Player target = player.getServer().getPlayer(args[1]);
-                if (target == null) {
-                    player.sendMessage(ColorUtil.translateColors("&cJoueur introuvable."));
+                Player addTarget = player.getServer().getPlayer(args[1]);
+                if (addTarget == null) {
+                    player.sendMessage(ColorUtil.translateColors("&cPlayer not found."));
                     return true;
                 }
                 if (!mineManager.hasMine(player)) {
-                    player.sendMessage(ColorUtil.translateColors("&cVous n'avez pas de mine."));
+                    player.sendMessage(ColorUtil.translateColors("&cYou do not own a mine."));
                     return true;
                 }
-                mineManager.getMineProtectionManager().addMemberToMineRegion(player.getUniqueId(), target.getUniqueId());
-                player.sendMessage(ColorUtil.translateColors("&a" + target.getName() + " est maintenant contributeur de votre mine !"));
+                mineManager.getMineProtectionManager().addMemberToMineRegion(player.getUniqueId(), addTarget.getUniqueId());
+                player.sendMessage(ColorUtil.translateColors("&a" + addTarget.getName() + " has been added to your mine!"));
+                return true;
+            case "remove":
+                if (args.length < 2) {
+                    player.sendMessage(ColorUtil.translateColors("&cUsage: /mine remove <player>"));
+                    return true;
+                }
+                Player removeTarget = player.getServer().getPlayer(args[1]);
+                if (removeTarget == null) {
+                    player.sendMessage(ColorUtil.translateColors("&cPlayer not found."));
+                    return true;
+                }
+                if (!mineManager.hasMine(player)) {
+                    player.sendMessage(ColorUtil.translateColors("&cYou do not own a mine."));
+                    return true;
+                }
+                mineManager.getMineProtectionManager().removeMemberFromMineRegion(player.getUniqueId(), removeTarget.getUniqueId());
+                player.sendMessage(ColorUtil.translateColors("&a" + removeTarget.getName() + " has been removed from your mine!"));
                 return true;
             case "debug":
                 if (args.length < 2 || (!args[1].equalsIgnoreCase("on") && !args[1].equalsIgnoreCase("off"))) {

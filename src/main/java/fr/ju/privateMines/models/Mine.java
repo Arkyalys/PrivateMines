@@ -225,34 +225,7 @@ public class Mine {
         return mineAccess;
     }
     public boolean canPlayerAccess(UUID playerUUID) {
-        if (playerUUID.equals(owner)) {
-            return true;
-        }
-        if (!isOpen) {
-            return false;
-        }
         return getMineAccess().canAccess(playerUUID);
-    }
-    public void banPlayer(UUID playerUUID, long durationSeconds) {
-        if (!playerUUID.equals(owner)) {
-            getMineAccess().addTemporaryBan(playerUUID, durationSeconds);
-        }
-    }
-    public void banPlayerPermanently(UUID playerUUID) {
-        if (!playerUUID.equals(owner)) {
-            getMineAccess().addPermanentBan(playerUUID);
-        }
-    }
-    public void unbanPlayer(UUID playerUUID) {
-        getMineAccess().removeBan(playerUUID);
-    }
-    public void denyAccess(UUID playerUUID) {
-        if (!playerUUID.equals(owner)) {
-            getMineAccess().addDeniedUser(playerUUID);
-        }
-    }
-    public void allowAccess(UUID playerUUID) {
-        getMineAccess().removeDeniedUser(playerUUID);
     }
     public Set<UUID> getContributors() {
         return new HashSet<>(contributors);
