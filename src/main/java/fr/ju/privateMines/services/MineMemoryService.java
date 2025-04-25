@@ -36,19 +36,18 @@ public class MineMemoryService {
         playerMines.remove(uuid);
     }
     public Mine findAvailablePregenMine() {
+        Mine result = null;
         for (Map.Entry<UUID, Mine> entry : playerMines.entrySet()) {
-            Mine mine = entry.getValue();
-            return mine;
+            result = entry.getValue();
+            break;
         }
-        return null;
+        return result;
     }
     public boolean assignPregenMineToPlayer(Mine pregenMine, Player player) {
         if (pregenMine == null || player == null) return false;
         playerMines.remove(pregenMine.getOwner());
         try {
-            java.lang.reflect.Field ownerField = Mine.class.getDeclaredField("owner");
-            ownerField.setAccessible(true);
-            ownerField.set(pregenMine, player.getUniqueId());
+            pregenMine.setOwner(player.getUniqueId());
         } catch (Exception e) {
             return false;
         }

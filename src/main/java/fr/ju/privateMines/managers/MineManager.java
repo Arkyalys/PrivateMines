@@ -340,9 +340,7 @@ public class MineManager {
         mineMemoryService.removeMine(pregenMine.getOwner());
         pregenMine.setLocation(player.getLocation()); 
         try {
-            java.lang.reflect.Field ownerField = Mine.class.getDeclaredField("owner");
-            ownerField.setAccessible(true);
-            ownerField.set(pregenMine, player.getUniqueId());
+            pregenMine.setOwner(player.getUniqueId());
         } catch (Exception e) {
             plugin.getLogger().warning("Impossible de changer l'owner de la mine pré-générée : " + e.getMessage());
             return false;

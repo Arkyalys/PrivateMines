@@ -8,7 +8,7 @@ import java.util.UUID;
 import org.bukkit.Location;
 import org.bukkit.Material;
 public class Mine {
-    private final UUID owner;
+    private UUID owner;
     private Location location;
     private String type;
     private int size;
@@ -48,6 +48,9 @@ public class Mine {
     }
     public UUID getOwner() {
         return owner;
+    }
+    public void setOwner(UUID owner) {
+        this.owner = owner;
     }
     public Location getLocation() {
         return location;
