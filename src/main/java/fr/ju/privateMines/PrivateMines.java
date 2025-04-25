@@ -38,54 +38,83 @@ public class PrivateMines extends JavaPlugin {
         dependencyManager = new DependencyManager();
         cacheManager = new CacheManager();
         try {
-            dependencyManager.checkDependencies();
-            if (!dependencyManager.areRequiredDependenciesPresent()) {
-                errorHandler.logError("Missing dependencies! The plugin cannot start.", null);
-                getServer().getPluginManager().disablePlugin(this);
-                return;
-            }
-            configManager = new ConfigManager(this);
-            ConfigValidator configValidator = new ConfigValidator(this, configManager.getConfig());
-            if (!configValidator.validateConfig()) {
-                configValidator.logErrors();
-                errorHandler.logError("Invalid configuration! The plugin cannot start.", null);
-                getServer().getPluginManager().disablePlugin(this);
-                return;
-            }
-            mineWorldManager = new MineWorldManager(this);
-            mineManager = new MineManager(this);
-            statsManager = new StatsManager(this);
-            guiManager = new GUIManager(this);
-            if (getServer().getPluginManager().getPlugin("DecentHolograms") != null) {
-                hologramManager = new HologramManager(this);
-                errorHandler.logInfo("DecentHolograms detected. Hologram support enabled!");
-            } else {
-                errorHandler.logWarning("DecentHolograms not found. Hologram support disabled.");
-            }
-            PrivateMinesAPI.init(this);
-            api = PrivateMinesAPI.getInstance();
-            getCommand("jumine").setExecutor(new MineCommand(this));
-            getCommand("jumine").setTabCompleter(new MineTabCompleter(this));
-            getServer().getPluginManager().registerEvents(new MineListener(this), this);
-            getServer().getPluginManager().registerEvents(new MineStatsListener(this), this);
-            getServer().getPluginManager().registerEvents(new GUIListener(this), this);
-            if (dependencyManager.isDependencyPresent("PlaceholderAPI")) {
-                new PrivateMinesPlaceholders(this).register();
-            }
-            if (hologramManager != null) {
-                getServer().getScheduler().runTaskLater(this, () -> hologramManager.updateAllHolograms(), 40L); 
-                getServer().getScheduler().runTaskTimer(this, () -> hologramManager.updateAllHolograms(), 20L * 60 * 5, 20L * 60 * 5);
-            }
-            errorHandler.logInfo("PrivateMines plugin successfully activated!");
-            errorHandler.logInfo("Version: " + getPluginMeta().getVersion());
-            errorHandler.logInfo("WorldGuard: " + dependencyManager.getDependencyVersion("WorldGuard"));
-            errorHandler.logInfo("WorldEdit: " + dependencyManager.getDependencyVersion("WorldEdit"));
-            if (dependencyManager.isDependencyPresent("PlaceholderAPI")) {
-                errorHandler.logInfo("PlaceholderAPI: " + dependencyManager.getDependencyVersion("PlaceholderAPI"));
-            }
+            if (!checkAndHandleDependencies()) return;
+            if (!loadAndValidateConfig()) return;
+            initializeManagers();
+            initializeHolograms();
+            initializeAPI();
+            registerCommandsAndListeners();
+            registerPlaceholders();
+            scheduleHologramUpdates();
+            logPluginInfo();
         } catch (Exception e) {
             errorHandler.logError("Error while activating the plugin", e);
             getServer().getPluginManager().disablePlugin(this);
+        }
+    }
+    private boolean checkAndHandleDependencies() {
+        dependencyManager.checkDependencies();
+        if (!dependencyManager.areRequiredDependenciesPresent()) {
+            errorHandler.logError("Missing dependencies! The plugin cannot start.", null);
+            getServer().getPluginManager().disablePlugin(this);
+            return false;
+        }
+        return true;
+    }
+    private boolean loadAndValidateConfig() {
+        configManager = new ConfigManager(this);
+        ConfigValidator configValidator = new ConfigValidator(this, configManager.getConfig());
+        if (!configValidator.validateConfig()) {
+            configValidator.logErrors();
+            errorHandler.logError("Invalid configuration! The plugin cannot start.", null);
+            getServer().getPluginManager().disablePlugin(this);
+            return false;
+        }
+        return true;
+    }
+    private void initializeManagers() {
+        mineWorldManager = new MineWorldManager(this);
+        mineManager = new MineManager(this);
+        statsManager = new StatsManager(this);
+        guiManager = new GUIManager(this);
+    }
+    private void initializeHolograms() {
+        if (getServer().getPluginManager().getPlugin("DecentHolograms") != null) {
+            hologramManager = new HologramManager(this);
+            errorHandler.logInfo("DecentHolograms detected. Hologram support enabled!");
+        } else {
+            errorHandler.logWarning("DecentHolograms not found. Hologram support disabled.");
+        }
+    }
+    private void initializeAPI() {
+        PrivateMinesAPI.init(this);
+        api = PrivateMinesAPI.getInstance();
+    }
+    private void registerCommandsAndListeners() {
+        getCommand("jumine").setExecutor(new MineCommand(this));
+        getCommand("jumine").setTabCompleter(new MineTabCompleter(this));
+        getServer().getPluginManager().registerEvents(new MineListener(this), this);
+        getServer().getPluginManager().registerEvents(new MineStatsListener(this), this);
+        getServer().getPluginManager().registerEvents(new GUIListener(this), this);
+    }
+    private void registerPlaceholders() {
+        if (dependencyManager.isDependencyPresent("PlaceholderAPI")) {
+            new PrivateMinesPlaceholders(this).register();
+        }
+    }
+    private void scheduleHologramUpdates() {
+        if (hologramManager != null) {
+            getServer().getScheduler().runTaskLater(this, () -> hologramManager.updateAllHolograms(), 40L);
+            getServer().getScheduler().runTaskTimer(this, () -> hologramManager.updateAllHolograms(), 20L * 60 * 5, 20L * 60 * 5);
+        }
+    }
+    private void logPluginInfo() {
+        errorHandler.logInfo("PrivateMines plugin successfully activated!");
+        errorHandler.logInfo("Version: " + getPluginMeta().getVersion());
+        errorHandler.logInfo("WorldGuard: " + dependencyManager.getDependencyVersion("WorldGuard"));
+        errorHandler.logInfo("WorldEdit: " + dependencyManager.getDependencyVersion("WorldEdit"));
+        if (dependencyManager.isDependencyPresent("PlaceholderAPI")) {
+            errorHandler.logInfo("PlaceholderAPI: " + dependencyManager.getDependencyVersion("PlaceholderAPI"));
         }
     }
     @Override
