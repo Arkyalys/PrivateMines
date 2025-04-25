@@ -34,9 +34,7 @@ public class MineListener implements Listener {
         configManager.reloadData();
         ConfigurationSection minesSection = configManager.getData().getConfigurationSection("mines");
         logMinesSection(minesSection, player);
-        if (minesSection != null && minesSection.contains(player.getUniqueId().toString())) {
-            if (tryLoadMineFromFile(player, minesSection)) return;
-        }
+        if (minesSection != null && minesSection.contains(player.getUniqueId().toString()) && tryLoadMineFromFile(player, minesSection)) return;
         handleAutoMineAssignment(player);
         plugin.getLogger().info("============================================");
     }

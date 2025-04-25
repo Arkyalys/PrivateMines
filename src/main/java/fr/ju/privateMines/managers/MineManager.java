@@ -28,8 +28,6 @@ public class MineManager {
     private final MineProtectionManager protectionManager;
     private final Map<String, Map<Material, Double>> mineTypes;
     private final Map<Integer, Map<Material, Double>> mineTiers;
-    private final MineAreaDetector areaDetector;
-    private final SchematicManager schematicManager;
     private final MineGenerationService mineGenerationService;
     private final MineResetService mineResetService;
     private final MineTypeService mineTypeService;
@@ -46,8 +44,8 @@ public class MineManager {
         this.protectionManager = new MineProtectionManager(plugin);
         this.mineTypes = new HashMap<>();
         this.mineTiers = new HashMap<>();
-        this.areaDetector = new MineAreaDetector(plugin);
-        this.schematicManager = new SchematicManager(plugin);
+        MineAreaDetector areaDetector = new MineAreaDetector(plugin);
+        SchematicManager schematicManager = new SchematicManager(plugin);
         this.mineGenerationService = new MineGenerationService(plugin, protectionManager, areaDetector, schematicManager);
         this.mineResetService = new MineResetService(plugin);
         this.mineTypeService = new MineTypeService(plugin);
