@@ -121,6 +121,20 @@ public class MineManager {
      * Crée une mine pour un joueur. Retourne true si succès, false sinon.
      */
     public boolean createMine(Player player, String type) {
+        if (!isValidMineCreation(player, type)) return false;
+        Location location = plugin.getMineWorldManager().getNextMineLocation();
+        if (!isValidLocation(player, location)) return false;
+        if (hasMine(player)) {
+            player.sendMessage(getMessage("Messages.already-own-mine"));
+            return false;
+        }
+        Mine mine = new Mine(player.getUniqueId(), location, type);
+        mine.setBlocks(mineTypes.get(type));
+        player.sendActionBar(net.kyori.adventure.text.Component.text("§eCréation de la mine en cours..."));
+        mineGenerationService.generateMineAsync(mine, success -> handleMineGenerationResult(success, player, mine), player);
+        return true;
+    }
+    private boolean isValidMineCreation(Player player, String type) {
         if (player == null) {
             plugin.getLogger().warning("Tentative de création de mine avec un joueur null");
             return false;
@@ -131,48 +145,41 @@ public class MineManager {
             player.sendMessage(getMessage("Messages.invalid-type", replacements));
             return false;
         }
-        Location location = plugin.getMineWorldManager().getNextMineLocation();
+        return true;
+    }
+    private boolean isValidLocation(Player player, Location location) {
         if (location == null) {
             player.sendMessage(getMessage("Messages.no-available-location"));
             return false;
         }
-        if (hasMine(player)) {
-            player.sendMessage(getMessage("Messages.already-own-mine"));
-            return false;
-        }
-        Mine mine = new Mine(player.getUniqueId(), location, type);
-        mine.setBlocks(mineTypes.get(type));
-        player.sendActionBar(net.kyori.adventure.text.Component.text("§eCréation de la mine en cours..."));
-        mineGenerationService.generateMineAsync(mine, success -> {
-            if (success) {
-                debug("[DEBUG] Mine generation successful for " + player.getName() + ". Adding to map..."); 
-                mineMemoryService.addMineToMap(player.getUniqueId(), mine);
-                debug("[DEBUG] Mine added to map for UUID: " + player.getUniqueId() + ". Map size: " + mineMemoryService.getPlayerMines().size()); 
-                if (mine.hasMineArea()) {
-                    mine.calculateTotalBlocks();
-                    mine.getStats().resetBlockStats();
-                    mine.synchronizeStats();
-                    debug("[DEBUG] New mine statistics initialized: totalBlocks=" + 
-                           mine.getStats().getTotalBlocks() + ", blocksMined=" + 
-                           mine.getStats().getBlocksMined());
-                }
-                saveMineData(player);
-                debug("[DEBUG] Called saveMineData for " + player.getName()); 
-                player.sendActionBar(net.kyori.adventure.text.Component.text("§aMine créée avec succès !"));
-                player.playSound(player.getLocation(), org.bukkit.Sound.BLOCK_BEACON_ACTIVATE, 1.0f, 1.2f);
-                player.sendMessage(getMessage("Messages.mine-created"));
-                player.sendMessage(getMessage("Messages.teleported-to-mine-after-creation"));
-                teleportPlayerToMine(player, mine);
-                Title title = createMineCreatedTitle(player);
-                player.showTitle(title);
-            } else {
-                plugin.getLogger().warning("Échec de la génération de la mine pour " + player.getName());
-                player.sendActionBar(net.kyori.adventure.text.Component.text("§cErreur lors de la création de la mine !"));
-                player.sendMessage(getMessage("Messages.mine-creation-failed"));
-                player.sendMessage(ColorUtil.deserialize("&cAn error occurred while creating your mine. Contact an admin."));
-            }
-        }, player);
         return true;
+    }
+    private void handleMineGenerationResult(boolean success, Player player, Mine mine) {
+        if (success) {
+            debug("[DEBUG] Mine generation successful for " + player.getName() + ". Adding to map...");
+            mineMemoryService.addMineToMap(player.getUniqueId(), mine);
+            debug("[DEBUG] Mine added to map for UUID: " + player.getUniqueId() + ". Map size: " + mineMemoryService.getPlayerMines().size());
+            if (mine.hasMineArea()) {
+                mine.calculateTotalBlocks();
+                mine.getStats().resetBlockStats();
+                mine.synchronizeStats();
+                debug("[DEBUG] New mine statistics initialized: totalBlocks=" + mine.getStats().getTotalBlocks() + ", blocksMined=" + mine.getStats().getBlocksMined());
+            }
+            saveMineData(player);
+            debug("[DEBUG] Called saveMineData for " + player.getName());
+            player.sendActionBar(net.kyori.adventure.text.Component.text("§aMine créée avec succès !"));
+            player.playSound(player.getLocation(), org.bukkit.Sound.BLOCK_BEACON_ACTIVATE, 1.0f, 1.2f);
+            player.sendMessage(getMessage("Messages.mine-created"));
+            player.sendMessage(getMessage("Messages.teleported-to-mine-after-creation"));
+            teleportPlayerToMine(player, mine);
+            Title title = createMineCreatedTitle(player);
+            player.showTitle(title);
+        } else {
+            plugin.getLogger().warning("Échec de la génération de la mine pour " + player.getName());
+            player.sendActionBar(net.kyori.adventure.text.Component.text("§cErreur lors de la création de la mine !"));
+            player.sendMessage(getMessage("Messages.mine-creation-failed"));
+            player.sendMessage(ColorUtil.deserialize("&cAn error occurred while creating your mine. Contact an admin."));
+        }
     }
     /**
      * Téléporte un joueur à sa mine.

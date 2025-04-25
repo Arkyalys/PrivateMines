@@ -274,60 +274,86 @@ public class MinePersistenceService {
     }
     public void saveAllMineData(MineManager mineManager, ConfigManager configManager, PrivateMines plugin) {
         PrivateMines.debugLog("Sauvegarde des données de toutes les mines (" + mineManager.mineMemoryService.getPlayerMines().size() + " mines)...");
-        if (plugin.getConfigManager().getData().contains("mines")) {
-            plugin.getConfigManager().getData().set("mines", null);
-        }
+        clearOldMinesSection(plugin);
         int savedCount = 0;
         for (Map.Entry<UUID, Mine> entry : mineManager.mineMemoryService.getPlayerMines().entrySet()) {
-            UUID ownerId = entry.getKey();
-            Mine mine = entry.getValue();
-            if (mine == null || mine.getLocation() == null || mine.getLocation().getWorld() == null) {
-                PrivateMines.debugLog("Mine invalide détectée pour l'UUID " + ownerId + ". Ignorée lors de la sauvegarde.");
-                continue;
+            if (saveSingleMine(entry, plugin)) {
+                savedCount++;
             }
-            String path = "mines." + ownerId.toString();
-            plugin.getConfigManager().getData().set(path + ".location.world", mine.getLocation().getWorld().getName());
-            plugin.getConfigManager().getData().set(path + ".location.x", mine.getLocation().getX());
-            plugin.getConfigManager().getData().set(path + ".location.y", mine.getLocation().getY());
-            plugin.getConfigManager().getData().set(path + ".location.z", mine.getLocation().getZ());
-            plugin.getConfigManager().getData().set(path + ".type", mine.getType());
-            plugin.getConfigManager().getData().set(path + ".tier", mine.getTier());
-            plugin.getConfigManager().getData().set(path + ".size", mine.getSize());
-            plugin.getConfigManager().getData().set(path + ".isOpen", mine.isOpen());
-            plugin.getConfigManager().getData().set(path + ".tax", mine.getTax());
-            if (mine.hasMineArea()) {
-                plugin.getConfigManager().getData().set(path + ".area.minX", mine.getMinX());
-                plugin.getConfigManager().getData().set(path + ".area.minY", mine.getMinY());
-                plugin.getConfigManager().getData().set(path + ".area.minZ", mine.getMinZ());
-                plugin.getConfigManager().getData().set(path + ".area.maxX", mine.getMaxX());
-                plugin.getConfigManager().getData().set(path + ".area.maxY", mine.getMaxY());
-                plugin.getConfigManager().getData().set(path + ".area.maxZ", mine.getMaxZ());
-            }
-            if (mine.hasSchematicBounds()) {
-                plugin.getConfigManager().getData().set(path + ".schematic.minX", mine.getSchematicMinX());
-                plugin.getConfigManager().getData().set(path + ".schematic.minY", mine.getSchematicMinY());
-                plugin.getConfigManager().getData().set(path + ".schematic.minZ", mine.getSchematicMinZ());
-                plugin.getConfigManager().getData().set(path + ".schematic.maxX", mine.getSchematicMaxX());
-                plugin.getConfigManager().getData().set(path + ".schematic.maxY", mine.getSchematicMaxY());
-                plugin.getConfigManager().getData().set(path + ".schematic.maxZ", mine.getSchematicMaxZ());
-            }
-            if (mine.getTeleportLocation() != null) {
-                plugin.getConfigManager().getData().set(path + ".teleport.world", mine.getTeleportLocation().getWorld().getName());
-                plugin.getConfigManager().getData().set(path + ".teleport.x", mine.getTeleportLocation().getX());
-                plugin.getConfigManager().getData().set(path + ".teleport.y", mine.getTeleportLocation().getY());
-                plugin.getConfigManager().getData().set(path + ".teleport.z", mine.getTeleportLocation().getZ());
-                plugin.getConfigManager().getData().set(path + ".teleport.yaw", mine.getTeleportLocation().getYaw());
-                plugin.getConfigManager().getData().set(path + ".teleport.pitch", mine.getTeleportLocation().getPitch());
-            }
-            if (mine.getBlocks() != null && !mine.getBlocks().isEmpty()) {
-                for (Map.Entry<Material, Double> blockEntry : mine.getBlocks().entrySet()) {
-                    plugin.getConfigManager().getData().set(path + ".blocks." + blockEntry.getKey().name(), blockEntry.getValue());
-                }
-            }
-            saveAccessData(mine, plugin.getConfigManager().getData().createSection(path + ".access"));
-            savedCount++;
         }
         plugin.getConfigManager().saveData();
         PrivateMines.debugLog("Sauvegarde terminée. " + savedCount + " mines enregistrées.");
+    }
+    private void clearOldMinesSection(PrivateMines plugin) {
+        if (plugin.getConfigManager().getData().contains("mines")) {
+            plugin.getConfigManager().getData().set("mines", null);
+        }
+    }
+    private boolean saveSingleMine(Map.Entry<UUID, Mine> entry, PrivateMines plugin) {
+        UUID ownerId = entry.getKey();
+        Mine mine = entry.getValue();
+        if (mine == null || mine.getLocation() == null || mine.getLocation().getWorld() == null) {
+            PrivateMines.debugLog("Mine invalide détectée pour l'UUID " + ownerId + ". Ignorée lors de la sauvegarde.");
+            return false;
+        }
+        String path = "mines." + ownerId.toString();
+        saveMineLocation(mine, path, plugin);
+        saveMineProperties(mine, path, plugin);
+        saveMineAreaIfPresent(mine, path, plugin);
+        saveSchematicBoundsIfPresent(mine, path, plugin);
+        saveTeleportLocationIfPresent(mine, path, plugin);
+        saveBlocksIfPresent(mine, path, plugin);
+        saveAccessData(mine, plugin.getConfigManager().getData().createSection(path + ".access"));
+        return true;
+    }
+    private void saveMineLocation(Mine mine, String path, PrivateMines plugin) {
+        plugin.getConfigManager().getData().set(path + ".location.world", mine.getLocation().getWorld().getName());
+        plugin.getConfigManager().getData().set(path + ".location.x", mine.getLocation().getX());
+        plugin.getConfigManager().getData().set(path + ".location.y", mine.getLocation().getY());
+        plugin.getConfigManager().getData().set(path + ".location.z", mine.getLocation().getZ());
+    }
+    private void saveMineProperties(Mine mine, String path, PrivateMines plugin) {
+        plugin.getConfigManager().getData().set(path + ".type", mine.getType());
+        plugin.getConfigManager().getData().set(path + ".tier", mine.getTier());
+        plugin.getConfigManager().getData().set(path + ".size", mine.getSize());
+        plugin.getConfigManager().getData().set(path + ".isOpen", mine.isOpen());
+        plugin.getConfigManager().getData().set(path + ".tax", mine.getTax());
+    }
+    private void saveMineAreaIfPresent(Mine mine, String path, PrivateMines plugin) {
+        if (mine.hasMineArea()) {
+            plugin.getConfigManager().getData().set(path + ".area.minX", mine.getMinX());
+            plugin.getConfigManager().getData().set(path + ".area.minY", mine.getMinY());
+            plugin.getConfigManager().getData().set(path + ".area.minZ", mine.getMinZ());
+            plugin.getConfigManager().getData().set(path + ".area.maxX", mine.getMaxX());
+            plugin.getConfigManager().getData().set(path + ".area.maxY", mine.getMaxY());
+            plugin.getConfigManager().getData().set(path + ".area.maxZ", mine.getMaxZ());
+        }
+    }
+    private void saveSchematicBoundsIfPresent(Mine mine, String path, PrivateMines plugin) {
+        if (mine.hasSchematicBounds()) {
+            plugin.getConfigManager().getData().set(path + ".schematic.minX", mine.getSchematicMinX());
+            plugin.getConfigManager().getData().set(path + ".schematic.minY", mine.getSchematicMinY());
+            plugin.getConfigManager().getData().set(path + ".schematic.minZ", mine.getSchematicMinZ());
+            plugin.getConfigManager().getData().set(path + ".schematic.maxX", mine.getSchematicMaxX());
+            plugin.getConfigManager().getData().set(path + ".schematic.maxY", mine.getSchematicMaxY());
+            plugin.getConfigManager().getData().set(path + ".schematic.maxZ", mine.getSchematicMaxZ());
+        }
+    }
+    private void saveTeleportLocationIfPresent(Mine mine, String path, PrivateMines plugin) {
+        if (mine.getTeleportLocation() != null) {
+            plugin.getConfigManager().getData().set(path + ".teleport.world", mine.getTeleportLocation().getWorld().getName());
+            plugin.getConfigManager().getData().set(path + ".teleport.x", mine.getTeleportLocation().getX());
+            plugin.getConfigManager().getData().set(path + ".teleport.y", mine.getTeleportLocation().getY());
+            plugin.getConfigManager().getData().set(path + ".teleport.z", mine.getTeleportLocation().getZ());
+            plugin.getConfigManager().getData().set(path + ".teleport.yaw", mine.getTeleportLocation().getYaw());
+            plugin.getConfigManager().getData().set(path + ".teleport.pitch", mine.getTeleportLocation().getPitch());
+        }
+    }
+    private void saveBlocksIfPresent(Mine mine, String path, PrivateMines plugin) {
+        if (mine.getBlocks() != null && !mine.getBlocks().isEmpty()) {
+            for (Map.Entry<Material, Double> blockEntry : mine.getBlocks().entrySet()) {
+                plugin.getConfigManager().getData().set(path + ".blocks." + blockEntry.getKey().name(), blockEntry.getValue());
+            }
+        }
     }
 } 

@@ -32,16 +32,26 @@ public class MineExpandCommand implements SubCommand {
         }
         mine.expand();
         if (mine.hasMineArea()) {
-            mine.setMineArea(
-                mine.getMinX() - 1,
-                mine.getMinY(),
-                mine.getMinZ() - 1,
-                mine.getMaxX() + 1,
-                mine.getMaxY(),
-                mine.getMaxZ() + 1
-            );
+            expandMineArea(mine);
         }
         mineManager.getMineProtectionManager().updateMineProtection(mine);
+        fillMineWithOresAndBedrock(mine);
+        mineManager.saveMineData(player);
+        mineManager.resetMine(player);
+        player.sendMessage(configManager.getMessage("mine-expanded").replace("{size}", String.valueOf(mine.getSize())));
+        return true;
+    }
+    private void expandMineArea(fr.ju.privateMines.models.Mine mine) {
+        mine.setMineArea(
+            mine.getMinX() - 1,
+            mine.getMinY(),
+            mine.getMinZ() - 1,
+            mine.getMaxX() + 1,
+            mine.getMaxY(),
+            mine.getMaxZ() + 1
+        );
+    }
+    private void fillMineWithOresAndBedrock(fr.ju.privateMines.models.Mine mine) {
         org.bukkit.World world = mine.getLocation().getWorld();
         if (world != null && mine.hasMineArea()) {
             int minX = mine.getMinX();
@@ -50,7 +60,6 @@ public class MineExpandCommand implements SubCommand {
             int maxY = mine.getMaxY();
             int minZ = mine.getMinZ();
             int maxZ = mine.getMaxZ();
-            // Génération des minerais (copie de fillMineWithOres)
             java.util.Map<org.bukkit.Material, Double> blockDistribution = mine.getBlocks();
             if (blockDistribution == null || blockDistribution.isEmpty()) {
                 blockDistribution = new java.util.HashMap<>();
@@ -81,7 +90,6 @@ public class MineExpandCommand implements SubCommand {
                     }
                 }
             }
-            // Placer la bedrock sur les murs extérieurs (pas le dessus/sol)
             for (int y = minY; y <= maxY; y++) {
                 for (int x = minX; x <= maxX; x++) {
                     world.getBlockAt(x, y, minZ - 1).setType(org.bukkit.Material.BEDROCK);
@@ -92,16 +100,11 @@ public class MineExpandCommand implements SubCommand {
                     world.getBlockAt(maxX + 1, y, z).setType(org.bukkit.Material.BEDROCK);
                 }
             }
-            // Placer la bedrock sous toute la mine
             for (int x = minX; x <= maxX; x++) {
                 for (int z = minZ; z <= maxZ; z++) {
                     world.getBlockAt(x, minY - 1, z).setType(org.bukkit.Material.BEDROCK);
                 }
             }
         }
-        mineManager.saveMineData(player);
-        mineManager.resetMine(player);
-        player.sendMessage(configManager.getMessage("mine-expanded").replace("{size}", String.valueOf(mine.getSize())));
-        return true;
     }
 } 
