@@ -1,6 +1,5 @@
 package fr.ju.privateMines.listeners;
 import org.bukkit.Location;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -31,18 +30,7 @@ public class MineStatsListener implements Listener {
     }
     @EventHandler
     public void onPlayerMove(PlayerMoveEvent event) {
-        if (event.getFrom().getBlockX() == event.getTo().getBlockX() && 
-            event.getFrom().getBlockY() == event.getTo().getBlockY() && 
-            event.getFrom().getBlockZ() == event.getTo().getBlockZ()) {
-            return;
-        }
-        Player player = event.getPlayer();
-        Location loc = event.getTo();
-        Mine mine = findMineByLocation(loc);
-        if (mine == null) return;
-        if (!mine.getOwner().equals(player.getUniqueId())) {
-            statsManager.addVisit(mine, player.getUniqueId());
-        }
+        // Suppression de la logique d'ajout de visite
     }
     private Mine findMineByLocation(Location location) {
         if (plugin.getCacheManager() != null) {

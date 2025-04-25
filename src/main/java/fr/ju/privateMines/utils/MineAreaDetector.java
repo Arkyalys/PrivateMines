@@ -109,6 +109,11 @@ public class MineAreaDetector {
         return true;
     }
     private void fillMineWithOres(Mine mine, int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
+        Map<Material, Double> blockDistribution = getBlockDistribution(mine);
+        List<Material> weightedMaterials = buildWeightedMaterials(blockDistribution);
+        fillBlocksInArea(mine, minX, minY, minZ, maxX, maxY, maxZ, weightedMaterials);
+    }
+    private Map<Material, Double> getBlockDistribution(Mine mine) {
         Map<Material, Double> blockDistribution = mine.getBlocks();
         if (blockDistribution == null || blockDistribution.isEmpty()) {
             blockDistribution = new HashMap<>();
@@ -117,6 +122,9 @@ public class MineAreaDetector {
             blockDistribution.put(Material.IRON_ORE, 0.1);
             blockDistribution.put(Material.GOLD_ORE, 0.05);
         }
+        return blockDistribution;
+    }
+    private List<Material> buildWeightedMaterials(Map<Material, Double> blockDistribution) {
         List<Material> weightedMaterials = new ArrayList<>();
         for (Map.Entry<Material, Double> entry : blockDistribution.entrySet()) {
             int weight = (int) (entry.getValue() * 100);
@@ -127,6 +135,9 @@ public class MineAreaDetector {
         if (weightedMaterials.isEmpty()) {
             weightedMaterials.add(Material.STONE);
         }
+        return weightedMaterials;
+    }
+    private void fillBlocksInArea(Mine mine, int minX, int minY, int minZ, int maxX, int maxY, int maxZ, List<Material> weightedMaterials) {
         Random random = new Random();
         for (int x = minX; x <= maxX; x++) {
             for (int y = minY; y <= maxY; y++) {

@@ -3,12 +3,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
+
 import fr.ju.privateMines.PrivateMines;
 import fr.ju.privateMines.events.MineChallenge.ChallengeType;
 import fr.ju.privateMines.utils.ColorUtil;
@@ -37,57 +39,71 @@ public class EventManager {
         for (String eventId : eventsSection.getKeys(false)) {
             ConfigurationSection eventSection = eventsSection.getConfigurationSection(eventId);
             if (eventSection == null) continue;
-            String name = eventSection.getString("name", "Événement de mine");
-            String description = eventSection.getString("description", "Un événement spécial pour les mines");
-            long startTime = eventSection.getLong("start-time", System.currentTimeMillis());
-            long endTime = eventSection.getLong("end-time", System.currentTimeMillis() + 86400000); 
-            MineEvent event = new MineEvent(eventId, name, description, startTime, endTime);
-            ConfigurationSection boostsSection = eventSection.getConfigurationSection("block-boosts");
-            if (boostsSection != null) {
-                for (String materialName : boostsSection.getKeys(false)) {
-                    try {
-                        Material material = Material.valueOf(materialName.toUpperCase());
-                        double boost = boostsSection.getDouble(materialName, 1.0);
-                        event.addBlockBoost(material, boost);
-                    } catch (IllegalArgumentException e) {
-                        plugin.getLogger().warning("Matériau inconnu dans la configuration des événements: " + materialName);
-                    }
-                }
-            }
-            ConfigurationSection challengesSection = eventSection.getConfigurationSection("challenges");
-            if (challengesSection != null) {
-                for (String challengeId : challengesSection.getKeys(false)) {
-                    ConfigurationSection challengeSection = challengesSection.getConfigurationSection(challengeId);
-                    if (challengeSection == null) continue;
-                    String challengeName = challengeSection.getString("name", "Défi");
-                    String challengeDesc = challengeSection.getString("description", "Un défi spécial");
-                    int requiredAmount = challengeSection.getInt("required-amount", 100);
-                    String typeStr = challengeSection.getString("type", "MINE_BLOCKS");
-                    ChallengeType type;
-                    try {
-                        type = ChallengeType.valueOf(typeStr);
-                    } catch (IllegalArgumentException e) {
-                        plugin.getLogger().warning("Type de défi inconnu: " + typeStr);
-                        continue;
-                    }
-                    MineChallenge challenge = new MineChallenge(challengeId, challengeName, challengeDesc, requiredAmount, type);
-                    String rewardItem = challengeSection.getString("reward.item");
-                    int rewardAmount = challengeSection.getInt("reward.amount", 1);
-                    if (rewardItem != null) {
-                        try {
-                            Material rewardMaterial = Material.valueOf(rewardItem.toUpperCase());
-                            challenge.setItemReward(rewardMaterial, rewardAmount);
-                        } catch (IllegalArgumentException e) {
-                            plugin.getLogger().warning("Matériau de récompense inconnu: " + rewardItem);
-                        }
-                    }
-                    event.addChallenge(challenge);
-                }
-            }
+            MineEvent event = createMineEventFromSection(eventId, eventSection);
             events.add(event);
             eventById.put(eventId, event);
         }
         plugin.getLogger().info("Chargement de " + events.size() + " événements programmés");
+    }
+    private MineEvent createMineEventFromSection(String eventId, ConfigurationSection eventSection) {
+        String name = eventSection.getString("name", "Événement de mine");
+        String description = eventSection.getString("description", "Un événement spécial pour les mines");
+        long startTime = eventSection.getLong("start-time", System.currentTimeMillis());
+        long endTime = eventSection.getLong("end-time", System.currentTimeMillis() + 86400000);
+        MineEvent event = new MineEvent(eventId, name, description, startTime, endTime);
+        loadBlockBoosts(event, eventSection.getConfigurationSection("block-boosts"));
+        loadChallenges(event, eventSection.getConfigurationSection("challenges"));
+        return event;
+    }
+    private void loadBlockBoosts(MineEvent event, ConfigurationSection boostsSection) {
+        if (boostsSection != null) {
+            for (String materialName : boostsSection.getKeys(false)) {
+                try {
+                    Material material = Material.valueOf(materialName.toUpperCase());
+                    double boost = boostsSection.getDouble(materialName, 1.0);
+                    event.addBlockBoost(material, boost);
+                } catch (IllegalArgumentException e) {
+                    plugin.getLogger().warning("Matériau inconnu dans la configuration des événements: " + materialName);
+                }
+            }
+        }
+    }
+    private void loadChallenges(MineEvent event, ConfigurationSection challengesSection) {
+        if (challengesSection != null) {
+            for (String challengeId : challengesSection.getKeys(false)) {
+                ConfigurationSection challengeSection = challengesSection.getConfigurationSection(challengeId);
+                if (challengeSection == null) continue;
+                MineChallenge challenge = createChallengeFromSection(challengeId, challengeSection);
+                if (challenge != null) {
+                    event.addChallenge(challenge);
+                }
+            }
+        }
+    }
+    private MineChallenge createChallengeFromSection(String challengeId, ConfigurationSection challengeSection) {
+        String challengeName = challengeSection.getString("name", "Défi");
+        String challengeDesc = challengeSection.getString("description", "Un défi spécial");
+        int requiredAmount = challengeSection.getInt("required-amount", 100);
+        String typeStr = challengeSection.getString("type", "MINE_BLOCKS");
+        ChallengeType type;
+        try {
+            type = ChallengeType.valueOf(typeStr);
+        } catch (IllegalArgumentException e) {
+            plugin.getLogger().warning("Type de défi inconnu: " + typeStr);
+            return null;
+        }
+        MineChallenge challenge = new MineChallenge(challengeId, challengeName, challengeDesc, requiredAmount, type);
+        String rewardItem = challengeSection.getString("reward.item");
+        int rewardAmount = challengeSection.getInt("reward.amount", 1);
+        if (rewardItem != null) {
+            try {
+                Material rewardMaterial = Material.valueOf(rewardItem.toUpperCase());
+                challenge.setItemReward(rewardMaterial, rewardAmount);
+            } catch (IllegalArgumentException e) {
+                plugin.getLogger().warning("Matériau de récompense inconnu: " + rewardItem);
+            }
+        }
+        return challenge;
     }
     private void createDemoEvent() {
         long now = System.currentTimeMillis();

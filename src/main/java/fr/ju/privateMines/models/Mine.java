@@ -181,18 +181,6 @@ public class Mine {
         stats.incrementBlocksMined();
         return stats.shouldAutoReset(autoResetThreshold);
     }
-    public void addVisit(UUID visitor) {
-        fr.ju.privateMines.PrivateMines plugin = fr.ju.privateMines.PrivateMines.getInstance();
-        plugin.getLogger().info("[DEBUG] Mine.addVisit: Adding visit from " + visitor + " to mine owned by " + owner);
-        if (plugin != null && plugin.getStatsManager() != null) {
-            plugin.getLogger().info("[DEBUG] Mine.addVisit: StatsManager found, delegating visit recording");
-            plugin.getStatsManager().addVisit(this, visitor);
-            return;
-        }
-        plugin.getLogger().info("[DEBUG] Mine.addVisit: StatsManager not available, using internal implementation");
-        stats.addVisit(visitor);
-        plugin.getLogger().info("[DEBUG] Mine.addVisit: Visit recorded using internal implementation. Total visits: " + stats.getVisits());
-    }
     public void calculateTotalBlocks() {
         if (!hasMineArea()) return;
         int total = (maxX - minX + 1) * (maxY - minY + 1) * (maxZ - minZ + 1);

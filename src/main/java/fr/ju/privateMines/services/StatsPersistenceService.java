@@ -3,10 +3,12 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
+
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.scheduler.BukkitRunnable;
+
 import fr.ju.privateMines.PrivateMines;
 import fr.ju.privateMines.managers.StatsManager;
 import fr.ju.privateMines.models.MineStats;
@@ -45,24 +47,6 @@ public class StatsPersistenceService {
                             stats.setBlocksMined(blocksMined);
                             plugin.getLogger().info("[DEBUG] Loaded " + blocksMined + " mined blocks for UUID " + key);
                         }
-                        int visits = mineSection.getInt("visits", 0);
-                        for (int i = 0; i < visits; i++) {
-                            stats.addVisit(owner);
-                        }
-                        ConfigurationSection visitorsSection = mineSection.getConfigurationSection("visitors");
-                        if (visitorsSection != null) {
-                            for (String visitorKey : visitorsSection.getKeys(false)) {
-                                try {
-                                    UUID visitorUUID = UUID.fromString(visitorKey);
-                                    int visitorCount = visitorsSection.getInt(visitorKey, 0);
-                                    for (int i = 0; i < visitorCount; i++) {
-                                        stats.addVisit(visitorUUID);
-                                    }
-                                } catch (IllegalArgumentException e) {
-                                    plugin.getLogger().warning("UUID de visiteur invalide dans stats.yml : " + visitorKey);
-                                }
-                            }
-                        }
                         if (mineSection.contains("last-reset")) {
                             long lastReset = mineSection.getLong("last-reset", System.currentTimeMillis());
                             stats.setLastReset(lastReset);
@@ -91,7 +75,6 @@ public class StatsPersistenceService {
         Map<UUID, MineStats> mineStats = getMineStats();
         FileConfiguration statsConfig = getStatsConfig();
         File statsFile = getStatsFile();
-        int maxTrackedVisitors = getMaxTrackedVisitors();
         for (Map.Entry<UUID, MineStats> entry : mineStats.entrySet()) {
             UUID owner = entry.getKey();
             MineStats stats = entry.getValue();
@@ -99,15 +82,7 @@ public class StatsPersistenceService {
             statsConfig.set(path + ".total-blocks", stats.getTotalBlocks());
             statsConfig.set(path + ".blocks-mined", stats.getBlocksMined());
             statsConfig.set(path + ".percentage-mined", stats.getPercentageMined());
-            statsConfig.set(path + ".visits", stats.getVisits());
             statsConfig.set(path + ".last-reset", stats.getLastReset());
-            Map<UUID, Integer> visitorStats = stats.getVisitorStats();
-            int count = 0;
-            for (Map.Entry<UUID, Integer> visitorEntry : visitorStats.entrySet()) {
-                if (count >= maxTrackedVisitors) break;
-                statsConfig.set(path + ".visitors." + visitorEntry.getKey().toString(), visitorEntry.getValue());
-                count++;
-            }
         }
         try {
             statsConfig.save(statsFile);

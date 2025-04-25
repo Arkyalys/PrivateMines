@@ -31,57 +31,76 @@ public class MineCompositionGUI {
             player.sendMessage(ColorUtil.translateColors("&cErreur lors de la récupération de votre mine."));
             return;
         }
-        Inventory inventory = Bukkit.createInventory(null, 54, Component.text(ColorUtil.translateColors(GUI_TITLE))); 
+        Inventory inventory = Bukkit.createInventory(null, 54, Component.text(ColorUtil.translateColors(GUI_TITLE)));
+        addTitleItem(guiManager, inventory);
+        Map<Material, Double> blocks = mine.getBlocks();
+        if (blocks.isEmpty()) {
+            addEmptyItem(guiManager, inventory);
+        } else {
+            addBlockItems(guiManager, inventory, blocks);
+        }
+        addGraphAndBackButton(guiManager, inventory);
+        guiManager.fillEmptySlots(inventory);
+        player.openInventory(inventory);
+        guiManager.registerOpenInventory(player, INVENTORY_TYPE);
+    }
+
+    private static void addTitleItem(GUIManager guiManager, Inventory inventory) {
         List<String> titleLore = new ArrayList<>();
         titleLore.add("&7Voici la liste complète des blocs");
         titleLore.add("&7qui composent votre mine et leur");
         titleLore.add("&7pourcentage de distribution.");
         ItemStack titleItem = guiManager.createGuiItem(Material.CHEST, "&eComposition de la Mine", titleLore);
         inventory.setItem(4, titleItem);
-        Map<Material, Double> blocks = mine.getBlocks();
-        if (blocks.isEmpty()) {
-            List<String> emptyLore = new ArrayList<>();
-            emptyLore.add("&cAucun bloc défini pour cette mine.");
-            emptyLore.add("&7Contactez un administrateur");
-            emptyLore.add("&7pour configurer votre mine.");
-            ItemStack emptyItem = guiManager.createGuiItem(Material.BARRIER, "&cMine non configurée", emptyLore);
-            inventory.setItem(22, emptyItem);
-        } else {
-            List<Map.Entry<Material, Double>> sortedBlocks = blocks.entrySet().stream()
-                .sorted(Map.Entry.<Material, Double>comparingByValue().reversed())
-                .collect(Collectors.toList());
-            int slot = 19; 
-            for (Map.Entry<Material, Double> entry : sortedBlocks) {
-                if (slot > 44 || (slot % 9 == 8)) {
-                    if (slot % 9 == 8) slot += 2;
-                    else break;
-                }
-                Material material = entry.getKey();
-                double percentage = entry.getValue();
-                List<String> blockLore = new ArrayList<>();
-                blockLore.add("&7Pourcentage: &b" + String.format("%.1f", percentage) + "%");
-                blockLore.add("&7Type: &b" + GUIManager.formatMaterialName(material.name()));
-                if (material.isBlock()) {
-                    blockLore.add("&7Catégorie: &bBloc solide");
-                } else if (material.name().contains("ORE")) {
-                    blockLore.add("&7Catégorie: &bMinerai");
-                } else {
-                    blockLore.add("&7Catégorie: &bAutre");
-                }
-                ItemStack blockItem = new ItemStack(material);
-                ItemMeta meta = blockItem.getItemMeta();
-                if (meta != null) {
-                    meta.displayName(Component.text(ColorUtil.translateColors("&b" + GUIManager.formatMaterialName(material.name()))));
-                    List<Component> loreComponents = blockLore.stream()
-                        .map(line -> Component.text(ColorUtil.translateColors(line)))
-                        .collect(Collectors.toList());
-                    meta.lore(loreComponents);
-                    blockItem.setItemMeta(meta);
-                }
-                inventory.setItem(slot, blockItem);
-                slot++;
+    }
+
+    private static void addEmptyItem(GUIManager guiManager, Inventory inventory) {
+        List<String> emptyLore = new ArrayList<>();
+        emptyLore.add("&cAucun bloc défini pour cette mine.");
+        emptyLore.add("&7Contactez un administrateur");
+        emptyLore.add("&7pour configurer votre mine.");
+        ItemStack emptyItem = guiManager.createGuiItem(Material.BARRIER, "&cMine non configurée", emptyLore);
+        inventory.setItem(22, emptyItem);
+    }
+
+    private static void addBlockItems(GUIManager guiManager, Inventory inventory, Map<Material, Double> blocks) {
+        List<Map.Entry<Material, Double>> sortedBlocks = blocks.entrySet().stream()
+            .sorted(Map.Entry.<Material, Double>comparingByValue().reversed())
+            .collect(Collectors.toList());
+        int slot = 19;
+        for (Map.Entry<Material, Double> entry : sortedBlocks) {
+            if (slot > 44 || (slot % 9 == 8)) {
+                if (slot % 9 == 8) slot += 2;
+                else break;
             }
+            Material material = entry.getKey();
+            double percentage = entry.getValue();
+            List<String> blockLore = new ArrayList<>();
+            blockLore.add("&7Pourcentage: &b" + String.format("%.1f", percentage) + "%");
+            blockLore.add("&7Type: &b" + GUIManager.formatMaterialName(material.name()));
+            if (material.isBlock()) {
+                blockLore.add("&7Catégorie: &bBloc solide");
+            } else if (material.name().contains("ORE")) {
+                blockLore.add("&7Catégorie: &bMinerai");
+            } else {
+                blockLore.add("&7Catégorie: &bAutre");
+            }
+            ItemStack blockItem = new ItemStack(material);
+            ItemMeta meta = blockItem.getItemMeta();
+            if (meta != null) {
+                meta.displayName(Component.text(ColorUtil.translateColors("&b" + GUIManager.formatMaterialName(material.name()))));
+                List<Component> loreComponents = blockLore.stream()
+                    .map(line -> Component.text(ColorUtil.translateColors(line)))
+                    .collect(Collectors.toList());
+                meta.lore(loreComponents);
+                blockItem.setItemMeta(meta);
+            }
+            inventory.setItem(slot, blockItem);
+            slot++;
         }
+    }
+
+    private static void addGraphAndBackButton(GUIManager guiManager, Inventory inventory) {
         List<String> graphLore = new ArrayList<>();
         graphLore.add("&7Visualisez la composition de votre mine");
         graphLore.add("&7sous forme de graphique coloré");
@@ -90,8 +109,5 @@ public class MineCompositionGUI {
         ItemStack backButton = guiManager.createGuiItem(Material.BARRIER, "&e◀ &cRetour",
                 "&7Retourner au menu des statistiques");
         inventory.setItem(50, backButton);
-        guiManager.fillEmptySlots(inventory);
-        player.openInventory(inventory);
-        guiManager.registerOpenInventory(player, INVENTORY_TYPE);
     }
 } 

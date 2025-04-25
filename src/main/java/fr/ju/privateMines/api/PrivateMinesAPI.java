@@ -63,7 +63,6 @@ public class PrivateMinesAPI {
 
     // Accès et permissions
     public MineAccess getMineAccess(Player player) { Mine mine = getMine(player); return mine != null ? mine.getMineAccess() : null; }
-    public void addVisit(Player owner, UUID visitor) { Mine mine = getMine(owner); if (mine != null) mine.addVisit(visitor); }
     public List<Mine> getTopMines() { return plugin.getStatsManager().getTopMines(); }
     public void saveStats() { plugin.getStatsManager().saveStats(); }
     public void syncMineStats(Mine mine) { plugin.getStatsManager().syncMineStats(mine); }

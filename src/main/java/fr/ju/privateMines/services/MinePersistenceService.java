@@ -49,8 +49,19 @@ public class MinePersistenceService {
             PrivateMines.debugLog("[DEBUG-MINE] Location est null pour la mine de UUID: " + uuid);
             return;
         }
+        handleWorldCorrection(mine);
+        saveLocation(mine, mineSection);
+        saveMineProperties(mine, mineSection);
+        saveTeleportLocation(mine, mineSection);
+        saveMineArea(mine, mineSection);
+        saveSchematicBounds(mine, mineSection);
+        saveBlocks(mine, mineSection);
+        saveAccessData(mine, mineSection);
+        plugin.getConfigManager().saveData();
+    }
+    private void handleWorldCorrection(Mine mine) {
         if (mine.getLocation().getWorld() == null) {
-            PrivateMines.debugLog("[DEBUG-MINE] Monde est null pour la mine de UUID: " + uuid);
+            PrivateMines.debugLog("[DEBUG-MINE] Monde est null pour la mine de UUID: " + mine.getOwner());
             if (plugin.getMineWorldManager() != null && plugin.getMineWorldManager().getMineWorld() != null) {
                 Location newLoc = mine.getLocation().clone();
                 newLoc.setWorld(plugin.getMineWorldManager().getMineWorld());
@@ -60,6 +71,8 @@ public class MinePersistenceService {
                 PrivateMines.debugLog("[DEBUG-MINE] Impossible de définir un monde par défaut, la sauvegarde peut être incomplète");
             }
         }
+    }
+    private void saveLocation(Mine mine, ConfigurationSection mineSection) {
         if (mine.getLocation().getWorld() != null) {
             mineSection.set("location.world", mine.getLocation().getWorld().getName());
         } else {
@@ -69,11 +82,15 @@ public class MinePersistenceService {
         mineSection.set("location.y", mine.getLocation().getY());
         mineSection.set("location.z", mine.getLocation().getZ());
         mineSection.set("world", null);
+    }
+    private void saveMineProperties(Mine mine, ConfigurationSection mineSection) {
         mineSection.set("type", mine.getType());
         mineSection.set("size", mine.getSize());
         mineSection.set("tax", mine.getTax());
         mineSection.set("isOpen", mine.isOpen());
         mineSection.set("tier", mine.getTier());
+    }
+    private void saveTeleportLocation(Mine mine, ConfigurationSection mineSection) {
         if (mine.getTeleportLocation() != null) {
             if (mine.getTeleportLocation().getWorld() != null) {
                 mineSection.set("teleport.world", mine.getTeleportLocation().getWorld().getName());
@@ -87,6 +104,8 @@ public class MinePersistenceService {
             mineSection.set("teleport.yaw", mine.getTeleportLocation().getYaw());
             mineSection.set("teleport.pitch", mine.getTeleportLocation().getPitch());
         }
+    }
+    private void saveMineArea(Mine mine, ConfigurationSection mineSection) {
         if (mine.hasMineArea()) {
             mineSection.set("area.minX", mine.getMinX());
             mineSection.set("area.minY", mine.getMinY());
@@ -95,6 +114,8 @@ public class MinePersistenceService {
             mineSection.set("area.maxY", mine.getMaxY());
             mineSection.set("area.maxZ", mine.getMaxZ());
         }
+    }
+    private void saveSchematicBounds(Mine mine, ConfigurationSection mineSection) {
         if (mine.hasSchematicBounds()) {
             mineSection.set("schematic.minX", mine.getSchematicMinX());
             mineSection.set("schematic.minY", mine.getSchematicMinY());
@@ -103,12 +124,12 @@ public class MinePersistenceService {
             mineSection.set("schematic.maxY", mine.getSchematicMaxY());
             mineSection.set("schematic.maxZ", mine.getSchematicMaxZ());
         }
+    }
+    private void saveBlocks(Mine mine, ConfigurationSection mineSection) {
         ConfigurationSection blocksSection = mineSection.createSection("blocks");
         for (Map.Entry<Material, Double> entry : mine.getBlocks().entrySet()) {
             blocksSection.set(entry.getKey().name(), entry.getValue());
         }
-        saveAccessData(mine, mineSection);
-        plugin.getConfigManager().saveData();
     }
     public void saveAccessData(Mine mine, ConfigurationSection mineSection) {
         // Supprimer toute la logique liée à la persistance des bans/denys dans les mines
