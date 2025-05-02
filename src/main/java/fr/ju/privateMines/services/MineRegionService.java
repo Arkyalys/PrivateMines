@@ -102,6 +102,7 @@ public class MineRegionService {
         fullMineRegion.setFlag(Flags.PVP, StateFlag.State.DENY);
         fullMineRegion.setFlag(Flags.MOB_SPAWNING, StateFlag.State.DENY);
         fullMineRegion.setFlag(Flags.CHEST_ACCESS, StateFlag.State.DENY);
+        fullMineRegion.setPriority(-1);
         return fullMineRegion;
     }
     public void unprotectMine(Mine mine) {
