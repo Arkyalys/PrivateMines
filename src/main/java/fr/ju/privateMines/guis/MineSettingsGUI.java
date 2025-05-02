@@ -29,7 +29,18 @@ public class MineSettingsGUI {
             player.sendMessage(ColorUtil.translateColors("&cErreur lors de la récupération de votre mine."));
             return;
         }
-        Inventory inventory = Bukkit.createInventory(null, 36, Component.text(ColorUtil.translateColors(GUI_TITLE))); 
+        Inventory inventory = Bukkit.createInventory(null, 36, Component.text(ColorUtil.translateColors(GUI_TITLE)));
+        setupTypeItem(inventory, mine, guiManager);
+        setupTaxItem(inventory, mine, guiManager, plugin);
+        setupResetItem(inventory, mine, guiManager, plugin);
+        setupCompositionItem(inventory, mine, guiManager);
+        setupProtectionItem(inventory, mine, guiManager, plugin);
+        setupBackButton(inventory, guiManager);
+        guiManager.fillEmptySlots(inventory);
+        player.openInventory(inventory);
+        guiManager.registerOpenInventory(player, INVENTORY_TYPE);
+    }
+    private static void setupTypeItem(Inventory inventory, Mine mine, GUIManager guiManager) {
         List<String> typeLore = new ArrayList<>();
         typeLore.add("&7Type actuel: &b" + mine.getType());
         typeLore.add("");
@@ -40,6 +51,8 @@ public class MineSettingsGUI {
         typeLore.add("&eCliquez pour changer de type");
         ItemStack typeItem = guiManager.createGuiItem(Material.STONE, "&e🧱 &bType de Mine", typeLore);
         inventory.setItem(10, typeItem);
+    }
+    private static void setupTaxItem(Inventory inventory, Mine mine, GUIManager guiManager, PrivateMines plugin) {
         int currentTax = mine.getTax();
         int maxTax = plugin.getConfigManager().getConfig().getInt("Config.Gameplay.max-tax", 100);
         List<String> taxLore = new ArrayList<>();
@@ -55,6 +68,8 @@ public class MineSettingsGUI {
         Material taxMaterial = currentTax > 0 ? Material.GOLD_INGOT : Material.IRON_INGOT;
         ItemStack taxItem = guiManager.createGuiItem(taxMaterial, "&e💰 &bTaxe de la Mine", taxLore);
         inventory.setItem(12, taxItem);
+    }
+    private static void setupResetItem(Inventory inventory, Mine mine, GUIManager guiManager, PrivateMines plugin) {
         boolean autoReset = plugin.getConfigManager().getConfig().getBoolean("Config.Mines.auto-reset", true);
         int resetPercentage = plugin.getConfigManager().getConfig().getInt("Config.Mines.auto-reset-percentage", 75);
         List<String> resetLore = new ArrayList<>();
@@ -73,12 +88,14 @@ public class MineSettingsGUI {
         Material resetMaterial = autoReset ? Material.REDSTONE_LAMP : Material.REDSTONE_TORCH;
         ItemStack resetItem = guiManager.createGuiItem(resetMaterial, "&e♻ &bReset Automatique", resetLore);
         inventory.setItem(14, resetItem);
+    }
+    private static void setupCompositionItem(Inventory inventory, Mine mine, GUIManager guiManager) {
         List<String> compositionLore = new ArrayList<>();
         compositionLore.add("&7Composition actuelle:");
         Map<Material, Double> blocks = mine.getBlocks();
         blocks.entrySet().stream()
             .sorted(Map.Entry.<Material, Double>comparingByValue().reversed())
-            .limit(8) 
+            .limit(8)
             .forEach(entry -> {
                 String blockName = GUIManager.formatMaterialName(entry.getKey().name());
                 double percentage = entry.getValue();
@@ -92,6 +109,8 @@ public class MineSettingsGUI {
         compositionLore.add("&7lors du reset de la mine.");
         ItemStack compositionItem = guiManager.createGuiItem(Material.CHEST, "&e📊 &bComposition", compositionLore);
         inventory.setItem(16, compositionItem);
+    }
+    private static void setupProtectionItem(Inventory inventory, Mine mine, GUIManager guiManager, PrivateMines plugin) {
         boolean protectionEnabled = plugin.getConfigManager().getConfig().getBoolean("Config.Protection.enabled", true);
         List<String> worldLore = new ArrayList<>();
         worldLore.add("&7Protection WorldGuard: " + (protectionEnabled ? "&aActivée" : "&cDésactivée"));
@@ -109,11 +128,10 @@ public class MineSettingsGUI {
         Material worldMaterial = protectionEnabled ? Material.SHIELD : Material.BARRIER;
         ItemStack worldItem = guiManager.createGuiItem(worldMaterial, "&e🛡 &bProtection", worldLore);
         inventory.setItem(22, worldItem);
+    }
+    private static void setupBackButton(Inventory inventory, GUIManager guiManager) {
         ItemStack backButton = guiManager.createGuiItem(Material.BARRIER, "&e◀ &cRetour",
                 "&7Retourner au menu principal");
         inventory.setItem(31, backButton);
-        guiManager.fillEmptySlots(inventory);
-        player.openInventory(inventory);
-        guiManager.registerOpenInventory(player, INVENTORY_TYPE);
     }
 } 

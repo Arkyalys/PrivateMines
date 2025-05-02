@@ -60,50 +60,67 @@ public class MineExpandCommand implements SubCommand {
             int maxY = mine.getMaxY();
             int minZ = mine.getMinZ();
             int maxZ = mine.getMaxZ();
-            java.util.Map<org.bukkit.Material, Double> blockDistribution = mine.getBlocks();
-            if (blockDistribution == null || blockDistribution.isEmpty()) {
-                blockDistribution = new java.util.HashMap<>();
-                blockDistribution.put(org.bukkit.Material.STONE, 0.7);
-                blockDistribution.put(org.bukkit.Material.COAL_ORE, 0.15);
-                blockDistribution.put(org.bukkit.Material.IRON_ORE, 0.1);
-                blockDistribution.put(org.bukkit.Material.GOLD_ORE, 0.05);
+            java.util.Map<org.bukkit.Material, Double> blockDistribution = getBlockDistribution(mine);
+            java.util.List<org.bukkit.Material> weightedMaterials = buildWeightedMaterials(blockDistribution);
+            fillAirBlocks(world, minX, maxX, minY, maxY, minZ, maxZ, weightedMaterials);
+            placeBedrockWalls(world, minX, maxX, minY, maxY, minZ, maxZ);
+            placeBedrockFloor(world, minX, maxX, minY, minZ, maxZ);
+        }
+    }
+    private java.util.Map<org.bukkit.Material, Double> getBlockDistribution(fr.ju.privateMines.models.Mine mine) {
+        java.util.Map<org.bukkit.Material, Double> blockDistribution = mine.getBlocks();
+        if (blockDistribution == null || blockDistribution.isEmpty()) {
+            blockDistribution = new java.util.HashMap<>();
+            blockDistribution.put(org.bukkit.Material.STONE, 0.7);
+            blockDistribution.put(org.bukkit.Material.COAL_ORE, 0.15);
+            blockDistribution.put(org.bukkit.Material.IRON_ORE, 0.1);
+            blockDistribution.put(org.bukkit.Material.GOLD_ORE, 0.05);
+        }
+        return blockDistribution;
+    }
+    private java.util.List<org.bukkit.Material> buildWeightedMaterials(java.util.Map<org.bukkit.Material, Double> blockDistribution) {
+        java.util.List<org.bukkit.Material> weightedMaterials = new java.util.ArrayList<>();
+        for (java.util.Map.Entry<org.bukkit.Material, Double> entry : blockDistribution.entrySet()) {
+            int weight = (int) (entry.getValue() * 100);
+            for (int i = 0; i < weight; i++) {
+                weightedMaterials.add(entry.getKey());
             }
-            java.util.List<org.bukkit.Material> weightedMaterials = new java.util.ArrayList<>();
-            for (java.util.Map.Entry<org.bukkit.Material, Double> entry : blockDistribution.entrySet()) {
-                int weight = (int) (entry.getValue() * 100);
-                for (int i = 0; i < weight; i++) {
-                    weightedMaterials.add(entry.getKey());
-                }
-            }
-            if (weightedMaterials.isEmpty()) {
-                weightedMaterials.add(org.bukkit.Material.STONE);
-            }
-            java.util.Random random = new java.util.Random();
-            for (int x = minX; x <= maxX; x++) {
-                for (int y = minY; y <= maxY; y++) {
-                    for (int z = minZ; z <= maxZ; z++) {
-                        org.bukkit.block.Block block = world.getBlockAt(x, y, z);
-                        if (block.getType() == org.bukkit.Material.AIR) {
-                            org.bukkit.Material material = weightedMaterials.get(random.nextInt(weightedMaterials.size()));
-                            block.setType(material);
-                        }
+        }
+        if (weightedMaterials.isEmpty()) {
+            weightedMaterials.add(org.bukkit.Material.STONE);
+        }
+        return weightedMaterials;
+    }
+    private void fillAirBlocks(org.bukkit.World world, int minX, int maxX, int minY, int maxY, int minZ, int maxZ, java.util.List<org.bukkit.Material> weightedMaterials) {
+        java.util.Random random = new java.util.Random();
+        for (int x = minX; x <= maxX; x++) {
+            for (int y = minY; y <= maxY; y++) {
+                for (int z = minZ; z <= maxZ; z++) {
+                    org.bukkit.block.Block block = world.getBlockAt(x, y, z);
+                    if (block.getType() == org.bukkit.Material.AIR) {
+                        org.bukkit.Material material = weightedMaterials.get(random.nextInt(weightedMaterials.size()));
+                        block.setType(material);
                     }
                 }
             }
-            for (int y = minY; y <= maxY; y++) {
-                for (int x = minX; x <= maxX; x++) {
-                    world.getBlockAt(x, y, minZ - 1).setType(org.bukkit.Material.BEDROCK);
-                    world.getBlockAt(x, y, maxZ + 1).setType(org.bukkit.Material.BEDROCK);
-                }
-                for (int z = minZ; z <= maxZ; z++) {
-                    world.getBlockAt(minX - 1, y, z).setType(org.bukkit.Material.BEDROCK);
-                    world.getBlockAt(maxX + 1, y, z).setType(org.bukkit.Material.BEDROCK);
-                }
-            }
+        }
+    }
+    private void placeBedrockWalls(org.bukkit.World world, int minX, int maxX, int minY, int maxY, int minZ, int maxZ) {
+        for (int y = minY; y <= maxY; y++) {
             for (int x = minX; x <= maxX; x++) {
-                for (int z = minZ; z <= maxZ; z++) {
-                    world.getBlockAt(x, minY - 1, z).setType(org.bukkit.Material.BEDROCK);
-                }
+                world.getBlockAt(x, y, minZ - 1).setType(org.bukkit.Material.BEDROCK);
+                world.getBlockAt(x, y, maxZ + 1).setType(org.bukkit.Material.BEDROCK);
+            }
+            for (int z = minZ; z <= maxZ; z++) {
+                world.getBlockAt(minX - 1, y, z).setType(org.bukkit.Material.BEDROCK);
+                world.getBlockAt(maxX + 1, y, z).setType(org.bukkit.Material.BEDROCK);
+            }
+        }
+    }
+    private void placeBedrockFloor(org.bukkit.World world, int minX, int maxX, int minY, int minZ, int maxZ) {
+        for (int x = minX; x <= maxX; x++) {
+            for (int z = minZ; z <= maxZ; z++) {
+                world.getBlockAt(x, minY - 1, z).setType(org.bukkit.Material.BEDROCK);
             }
         }
     }

@@ -407,49 +407,74 @@ public class GUIListener implements Listener {
         player.sendMessage("[DEBUG] handleContributorAnvilClick: slot=" + event.getSlot());
         if (event.getInventory().getType() != InventoryType.ANVIL) return;
         if (event.getSlot() == 2) {
-            player.sendMessage("[DEBUG] Clic sur slot 2 de l'anvil");
-            ItemStack result = event.getInventory().getItem(2);
-            if (result == null || result.getType() != Material.PAPER) {
-                player.sendMessage("[DEBUG] Pas de papier dans le slot 2");
-                return;
-            }
-            String pseudo = null;
-            if (result.getItemMeta() != null && result.getItemMeta().hasDisplayName()) {
-                pseudo = PlainTextComponentSerializer.plainText().serialize(result.getItemMeta().displayName());
-            }
-            player.sendMessage("[DEBUG] Pseudo saisi: " + pseudo);
-            if (pseudo == null || pseudo.trim().isEmpty() || pseudo.equals("Entrer le pseudo")) {
-                player.sendMessage(ColorUtil.translateColors("&cPseudo invalide."));
-                event.setCancelled(true);
-                return;
-            }
-            Player target = plugin.getServer().getPlayerExact(pseudo.trim());
-            if (target == null) {
-                player.sendMessage(ColorUtil.translateColors("&cJoueur introuvable."));
-                event.setCancelled(true);
-                return;
-            }
-            Mine mine = plugin.getMineManager().getMine(player).orElse(null);
-            if (mine == null) {
-                player.sendMessage(ColorUtil.translateColors("&cErreur mine."));
-                event.setCancelled(true);
-                return;
-            }
-            org.bukkit.World world = mine.getLocation().getWorld();
-            com.sk89q.worldguard.protection.managers.RegionManager regionManager = com.sk89q.worldguard.WorldGuard.getInstance().getPlatform().getRegionContainer().get(com.sk89q.worldedit.bukkit.BukkitAdapter.adapt(world));
-            String regionId = "mine-" + mine.getOwner().toString();
-            com.sk89q.worldguard.protection.regions.ProtectedRegion region = regionManager != null ? regionManager.getRegion(regionId) : null;
-            if (region == null) {
-                player.sendMessage(ColorUtil.translateColors("&cErreur région."));
-                event.setCancelled(true);
-                return;
-            }
-            region.getMembers().addPlayer(target.getUniqueId());
-            player.sendMessage(ColorUtil.translateColors("&aContributeur ajouté !"));
-            awaitingContributorName.remove(player.getUniqueId());
-            MineVisitorsGUI.openGUI(player, 0);
-            event.setCancelled(true);
-            player.closeInventory();
+            handleAnvilSlot2Click(player, event);
         }
+    }
+    private void handleAnvilSlot2Click(Player player, InventoryClickEvent event) {
+        ItemStack result = event.getInventory().getItem(2);
+        if (!isValidAnvilResult(result, player, event)) return;
+        String pseudo = extractPseudo(result);
+        player.sendMessage("[DEBUG] Pseudo saisi: " + pseudo);
+        if (!isValidPseudo(pseudo, player, event)) return;
+        Player target = plugin.getServer().getPlayerExact(pseudo.trim());
+        if (!isValidTarget(target, player, event)) return;
+        Mine mine = plugin.getMineManager().getMine(player).orElse(null);
+        if (!isValidMine(mine, player, event)) return;
+        org.bukkit.World world = mine.getLocation().getWorld();
+        com.sk89q.worldguard.protection.managers.RegionManager regionManager = com.sk89q.worldguard.WorldGuard.getInstance().getPlatform().getRegionContainer().get(com.sk89q.worldedit.bukkit.BukkitAdapter.adapt(world));
+        String regionId = "mine-" + mine.getOwner().toString();
+        com.sk89q.worldguard.protection.regions.ProtectedRegion region = regionManager != null ? regionManager.getRegion(regionId) : null;
+        if (!isValidRegion(region, player, event)) return;
+        region.getMembers().addPlayer(target.getUniqueId());
+        player.sendMessage(ColorUtil.translateColors("&aContributeur ajouté !"));
+        awaitingContributorName.remove(player.getUniqueId());
+        MineVisitorsGUI.openGUI(player, 0);
+        event.setCancelled(true);
+        player.closeInventory();
+    }
+    private boolean isValidAnvilResult(ItemStack result, Player player, InventoryClickEvent event) {
+        if (result == null || result.getType() != Material.PAPER) {
+            player.sendMessage("[DEBUG] Pas de papier dans le slot 2");
+            return false;
+        }
+        return true;
+    }
+    private String extractPseudo(ItemStack result) {
+        if (result.getItemMeta() != null && result.getItemMeta().hasDisplayName()) {
+            return PlainTextComponentSerializer.plainText().serialize(result.getItemMeta().displayName());
+        }
+        return null;
+    }
+    private boolean isValidPseudo(String pseudo, Player player, InventoryClickEvent event) {
+        if (pseudo == null || pseudo.trim().isEmpty() || pseudo.equals("Entrer le pseudo")) {
+            player.sendMessage(ColorUtil.translateColors("&cPseudo invalide."));
+            event.setCancelled(true);
+            return false;
+        }
+        return true;
+    }
+    private boolean isValidTarget(Player target, Player player, InventoryClickEvent event) {
+        if (target == null) {
+            player.sendMessage(ColorUtil.translateColors("&cJoueur introuvable."));
+            event.setCancelled(true);
+            return false;
+        }
+        return true;
+    }
+    private boolean isValidMine(Mine mine, Player player, InventoryClickEvent event) {
+        if (mine == null) {
+            player.sendMessage(ColorUtil.translateColors("&cErreur mine."));
+            event.setCancelled(true);
+            return false;
+        }
+        return true;
+    }
+    private boolean isValidRegion(com.sk89q.worldguard.protection.regions.ProtectedRegion region, Player player, InventoryClickEvent event) {
+        if (region == null) {
+            player.sendMessage(ColorUtil.translateColors("&cErreur région."));
+            event.setCancelled(true);
+            return false;
+        }
+        return true;
     }
 } 

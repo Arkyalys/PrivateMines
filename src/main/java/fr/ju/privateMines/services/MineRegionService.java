@@ -66,6 +66,10 @@ public class MineRegionService {
         if (invincibleFlag != null) {
             region.setFlag(invincibleFlag, StateFlag.State.ALLOW);
         }
+        StateFlag upcEnchantsFlag = (StateFlag) WorldGuard.getInstance().getFlagRegistry().get("upc-enchants");
+        if (upcEnchantsFlag != null) {
+            region.setFlag(upcEnchantsFlag, StateFlag.State.ALLOW);
+        }
         region.getOwners().addPlayer(mine.getOwner());
         return region;
     }

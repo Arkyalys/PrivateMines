@@ -112,55 +112,70 @@ public class MineCommand implements CommandExecutor {
             sender.sendMessage(configManager.getMessage("mine-no-permission"));
             return true;
         }
-        if (args.length >= 2 && args[1].equalsIgnoreCase("reset")) {
-            if (!sender.hasPermission(Permissions.ADMIN_FULL_RESET)) {
-                sender.sendMessage(configManager.getMessage("mine-no-permission"));
-                return true;
-            }
-            UUID senderId = isPlayer ? ((Player) sender).getUniqueId() : Console.UUID;
-            if (args.length == 3 && args[2].equalsIgnoreCase("confirm")) {
-                if (pendingResetConfirmation.contains(senderId)) {
-                    pendingResetConfirmation.remove(senderId);
-                    sender.sendMessage(configManager.getMessage("mine-reset-in-progress"));
-                    performFullReset(sender, label);
-                    return true;
-                } else {
-                    sender.sendMessage(configManager.getMessage("mine-reset-no-pending"));
-                    return true;
-                }
-            } else {
-                sender.sendMessage(configManager.getMessage("mine-reset-warning").replace("%world%", mineWorldManager.getMineWorldName()));
-                sender.sendMessage(configManager.getMessage("mine-reset-confirm").replace("%command%", label));
-                pendingResetConfirmation.add(senderId);
-                Bukkit.getScheduler().runTaskLater(plugin, () -> pendingResetConfirmation.remove(senderId), 30 * 20L);
-                return true;
-            }
+        if (isResetCommand(args)) {
+            return handleResetCommand(sender, label, args, isPlayer);
         }
-        if (args.length >= 2 && args[1].equalsIgnoreCase("gui")) {
-            if (plugin.getGUIManager() != null) {
-                sender.sendMessage(configManager.getMessage("mine-gui-already-installed"));
-                return true;
-            }
-            sender.sendMessage(configManager.getMessage("mine-gui-installing"));
-            try {
-                // TODO: Remplacer la réflexion par une méthode d'initialisation propre dans PrivateMines
-                java.lang.reflect.Field field = PrivateMines.class.getDeclaredField("guiManager");
-                // field.setAccessible(true); // Suppression de setAccessible
-                field.set(plugin, new fr.ju.privateMines.utils.GUIManager(plugin));
-                sender.sendMessage(configManager.getMessage("mine-gui-installed"));
-                plugin.getServer().getPluginManager().registerEvents(new fr.ju.privateMines.listeners.GUIListener(plugin), plugin);
-                sender.sendMessage(configManager.getMessage("mine-gui-system-installed"));
-                sender.sendMessage(configManager.getMessage("mine-gui-usage"));
-            } catch (Exception e) {
-                sender.sendMessage(configManager.getMessage("mine-gui-install-error").replace("%error%", e.getMessage()));
-                plugin.getLogger().severe("Error installing GUI system: " + e.getMessage());
-                e.printStackTrace();
-            }
+        if (isGuiCommand(args)) {
+            return handleGuiCommandAdmin(sender);
+        }
+        sendAdminUsage(sender, label);
+        return true;
+    }
+    private boolean isResetCommand(String[] args) {
+        return args.length >= 2 && args[1].equalsIgnoreCase("reset");
+    }
+    private boolean isGuiCommand(String[] args) {
+        return args.length >= 2 && args[1].equalsIgnoreCase("gui");
+    }
+    private boolean handleResetCommand(CommandSender sender, String label, String[] args, boolean isPlayer) {
+        if (!sender.hasPermission(Permissions.ADMIN_FULL_RESET)) {
+            sender.sendMessage(configManager.getMessage("mine-no-permission"));
             return true;
         }
+        UUID senderId = isPlayer ? ((Player) sender).getUniqueId() : Console.UUID;
+        if (args.length == 3 && args[2].equalsIgnoreCase("confirm")) {
+            if (pendingResetConfirmation.contains(senderId)) {
+                pendingResetConfirmation.remove(senderId);
+                sender.sendMessage(configManager.getMessage("mine-reset-in-progress"));
+                performFullReset(sender, label);
+                return true;
+            } else {
+                sender.sendMessage(configManager.getMessage("mine-reset-no-pending"));
+                return true;
+            }
+        } else {
+            sender.sendMessage(configManager.getMessage("mine-reset-warning").replace("%world%", mineWorldManager.getMineWorldName()));
+            sender.sendMessage(configManager.getMessage("mine-reset-confirm").replace("%command%", label));
+            pendingResetConfirmation.add(senderId);
+            Bukkit.getScheduler().runTaskLater(plugin, () -> pendingResetConfirmation.remove(senderId), 30 * 20L);
+            return true;
+        }
+    }
+    private boolean handleGuiCommandAdmin(CommandSender sender) {
+        if (plugin.getGUIManager() != null) {
+            sender.sendMessage(configManager.getMessage("mine-gui-already-installed"));
+            return true;
+        }
+        sender.sendMessage(configManager.getMessage("mine-gui-installing"));
+        try {
+            // TODO: Remplacer la réflexion par une méthode d'initialisation propre dans PrivateMines
+            java.lang.reflect.Field field = PrivateMines.class.getDeclaredField("guiManager");
+            // field.setAccessible(true); // Suppression de setAccessible
+            field.set(plugin, new fr.ju.privateMines.utils.GUIManager(plugin));
+            sender.sendMessage(configManager.getMessage("mine-gui-installed"));
+            plugin.getServer().getPluginManager().registerEvents(new fr.ju.privateMines.listeners.GUIListener(plugin), plugin);
+            sender.sendMessage(configManager.getMessage("mine-gui-system-installed"));
+            sender.sendMessage(configManager.getMessage("mine-gui-usage"));
+        } catch (Exception e) {
+            sender.sendMessage(configManager.getMessage("mine-gui-install-error").replace("%error%", e.getMessage()));
+            plugin.getLogger().severe("Error installing GUI system: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return true;
+    }
+    private void sendAdminUsage(CommandSender sender, String label) {
         sender.sendMessage(configManager.getMessage("mine-usage-admin-reset").replace("%command%", label));
         sender.sendMessage(configManager.getMessage("mine-usage-admin-gui").replace("%command%", label));
-        return true;
     }
     private void handleGuiCommand(Player player) {
         MineMainGUI.openGUI(player);
