@@ -115,9 +115,6 @@ public class MineManager {
     /**
      * Récupère un message de configuration avec remplacements.
      */
-    private String getMessage(String key, Map<String, String> replacements) {
-        return configManager.getMessage(key, replacements);
-    }
     private String getMessage(String key) {
         return configManager.getMessage(key);
     }

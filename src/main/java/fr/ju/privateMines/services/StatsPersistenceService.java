@@ -109,6 +109,5 @@ public class StatsPersistenceService {
     private FileConfiguration getStatsConfig() { return statsManager.statsConfig; }
     private void setStatsConfig(FileConfiguration config) { statsManager.statsConfig = config; }
     private int getSaveInterval() { return statsManager.saveInterval; }
-    private int getMaxTrackedVisitors() { return statsManager.maxTrackedVisitors; }
     private boolean isEnabled() { return statsManager.enabled; }
 } 

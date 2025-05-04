@@ -13,13 +13,12 @@ import org.bukkit.entity.Player;
 import fr.ju.privateMines.PrivateMines;
 import fr.ju.privateMines.utils.Permissions;
 public class MineTabCompleter implements TabCompleter {
-    private final PrivateMines plugin;
     private final List<String> EMPTY_LIST = new ArrayList<>();
     private final List<String> BASE_COMMANDS = Arrays.asList(
         "create", "delete", "reset", "expand", "settype", "settax", "teleport", "tp", "stats", "upgrade", "pregen", "settier", "visit", "gui", "menu"
     );
     public MineTabCompleter(PrivateMines plugin) {
-        this.plugin = plugin;
+        // Constructeur vide
     }
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {

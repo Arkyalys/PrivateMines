@@ -385,6 +385,9 @@ public class GUIListener implements Listener {
         String regionId = "mine-" + mine.getOwner().toString();
         com.sk89q.worldguard.protection.regions.ProtectedRegion region = regionManager != null ? regionManager.getRegion(regionId) : null;
         if (!isValidRegion(region, player, event)) return;
+        
+        if (region == null) return;
+        
         region.getMembers().addPlayer(target.getUniqueId());
         player.sendMessage(ColorUtil.translateColors("&aContributeur ajouté !"));
         awaitingContributorName.remove(player.getUniqueId());

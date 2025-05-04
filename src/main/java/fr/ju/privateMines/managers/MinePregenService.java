@@ -1,7 +1,6 @@
 package fr.ju.privateMines.managers;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.bukkit.Location;
@@ -13,11 +12,11 @@ import fr.ju.privateMines.models.Mine;
 import fr.ju.privateMines.utils.ColorUtil;
 public class MinePregenService {
     private final PrivateMines plugin;
-    private final MineManager mineManager;
+    
     public MinePregenService(PrivateMines plugin, MineManager mineManager) {
         this.plugin = plugin;
-        this.mineManager = mineManager;
     }
+    
     public boolean pregenMines(Player player, int count, String type) {
         if (count <= 0 || count > 50) {
             player.sendMessage(ColorUtil.deserialize("&cLe nombre de mines à pré-générer doit être compris entre 1 et 50."));
@@ -29,11 +28,6 @@ public class MinePregenService {
     }
 
     private void runPregenTask(Player player, int count) {
-        // Logique de pré-génération sans notion de type
-        // ...
-    }
-
-    private void runPregenTask(Player player, int count, String defaultType, Map<String, Map<Material, Double>> mineTypes) {
         final AtomicInteger successes = new AtomicInteger(0);
         final AtomicInteger failures = new AtomicInteger(0);
         for (int i = 0; i < count; i++) {
@@ -49,7 +43,6 @@ public class MinePregenService {
             defaultBlocks.put(Material.STONE, 1.0);
             mine.setBlocks(defaultBlocks);
             final int currentIndex = i + 1;
-            AtomicBoolean success = new AtomicBoolean(false);
             plugin.getServer().getScheduler().runTask(plugin, () -> handleMineGeneration(player, mine, randomUUID, successes, failures, currentIndex, count));
             try {
                 Thread.sleep(100);
