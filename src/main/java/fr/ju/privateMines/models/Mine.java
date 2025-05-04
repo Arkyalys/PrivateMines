@@ -10,7 +10,6 @@ import org.bukkit.Material;
 public class Mine {
     private UUID owner;
     private Location location;
-    private String type;
     private int size;
     private int tax;
     private boolean isOpen;
@@ -23,19 +22,15 @@ public class Mine {
     private double schematicMaxX, schematicMaxY, schematicMaxZ;
     private MineAccess mineAccess;
     private final Set<UUID> contributors = new HashSet<>();
-    public Mine(UUID owner, Location location, String type) {
+    public Mine(UUID owner, Location location) {
         if (owner == null) {
             throw new IllegalArgumentException("Owner cannot be null");
         }
         if (location == null) {
             throw new IllegalArgumentException("Location cannot be null");
         }
-        if (type == null) {
-            throw new IllegalArgumentException("Type cannot be null");
-        }
         this.owner = owner;
         this.location = location;
-        this.type = type;
         this.size = 1;
         this.tax = 0;
         this.isOpen = true;
@@ -57,12 +52,6 @@ public class Mine {
     }
     public void setLocation(Location location) {
         this.location = location;
-    }
-    public String getType() {
-        return type;
-    }
-    public void setType(String type) {
-        this.type = type;
     }
     public int getSize() {
         return size;

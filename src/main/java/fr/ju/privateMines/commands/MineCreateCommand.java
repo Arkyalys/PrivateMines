@@ -19,11 +19,7 @@ public class MineCreateCommand implements SubCommand {
             player.sendMessage(configManager.getMessage("mine-no-permission"));
             return true;
         }
-        String mineType = "default";
-        if (args.length >= 2 && player.hasPermission(Permissions.ADMIN_CREATE)) {
-            mineType = args[1];
-        }
-        mineManager.createMine(player, mineType);
+        mineManager.createMine(player);
         return true;
     }
 } 

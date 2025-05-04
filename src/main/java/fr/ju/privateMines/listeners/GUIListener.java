@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -13,9 +12,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryType;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 
 import fr.ju.privateMines.PrivateMines;
 import fr.ju.privateMines.guis.MineCompositionGUI;
@@ -23,7 +20,6 @@ import fr.ju.privateMines.guis.MineExpandGUI;
 import fr.ju.privateMines.guis.MineMainGUI;
 import fr.ju.privateMines.guis.MineSettingsGUI;
 import fr.ju.privateMines.guis.MineStatsGUI;
-import fr.ju.privateMines.guis.MineTypeGUI;
 import fr.ju.privateMines.guis.MineVisitorsGUI;
 import fr.ju.privateMines.models.Mine;
 import fr.ju.privateMines.utils.ColorUtil;
@@ -65,9 +61,6 @@ public class GUIListener implements Listener {
                 break;
             case "mine_settings":
                 handleSettingsGUIClick(player, clickedItem, event.getSlot());
-                break;
-            case "mine_type":
-                handleTypeGUIClick(player, clickedItem, event.getSlot(), inventoryType, event.getClickedInventory());
                 break;
             case "mine_expand":
                 handleExpandGUIClick(player, clickedItem, event.getSlot());
@@ -159,11 +152,11 @@ public class GUIListener implements Listener {
             switch (slot) {
                 case 22: 
                     player.closeInventory();
-                    plugin.getMineManager().createMine(player, "default");
+                    plugin.getMineManager().createMine(player);
                     break;
                 case 31: 
                     if (player.hasPermission("privateMines.admin.create")) {
-                        MineTypeGUI.openGUI(player, false);
+                        // MineTypeGUI.openGUI(player, false);
                     }
                     break;
             }
@@ -279,7 +272,7 @@ public class GUIListener implements Listener {
     private void handleSettingsGUIClick(Player player, ItemStack clickedItem, int slot) {
         switch (slot) {
             case 10: 
-                MineTypeGUI.openGUI(player, true);
+                // MineTypeGUI.openGUI(player, true);
                 break;
             case 12: 
                 player.closeInventory();
@@ -288,39 +281,6 @@ public class GUIListener implements Listener {
             case 31: 
                 MineMainGUI.openGUI(player);
                 break;
-        }
-    }
-    private void handleTypeGUIClick(Player player, ItemStack clickedItem, int slot, String inventoryType, Inventory inventory) {
-        boolean isChangingType = inventoryType.contains(":change");
-        if (slot == inventory.getSize() - 5) {
-            if (isChangingType) {
-                MineSettingsGUI.openGUI(player);
-            } else {
-                MineMainGUI.openGUI(player);
-            }
-            return;
-        }
-        if (slot < 9 || slot >= inventory.getSize() - 9) return;
-        ItemMeta meta = clickedItem.getItemMeta();
-        if (meta == null) return;
-        String type = null;
-        if (meta.hasLore()) {
-            List<String> lore = meta.lore() != null
-                ? meta.lore().stream().map(component -> PlainTextComponentSerializer.plainText().serialize(component)).collect(Collectors.toList())
-                : new ArrayList<>();
-            for (String line : lore) {
-                if (line.startsWith(ColorUtil.translateColors("&7Type: &b"))) {
-                    type = line.substring(ColorUtil.translateColors("&7Type: &b").length());
-                    break;
-                }
-            }
-        }
-        if (type == null) return;
-        player.closeInventory();
-        if (isChangingType) {
-            plugin.getMineManager().setMineType(player, type);
-        } else {
-            plugin.getMineManager().createMine(player, type);
         }
     }
     private void handleExpandGUIClick(Player player, ItemStack clickedItem, int slot) {

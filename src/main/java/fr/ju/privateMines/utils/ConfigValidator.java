@@ -1,6 +1,8 @@
 package fr.ju.privateMines.utils;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 public class ConfigValidator {
@@ -17,21 +19,21 @@ public class ConfigValidator {
         checkSection("Config");
         checkSection("Config.Mines");
         checkSection("Config.Mines.default");
-        checkSection("Config.Mines.tiers");
-        checkValue("Config.Mines.default.size", "int");
-        checkValue("Config.Mines.default.type", "string");
-        checkValue("Config.Mines.default.tier", "int");
-        if (config.contains("Config.Mines.default.types")) {
-            for (String type : config.getConfigurationSection("Config.Mines.default.types").getKeys(false)) {
-                checkSection("Config.Mines.default.types." + type + ".blocks");
-            }
+        if (!tiersFileExists()) {
+            checkSection("Config.Mines.tiers");
         }
-        if (config.contains("Config.Mines.tiers")) {
+        checkValue("Config.Mines.default.size", "int");
+        checkValue("Config.Mines.default.tier", "int");
+        if (!tiersFileExists() && config.contains("Config.Mines.tiers")) {
             for (String tier : config.getConfigurationSection("Config.Mines.tiers").getKeys(false)) {
                 checkSection("Config.Mines.tiers." + tier + ".blocks");
             }
         }
         return errors.isEmpty();
+    }
+    private boolean tiersFileExists() {
+        File tiersFile = new File(plugin.getDataFolder(), "tiers.yml");
+        return tiersFile.exists();
     }
     private void checkSection(String path) {
         if (!config.contains(path)) {

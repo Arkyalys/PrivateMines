@@ -30,7 +30,6 @@ public class MineSettingsGUI {
             return;
         }
         Inventory inventory = Bukkit.createInventory(null, 36, Component.text(ColorUtil.translateColors(GUI_TITLE)));
-        setupTypeItem(inventory, mine, guiManager);
         setupTaxItem(inventory, mine, guiManager, plugin);
         setupResetItem(inventory, mine, guiManager, plugin);
         setupCompositionItem(inventory, mine, guiManager);
@@ -39,18 +38,6 @@ public class MineSettingsGUI {
         guiManager.fillEmptySlots(inventory);
         player.openInventory(inventory);
         guiManager.registerOpenInventory(player, INVENTORY_TYPE);
-    }
-    private static void setupTypeItem(Inventory inventory, Mine mine, GUIManager guiManager) {
-        List<String> typeLore = new ArrayList<>();
-        typeLore.add("&7Type actuel: &b" + mine.getType());
-        typeLore.add("");
-        typeLore.add("&7Changer le type de votre mine");
-        typeLore.add("&7affectera les blocs générés lors");
-        typeLore.add("&7du prochain reset.");
-        typeLore.add("");
-        typeLore.add("&eCliquez pour changer de type");
-        ItemStack typeItem = guiManager.createGuiItem(Material.STONE, "&e🧱 &bType de Mine", typeLore);
-        inventory.setItem(10, typeItem);
     }
     private static void setupTaxItem(Inventory inventory, Mine mine, GUIManager guiManager, PrivateMines plugin) {
         int currentTax = mine.getTax();

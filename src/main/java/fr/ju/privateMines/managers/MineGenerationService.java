@@ -27,13 +27,9 @@ public class MineGenerationService {
         generateMineAsync(mine, callback, null);
     }
     public void generateMineAsync(Mine mine, Consumer<Boolean> callback, org.bukkit.entity.Player player) {
-        String type = mine.getType();
-        String schematicName = configManager.getConfig().getString("Mines.types." + type + ".schematic");
+        String schematicName = configManager.getConfig().getString("Mines.default.schematic", "mine.schem");
         if (schematicName == null || schematicName.isEmpty()) {
-            schematicName = configManager.getConfig().getString("Mines.default.schematic", "mine.schem");
-        }
-        if (schematicName == null || schematicName.isEmpty()) {
-            plugin.getLogger().warning("Aucun schematic défini pour le type de mine: " + type);
+            plugin.getLogger().warning("Aucun schematic défini pour la mine (clé Mines.default.schematic)");
             callback.accept(false);
             return;
         }

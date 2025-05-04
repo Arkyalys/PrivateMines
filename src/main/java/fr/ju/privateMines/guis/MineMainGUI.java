@@ -61,7 +61,6 @@ public class MineMainGUI {
 
     private static ItemStack createInfoItem(GUIManager guiManager, Mine mine, MineStats stats) {
         List<String> infoLore = new ArrayList<>();
-        infoLore.add("&7Type: &b" + mine.getType());
         infoLore.add("&7Taille: &b" + mine.getSize());
         infoLore.add("&7Tier: &b" + mine.getTier());
         infoLore.add("&7Taxe: &b" + mine.getTax() + "%");

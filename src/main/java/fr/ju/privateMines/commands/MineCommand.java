@@ -45,7 +45,6 @@ public class MineCommand implements CommandExecutor {
         subCommands.put("delete", new MineDeleteCommand(mineManager, configManager));
         subCommands.put("reset", new MineResetCommand(mineManager, configManager));
         subCommands.put("expand", new MineExpandCommand(mineManager, configManager));
-        subCommands.put("settype", new MineSetTypeCommand(mineManager, configManager));
         subCommands.put("settier", new MineSetTierCommand(mineManager, configManager));
         subCommands.put("tax", new MineTaxCommand(mineManager, configManager));
         subCommands.put("upgrade", new MineUpgradeCommand(mineManager, configManager));
@@ -73,7 +72,6 @@ public class MineCommand implements CommandExecutor {
             case "delete":
             case "reset":
             case "expand":
-            case "settype":
             case "settier":
             case "tax":
             case "upgrade":

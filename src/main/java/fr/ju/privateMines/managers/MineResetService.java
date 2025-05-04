@@ -55,17 +55,16 @@ public class MineResetService {
             if (mineBlocks == null || mineBlocks.isEmpty()) {
                 plugin.getLogger().warning("[Reset Debug] Les blocs pour le palier " + tier + " sont nuls ou vides, même si la clé existe ! Vérifiez la configuration.");
                 mineBlocks = mine.getBlocks();
-                plugin.getLogger().warning("[Reset Debug] Tentative d'utilisation des blocs par défaut de la mine (type: " + mine.getType() + "): " + (mineBlocks != null ? mineBlocks.toString() : "null"));
             }
         } else {
             mineBlocks = mine.getBlocks();
-            plugin.getLogger().warning("[Reset Debug] Palier " + tier + " non trouvé dans mineTiers. Utilisation des blocs par défaut de la mine (type: " + mine.getType() + "): " + (mineBlocks != null ? mineBlocks.toString() : "null"));
+            plugin.getLogger().warning("[Reset Debug] Palier " + tier + " non trouvé dans mineTiers. Utilisation des blocs par défaut de la mine: " + (mineBlocks != null ? mineBlocks.toString() : "null"));
         }
         return mineBlocks;
     }
 
     private void handleCriticalBlockError(PrivateMines plugin, UUID uuid, Mine mine, Map<Integer, Map<Material, Double>> mineTiers) {
-        plugin.getLogger().severe("[Reset Debug] Échec critique: impossible de déterminer les blocs pour la régénération (tier: " + mine.getTier() + ", type: " + mine.getType() + "). La régénération est annulée.");
+        plugin.getLogger().severe("[Reset Debug] Échec critique: impossible de déterminer les blocs pour la régénération (tier: " + mine.getTier() + "). La régénération est annulée.");
         Player owner = plugin.getServer().getPlayer(uuid);
         if(owner != null && owner.isOnline()) {
             owner.sendMessage(ColorUtil.translateColors("&cErreur critique lors de la réinitialisation : impossible de trouver les blocs à placer. Contactez un administrateur."));

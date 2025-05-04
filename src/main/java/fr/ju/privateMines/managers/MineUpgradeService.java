@@ -34,16 +34,28 @@ public class MineUpgradeService {
         }
         int currentTier = mine.getTier();
         int nextTier = currentTier + 1;
+        
+        // Vérifier si le tier suivant existe dans la configuration
         if (!mineManager.getMineTiers().containsKey(nextTier)) {
             player.sendMessage(ColorUtil.deserialize("&cLe palier suivant n'est pas disponible."));
             return false;
         }
+        
+        // Mettre à jour le tier de la mine
         mine.setTier(nextTier);
+        
+        // Réinitialiser la mine avec les nouveaux blocs du tier
         mineManager.resetMine(player);
+        
+        // Sauvegarder les données de la mine
         mineManager.saveMineData(player);
+        
+        // Mettre à jour l'hologramme si nécessaire
         if (plugin.getHologramManager() != null) {
             plugin.getHologramManager().createOrUpdateHologram(mine);
         }
+        
+        // Notifier le joueur
         player.sendMessage(ColorUtil.deserialize("&aVotre mine a été améliorée au palier &e" + nextTier + "&a!"));
         Title title = Title.title(
             Component.text(ColorUtil.translateColors("&6&lMine améliorée")),

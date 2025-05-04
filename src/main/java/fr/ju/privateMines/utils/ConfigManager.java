@@ -2,8 +2,10 @@ package fr.ju.privateMines.utils;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
+
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+
 import fr.ju.privateMines.PrivateMines;
 public class ConfigManager {
     private final PrivateMines plugin;
@@ -13,11 +15,14 @@ public class ConfigManager {
     private File messagesFile;
     private FileConfiguration data;
     private File dataFile;
+    private FileConfiguration tiers;
+    private File tiersFile;
     public ConfigManager(PrivateMines plugin) {
         this.plugin = plugin;
         setupConfig();
         setupMessages();
         setupData();
+        setupTiers();
     }
     private void setupConfig() {
         if (!plugin.getDataFolder().exists()) {
@@ -47,11 +52,21 @@ public class ConfigManager {
         }
         data = YamlConfiguration.loadConfiguration(dataFile);
     }
+    private void setupTiers() {
+        tiersFile = new File(plugin.getDataFolder(), "tiers.yml");
+        if (!tiersFile.exists()) {
+            plugin.saveResource("tiers.yml", false);
+        }
+        tiers = YamlConfiguration.loadConfiguration(tiersFile);
+    }
     public FileConfiguration getConfig() {
         return config;
     }
     public FileConfiguration getMessages() {
         return messages;
+    }
+    public FileConfiguration getTiersConfig() {
+        return tiers;
     }
     public String getMessage(String path) {
         String message = messages.getString(path);
@@ -91,9 +106,17 @@ public class ConfigManager {
             e.printStackTrace();
         }
     }
+    public void saveTiers() {
+        try {
+            tiers.save(tiersFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
     public void reloadConfig() {
         config = YamlConfiguration.loadConfiguration(configFile);
         messages = YamlConfiguration.loadConfiguration(messagesFile);
+        tiers = YamlConfiguration.loadConfiguration(tiersFile);
     }
     public void reloadData() {
         data = YamlConfiguration.loadConfiguration(dataFile);

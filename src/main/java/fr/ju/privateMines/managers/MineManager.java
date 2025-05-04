@@ -26,13 +26,10 @@ public class MineManager {
     private final PrivateMines plugin;
     private final ConfigManager configManager;
     private final MineProtectionManager protectionManager;
-    private final Map<String, Map<Material, Double>> mineTypes;
     private final Map<Integer, Map<Material, Double>> mineTiers;
     private final MineGenerationService mineGenerationService;
     private final MineResetService mineResetService;
-    private final MineTypeService mineTypeService;
     private final MineTaxService mineTaxService;
-    private final MineTypeChangeService mineTypeChangeService;
     private final MineDeleteService mineDeleteService;
     private final MineUpgradeService mineUpgradeService;
     private final MinePregenService minePregenService;
@@ -42,32 +39,69 @@ public class MineManager {
         this.plugin = plugin;
         this.configManager = plugin.getConfigManager();
         this.protectionManager = new MineProtectionManager(plugin);
-        this.mineTypes = new HashMap<>();
         this.mineTiers = new HashMap<>();
         MineAreaDetector areaDetector = new MineAreaDetector(plugin);
         SchematicManager schematicManager = new SchematicManager(plugin);
         this.mineGenerationService = new MineGenerationService(plugin, protectionManager, areaDetector, schematicManager);
         this.mineResetService = new MineResetService(plugin);
-        this.mineTypeService = new MineTypeService(plugin);
         this.mineTaxService = new MineTaxService(plugin, this);
-        this.mineTypeChangeService = new MineTypeChangeService(plugin, this);
         this.mineDeleteService = new MineDeleteService(plugin, this);
         this.mineUpgradeService = new MineUpgradeService(plugin, this);
         this.minePregenService = new MinePregenService(plugin, this);
         this.minePersistenceService = new MinePersistenceService(plugin);
         this.mineMemoryService = new MineMemoryService();
-        loadMineTypes();
         loadMineTiers();
         loadMineData();
     }
-    public void loadMineTypes() {
-        mineTypeService.loadMineTypes(mineTypes, configManager);
-    }
     public void loadMineTiers() {
-        mineTypeService.loadMineTiers(mineTiers, configManager, plugin);
-    }
-    public Map<String, Map<Material, Double>> getMineTypes() {
-        return mineTypes;
+        mineTiers.clear();
+        plugin.getLogger().info("Chargement des tiers de mines...");
+        
+        org.bukkit.configuration.file.FileConfiguration tiersConfig = plugin.getConfigManager().getTiersConfig();
+        if (tiersConfig == null) {
+            plugin.getLogger().warning("Erreur: Impossible de charger le fichier tiers.yml");
+            return;
+        }
+        
+        if (!tiersConfig.isConfigurationSection("tiers")) {
+            plugin.getLogger().warning("Erreur: La section 'tiers' n'existe pas dans tiers.yml");
+            return;
+        }
+        
+        org.bukkit.configuration.ConfigurationSection tiersSection = tiersConfig.getConfigurationSection("tiers");
+        if (tiersSection == null) {
+            plugin.getLogger().warning("Erreur: La section 'tiers' est invalide dans tiers.yml");
+            return;
+        }
+        
+        for (String tierKey : tiersSection.getKeys(false)) {
+            try {
+                int tier = Integer.parseInt(tierKey);
+                Map<Material, Double> blocks = new HashMap<>();
+                
+                org.bukkit.configuration.ConfigurationSection blocksSection = tiersSection.getConfigurationSection(tierKey + ".blocks");
+                if (blocksSection != null) {
+                    for (String blockKey : blocksSection.getKeys(false)) {
+                        try {
+                            Material material = Material.valueOf(blockKey);
+                            double chance = blocksSection.getDouble(blockKey);
+                            blocks.put(material, chance);
+                        } catch (IllegalArgumentException e) {
+                            plugin.getLogger().warning("Erreur: Matériau invalide '" + blockKey + "' dans le tier " + tier);
+                        }
+                    }
+                    
+                    mineTiers.put(tier, blocks);
+                    if (PrivateMines.isDebugMode()) {
+                        plugin.getLogger().info("Tier " + tier + " chargé avec " + blocks.size() + " blocs");
+                    }
+                }
+            } catch (NumberFormatException e) {
+                plugin.getLogger().warning("Erreur: Tier invalide '" + tierKey + "' dans tiers.yml");
+            }
+        }
+        
+        plugin.getLogger().info(mineTiers.size() + " tiers de mines chargés");
     }
     public Collection<Mine> getAllMines() {
         return mineMemoryService.getAllMines();
@@ -120,29 +154,25 @@ public class MineManager {
     /**
      * Crée une mine pour un joueur. Retourne true si succès, false sinon.
      */
-    public boolean createMine(Player player, String type) {
-        if (!isValidMineCreation(player, type)) return false;
+    public boolean createMine(Player player) {
+        if (!isValidMineCreation(player)) return false;
         Location location = plugin.getMineWorldManager().getNextMineLocation();
         if (!isValidLocation(player, location)) return false;
         if (hasMine(player)) {
             player.sendMessage(getMessage("Messages.already-own-mine"));
             return false;
         }
-        Mine mine = new Mine(player.getUniqueId(), location, type);
-        mine.setBlocks(mineTypes.get(type));
+        Mine mine = new Mine(player.getUniqueId(), location);
+        Map<Material, Double> defaultBlocks = new HashMap<>();
+        defaultBlocks.put(Material.STONE, 1.0);
+        mine.setBlocks(defaultBlocks);
         player.sendActionBar(net.kyori.adventure.text.Component.text("§eCréation de la mine en cours..."));
         mineGenerationService.generateMineAsync(mine, success -> handleMineGenerationResult(success, player, mine), player);
         return true;
     }
-    private boolean isValidMineCreation(Player player, String type) {
+    private boolean isValidMineCreation(Player player) {
         if (player == null) {
             plugin.getLogger().warning("Tentative de création de mine avec un joueur null");
-            return false;
-        }
-        if (!mineTypes.containsKey(type)) {
-            Map<String, String> replacements = new HashMap<>();
-            replacements.put("%type%", type);
-            player.sendMessage(getMessage("Messages.invalid-type", replacements));
             return false;
         }
         return true;
@@ -266,7 +296,7 @@ public class MineManager {
         minePersistenceService.saveMine(mine, this);
     }
     public void loadMineData() {
-        minePersistenceService.loadMineData(this, configManager, plugin, protectionManager, mineTypes);
+        minePersistenceService.loadMineData(this, configManager, plugin, protectionManager, mineTiers);
     }
     public void saveAllMineData() {
         minePersistenceService.saveAllMineData(this, configManager, plugin);
@@ -297,9 +327,6 @@ public class MineManager {
     }
     public boolean deleteMine(Player player) {
         return mineDeleteService.deleteMine(player);
-    }
-    public boolean setMineType(Player player, String type) {
-        return mineTypeChangeService.setMineType(player, type);
     }
     public boolean upgradeMine(Player player) {
         return mineUpgradeService.upgradeMine(player);

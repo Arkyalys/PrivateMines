@@ -41,14 +41,13 @@ public class PrivateMinesAPI {
     public Map<UUID, Mine> getPlayerMines() { return plugin.getMineManager().mineMemoryService.getPlayerMines(); }
     public List<Mine> getPublicMines() { return plugin.getMineManager().getAllMines().stream().filter(Mine::isOpen).toList(); }
     public boolean hasMineAt(Location location) { return getMineAtLocation(location) != null; }
-    public Mine createMine(Player player, String type) { plugin.getMineManager().createMine(player, type); return getMine(player); }
+    public Mine createMine(Player player) { plugin.getMineManager().createMine(player); return getMine(player); }
     public boolean deleteMine(Player player) { return plugin.getMineManager().deleteMine(player); }
     public boolean deleteMine(UUID uuid) { Player p = plugin.getServer().getPlayer(uuid); return p != null && plugin.getMineManager().deleteMine(p); }
     public boolean resetMine(Player player) { plugin.getMineManager().resetMine(player); return true; }
     public boolean resetMine(UUID uuid) { plugin.getMineManager().resetMine(uuid); return true; }
     public boolean expandMine(Player player) { return plugin.getMineManager().expandMine(player); }
     public boolean expandMine(Player player, int expandSize) { return plugin.getMineManager().expandMine(player, expandSize); }
-    public boolean setMineType(Player player, String type) { return plugin.getMineManager().setMineType(player, type); }
     public boolean upgradeMine(Player player) { return plugin.getMineManager().upgradeMine(player); }
     public boolean setMineOpen(Player player, boolean isOpen) { Mine mine = getMine(player); if (mine == null) return false; mine.setOpen(isOpen); return true; }
     public boolean setMineTax(Player player, int tax) { return plugin.getMineManager().setMineTax(player, tax); }
@@ -199,7 +198,6 @@ public class PrivateMinesAPI {
     public void openStatsGUI(Player player) { fr.ju.privateMines.guis.MineStatsGUI.openGUI(player); }
     public void openVisitorsGUI(Player player, int page) { fr.ju.privateMines.guis.MineVisitorsGUI.openGUI(player, page); }
     public void openSettingsGUI(Player player) { fr.ju.privateMines.guis.MineSettingsGUI.openGUI(player); }
-    public void openTypeGUI(Player player, boolean isChangingType) { fr.ju.privateMines.guis.MineTypeGUI.openGUI(player, isChangingType); }
     public void openExpandGUI(Player player) { fr.ju.privateMines.guis.MineExpandGUI.openGUI(player); }
     public void openCompositionGUI(Player player) { fr.ju.privateMines.guis.MineCompositionGUI.openGUI(player); }
 
@@ -209,8 +207,11 @@ public class PrivateMinesAPI {
     public void updateMineProtection(Mine mine) { plugin.getMineManager().getMineProtectionManager().updateMineProtection(mine); }
 
     // Types et tiers
-    public Map<String, Map<Material, Double>> getMineTypes() { return plugin.getMineManager().getMineTypes(); }
-    public void reloadMineTypes() { plugin.getMineManager().loadMineTypes(); }
+    /**
+     * Récupère la liste complète des paliers (tiers) de mines disponibles
+     * @return Une map associant les numéros de palier avec leurs configurations de blocs
+     */
+    public Map<Integer, Map<Material, Double>> getMineTiers() { return plugin.getMineManager().getMineTiers(); }
     public void reloadMineTiers() { plugin.getMineManager().loadMineTiers(); }
 
     // Sauvegarde/chargement
@@ -219,4 +220,33 @@ public class PrivateMinesAPI {
     public void loadMineData() { plugin.getMineManager().loadMineData(); }
     public void saveAllMineData() { plugin.getMineManager().saveAllMineData(); }
     public void reloadPlugin() { plugin.reloadPlugin(); }
+
+    /**
+     * Définit le palier (tier) de la mine d'un joueur et applique le reset.
+     * @param player Le joueur cible
+     * @param tier Le nouveau palier
+     * @return true si la modification a réussi
+     */
+    public boolean setMineTier(Player player, int tier) {
+        Mine mine = getMine(player);
+        if (mine == null) return false;
+        mine.setTier(tier);
+        saveMine(mine);
+        resetMine(player);
+        return true;
+    }
+    /**
+     * Définit le palier (tier) de la mine d'un joueur (par UUID) et applique le reset.
+     * @param uuid L'UUID du joueur
+     * @param tier Le nouveau palier
+     * @return true si la modification a réussi
+     */
+    public boolean setMineTier(UUID uuid, int tier) {
+        Mine mine = getMine(uuid);
+        if (mine == null) return false;
+        mine.setTier(tier);
+        saveMine(mine);
+        resetMine(uuid);
+        return true;
+    }
 } 

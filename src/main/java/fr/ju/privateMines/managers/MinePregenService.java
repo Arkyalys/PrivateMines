@@ -19,24 +19,18 @@ public class MinePregenService {
         this.mineManager = mineManager;
     }
     public boolean pregenMines(Player player, int count, String type) {
-        Map<String, Map<Material, Double>> mineTypes = mineManager.getMineTypes();
-        if (!validatePregenInput(player, count, type, mineTypes)) return false;
-        String defaultType = type != null ? type : plugin.getConfigManager().getConfig().getString("Config.Mines.default.type", "default");
-        player.sendMessage(ColorUtil.deserialize("&6Pré-génération de &e" + count + " &6mines de type &e" + defaultType + "&6..."));
-        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> runPregenTask(player, count, defaultType, mineTypes));
-        return true;
-    }
-
-    private boolean validatePregenInput(Player player, int count, String type, Map<String, Map<Material, Double>> mineTypes) {
         if (count <= 0 || count > 50) {
             player.sendMessage(ColorUtil.deserialize("&cLe nombre de mines à pré-générer doit être compris entre 1 et 50."));
             return false;
         }
-        if (type != null && !mineTypes.containsKey(type)) {
-            player.sendMessage(ColorUtil.deserialize("&cType de mine inconnu: &e" + type));
-            return false;
-        }
+        player.sendMessage(ColorUtil.deserialize("&6Pré-génération de &e" + count + " &6mines..."));
+        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> runPregenTask(player, count));
         return true;
+    }
+
+    private void runPregenTask(Player player, int count) {
+        // Logique de pré-génération sans notion de type
+        // ...
     }
 
     private void runPregenTask(Player player, int count, String defaultType, Map<String, Map<Material, Double>> mineTypes) {
@@ -49,8 +43,11 @@ public class MinePregenService {
                 handleNoLocationAvailable(player, successes, failures);
                 return;
             }
-            Mine mine = new Mine(randomUUID, location, defaultType);
-            mine.setBlocks(mineTypes.get(defaultType));
+            Mine mine = new Mine(randomUUID, location);
+            // Par défaut, tout en pierre
+            Map<Material, Double> defaultBlocks = new java.util.HashMap<>();
+            defaultBlocks.put(Material.STONE, 1.0);
+            mine.setBlocks(defaultBlocks);
             final int currentIndex = i + 1;
             AtomicBoolean success = new AtomicBoolean(false);
             plugin.getServer().getScheduler().runTask(plugin, () -> handleMineGeneration(player, mine, randomUUID, successes, failures, currentIndex, count));

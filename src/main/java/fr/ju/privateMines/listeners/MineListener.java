@@ -57,7 +57,7 @@ public class MineListener implements Listener {
         if (mineEnMemoire) {
             Mine mine = plugin.getMineManager().getMine(player).orElse(null);
             if (mine == null) return true;
-            plugin.getLogger().info("Détails de la mine: Type=" + mine.getType() + ", Taille=" + mine.getSize() + ", Tier=" + mine.getTier());
+            plugin.getLogger().info("Détails de la mine: Taille=" + mine.getSize() + ", Tier=" + mine.getTier());
             plugin.getLogger().info("Position: " + mine.getLocation().getWorld().getName() + " [" + mine.getLocation().getX() + "," + mine.getLocation().getY() + "," + mine.getLocation().getZ() + "]");
             return true;
         }
@@ -133,9 +133,7 @@ public class MineListener implements Listener {
         double z = mineSection.getDouble("z");
         plugin.getLogger().info("[DEBUG] Position: " + x + "," + y + "," + z);
         Location location = new Location(world, x, y, z);
-        String type = mineSection.getString("type", "default");
-        plugin.getLogger().info("[DEBUG] Type de mine: " + type);
-        Mine mineLoaded = new Mine(playerUUID, location, type);
+        Mine mineLoaded = new Mine(playerUUID, location);
         plugin.getLogger().info("Objet Mine créé avec succès");
         mineLoaded.setSize(mineSection.getInt("size", 1));
         mineLoaded.setTax(mineSection.getInt("tax", 0));
@@ -199,8 +197,6 @@ public class MineListener implements Listener {
             boolean pregenEnabled = configManager.getConfig().getBoolean("Config.Pregen-Mine-Assignment.enabled", true);
             boolean preferExisting = configManager.getConfig().getBoolean("Config.Pregen-Mine-Assignment.prefer-existing-mines", true);
             plugin.getLogger().info("Attribution auto mines pré-générées: activée=" + pregenEnabled + ", préférer existantes=" + preferExisting);
-            String defaultType = configManager.getConfig().getString("Config.Default-Mine-Type", "default");
-            plugin.getLogger().info("Type de mine par défaut: " + defaultType);
             if (pregenEnabled && preferExisting) {
                 Mine availableMine = mineManager.findAvailablePregenMine();
                 plugin.getLogger().info("Mine pré-générée disponible? " + (availableMine != null));
@@ -218,7 +214,7 @@ public class MineListener implements Listener {
                 }
             }
             plugin.getLogger().info("Création d'une nouvelle mine pour " + player.getName());
-            mineManager.createMine(player, defaultType);
+            mineManager.createMine(player);
         }
     }
 } 

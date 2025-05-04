@@ -1,0 +1,605 @@
+# Configuration des paliers des mines pour un serveur Prison 1.21.4
+# 100 tiers esthétiques et satisfaisants avec progression visuelle
+
+tiers:
+  # --- TIERS DE DÉPART (1-10) ---
+  1:
+    blocks:
+      ANDESITE: 0.45
+      GRANITE: 0.25
+      DIORITE: 0.20
+      COAL_ORE: 0.10
+  2:
+    blocks:
+      CALCITE: 0.40
+      TUFF: 0.30
+      COPPER_ORE: 0.20
+      IRON_ORE: 0.10
+  3:
+    blocks:
+      DRIPSTONE_BLOCK: 0.35
+      TUFF: 0.25
+      COPPER_ORE: 0.25
+      IRON_ORE: 0.15
+  4:
+    blocks:
+      DEEPSLATE: 0.30
+      CALCITE: 0.25
+      IRON_ORE: 0.25
+      GOLD_ORE: 0.20
+  5:
+    blocks:
+      DEEPSLATE: 0.25
+      DEEPSLATE_IRON_ORE: 0.25
+      DEEPSLATE_GOLD_ORE: 0.25
+      DEEPSLATE_COPPER_ORE: 0.25
+  6:
+    blocks:
+      SMOOTH_BASALT: 0.30
+      MOSS_BLOCK: 0.20
+      COPPER_BLOCK: 0.20
+      LAPIS_ORE: 0.30
+  7:
+    blocks:
+      DEEPSLATE: 0.20
+      DEEPSLATE_COAL_ORE: 0.15
+      DEEPSLATE_IRON_ORE: 0.25
+      DEEPSLATE_LAPIS_ORE: 0.40
+  8:
+    blocks:
+      PRISMARINE: 0.30
+      DRIPSTONE_BLOCK: 0.25
+      GOLD_ORE: 0.25
+      DIAMOND_ORE: 0.20
+  9:
+    blocks:
+      DEEPSLATE: 0.20
+      DEEPSLATE_GOLD_ORE: 0.30
+      DEEPSLATE_REDSTONE_ORE: 0.30
+      DEEPSLATE_DIAMOND_ORE: 0.20
+  10:
+    blocks:
+      DEEPSLATE: 0.20
+      AMETHYST_BLOCK: 0.20
+      DEEPSLATE_DIAMOND_ORE: 0.30
+      DEEPSLATE_EMERALD_ORE: 0.30
+
+  # --- TIERS INTERMÉDIAIRES (11-20) ---
+  11:
+    blocks:
+      PRISMARINE: 0.30
+      DARK_PRISMARINE: 0.25
+      SEA_LANTERN: 0.25
+      DIAMOND_ORE: 0.20
+  12:
+    blocks:
+      DEEPSLATE: 0.15
+      DEEPSLATE_DIAMOND_ORE: 0.35
+      EMERALD_ORE: 0.25
+      AMETHYST_BLOCK: 0.25
+  13:
+    blocks:
+      COPPER_BLOCK: 0.30
+      EXPOSED_COPPER: 0.25
+      WEATHERED_COPPER: 0.25
+      OXIDIZED_COPPER: 0.20
+  14:
+    blocks:
+      DRIPSTONE_BLOCK: 0.20
+      POINTED_DRIPSTONE: 0.20
+      AMETHYST_BLOCK: 0.30
+      BUDDING_AMETHYST: 0.30
+  15:
+    blocks:
+      DEEPSLATE: 0.10
+      DEEPSLATE_DIAMOND_ORE: 0.30
+      DEEPSLATE_EMERALD_ORE: 0.30
+      LAPIS_BLOCK: 0.30
+  16:
+    blocks:
+      QUARTZ_BLOCK: 0.30
+      QUARTZ_BRICKS: 0.25
+      SMOOTH_QUARTZ: 0.25
+      GOLD_BLOCK: 0.20
+  17:
+    blocks:
+      AMETHYST_BLOCK: 0.35
+      BUDDING_AMETHYST: 0.20
+      DEEPSLATE_DIAMOND_ORE: 0.25
+      DIAMOND_BLOCK: 0.20
+  18:
+    blocks:
+      GOLD_BLOCK: 0.25
+      COPPER_BLOCK: 0.25
+      EMERALD_ORE: 0.30
+      IRON_BLOCK: 0.20
+  19:
+    blocks:
+      CRYING_OBSIDIAN: 0.20
+      OBSIDIAN: 0.20
+      DIAMOND_BLOCK: 0.30
+      EMERALD_BLOCK: 0.30
+  20:
+    blocks:
+      EMERALD_BLOCK: 0.30
+      DIAMOND_BLOCK: 0.30
+      GOLD_BLOCK: 0.20
+      LAPIS_BLOCK: 0.20
+
+  # --- TIERS NETHER (21-40) ---
+  21:
+    blocks:
+      NETHERRACK: 0.15
+      CRIMSON_NYLIUM: 0.30
+      WARPED_NYLIUM: 0.30
+      NETHER_GOLD_ORE: 0.25
+  22:
+    blocks:
+      CRIMSON_STEM: 0.20
+      WARPED_STEM: 0.20
+      NETHER_WART_BLOCK: 0.30
+      WARPED_WART_BLOCK: 0.30
+  23:
+    blocks:
+      BASALT: 0.30
+      BLACKSTONE: 0.30
+      NETHER_GOLD_ORE: 0.20
+      GLOWSTONE: 0.20
+  24:
+    blocks:
+      BLACKSTONE: 0.20
+      GILDED_BLACKSTONE: 0.30
+      NETHER_QUARTZ_ORE: 0.25
+      GLOWSTONE: 0.25
+  25:
+    blocks:
+      POLISHED_BLACKSTONE: 0.30
+      POLISHED_BLACKSTONE_BRICKS: 0.20
+      GILDED_BLACKSTONE: 0.30
+      NETHER_QUARTZ_ORE: 0.20
+  26:
+    blocks:
+      NETHER_BRICKS: 0.25
+      RED_NETHER_BRICKS: 0.25
+      NETHER_QUARTZ_ORE: 0.25
+      GLOWSTONE: 0.25
+  27:
+    blocks:
+      WARPED_WART_BLOCK: 0.25
+      CRIMSON_NYLIUM: 0.25
+      QUARTZ_BLOCK: 0.25
+      CHISELED_QUARTZ_BLOCK: 0.25
+  28:
+    blocks:
+      QUARTZ_BLOCK: 0.30
+      QUARTZ_BRICKS: 0.30
+      SMOOTH_QUARTZ: 0.20
+      CHISELED_QUARTZ_BLOCK: 0.20
+  29:
+    blocks:
+      BLACKSTONE: 0.20
+      GILDED_BLACKSTONE: 0.30
+      ANCIENT_DEBRIS: 0.20
+      SHROOMLIGHT: 0.30
+  30:
+    blocks:
+      NETHERITE_BLOCK: 0.20
+      ANCIENT_DEBRIS: 0.30
+      GILDED_BLACKSTONE: 0.25
+      QUARTZ_BLOCK: 0.25
+  31:
+    blocks:
+      MAGMA_BLOCK: 0.20
+      GLOWSTONE: 0.20
+      ANCIENT_DEBRIS: 0.30
+      GILDED_BLACKSTONE: 0.30
+  32:
+    blocks:
+      BLACKSTONE: 0.20
+      CRYING_OBSIDIAN: 0.20
+      ANCIENT_DEBRIS: 0.30
+      NETHERITE_BLOCK: 0.30
+  33:
+    blocks:
+      RED_NETHER_BRICKS: 0.20
+      SHROOMLIGHT: 0.20
+      ANCIENT_DEBRIS: 0.35
+      NETHERITE_BLOCK: 0.25
+  34:
+    blocks:
+      CHISELED_NETHER_BRICKS: 0.20
+      CRACKED_NETHER_BRICKS: 0.20
+      GILDED_BLACKSTONE: 0.30
+      ANCIENT_DEBRIS: 0.30
+  35:
+    blocks:
+      GOLD_BLOCK: 0.20
+      GILDED_BLACKSTONE: 0.25
+      ANCIENT_DEBRIS: 0.30
+      NETHERITE_BLOCK: 0.25
+  36:
+    blocks:
+      POLISHED_BLACKSTONE_BRICKS: 0.15
+      CHISELED_POLISHED_BLACKSTONE: 0.15
+      ANCIENT_DEBRIS: 0.35
+      NETHERITE_BLOCK: 0.35
+  37:
+    blocks:
+      MAGMA_BLOCK: 0.15
+      SHROOMLIGHT: 0.15
+      ANCIENT_DEBRIS: 0.35
+      NETHERITE_BLOCK: 0.35
+  38:
+    blocks:
+      QUARTZ_BLOCK: 0.15
+      CHISELED_QUARTZ_BLOCK: 0.15
+      ANCIENT_DEBRIS: 0.35
+      NETHERITE_BLOCK: 0.35
+  39:
+    blocks:
+      GLOWSTONE: 0.15
+      CRYING_OBSIDIAN: 0.15
+      ANCIENT_DEBRIS: 0.35
+      NETHERITE_BLOCK: 0.35
+  40:
+    blocks:
+      GILDED_BLACKSTONE: 0.15
+      QUARTZ_BRICKS: 0.15
+      ANCIENT_DEBRIS: 0.35
+      NETHERITE_BLOCK: 0.35
+
+  # --- TIERS END (41-60) ---
+  41:
+    blocks:
+      END_STONE: 0.30
+      END_STONE_BRICKS: 0.30
+      PURPUR_BLOCK: 0.20
+      PURPUR_PILLAR: 0.20
+  42:
+    blocks:
+      END_STONE: 0.25
+      END_STONE_BRICKS: 0.25
+      PURPUR_BLOCK: 0.25
+      PURPUR_PILLAR: 0.25
+  43:
+    blocks:
+      PURPUR_BLOCK: 0.30
+      PURPUR_PILLAR: 0.30
+      AMETHYST_BLOCK: 0.20
+      BUDDING_AMETHYST: 0.20
+  44:
+    blocks:
+      END_STONE_BRICKS: 0.25
+      PURPUR_BLOCK: 0.25
+      OBSIDIAN: 0.25
+      CRYING_OBSIDIAN: 0.25
+  45:
+    blocks:
+      PURPUR_BLOCK: 0.25
+      PURPUR_PILLAR: 0.25
+      DIAMOND_BLOCK: 0.25
+      EMERALD_BLOCK: 0.25
+  46:
+    blocks:
+      END_STONE_BRICKS: 0.20
+      PURPUR_BLOCK: 0.20
+      AMETHYST_BLOCK: 0.30
+      BUDDING_AMETHYST: 0.30
+  47:
+    blocks:
+      PURPUR_BLOCK: 0.20
+      PURPUR_PILLAR: 0.20
+      DIAMOND_BLOCK: 0.30
+      EMERALD_BLOCK: 0.30
+  48:
+    blocks:
+      END_STONE_BRICKS: 0.15
+      PURPUR_BLOCK: 0.15
+      DIAMOND_BLOCK: 0.35
+      EMERALD_BLOCK: 0.35
+  49:
+    blocks:
+      PURPUR_BLOCK: 0.15
+      AMETHYST_BLOCK: 0.15
+      DIAMOND_BLOCK: 0.35
+      EMERALD_BLOCK: 0.35
+  50:
+    blocks:
+      PURPUR_PILLAR: 0.15
+      CRYING_OBSIDIAN: 0.15
+      DIAMOND_BLOCK: 0.35
+      NETHERITE_BLOCK: 0.35
+  51:
+    blocks:
+      END_STONE_BRICKS: 0.15
+      PURPUR_BLOCK: 0.15
+      EMERALD_BLOCK: 0.35
+      NETHERITE_BLOCK: 0.35
+  52:
+    blocks:
+      PURPUR_BLOCK: 0.15
+      PURPUR_PILLAR: 0.15
+      DIAMOND_BLOCK: 0.35
+      NETHERITE_BLOCK: 0.35
+  53:
+    blocks:
+      OBSIDIAN: 0.15
+      CRYING_OBSIDIAN: 0.15
+      EMERALD_BLOCK: 0.35
+      NETHERITE_BLOCK: 0.35
+  54:
+    blocks:
+      AMETHYST_BLOCK: 0.15
+      BUDDING_AMETHYST: 0.15
+      DIAMOND_BLOCK: 0.35
+      NETHERITE_BLOCK: 0.35
+  55:
+    blocks:
+      PURPUR_BLOCK: 0.10
+      PURPUR_PILLAR: 0.10
+      EMERALD_BLOCK: 0.40
+      NETHERITE_BLOCK: 0.40
+  56:
+    blocks:
+      END_STONE_BRICKS: 0.10
+      CRYING_OBSIDIAN: 0.10
+      DIAMOND_BLOCK: 0.40
+      NETHERITE_BLOCK: 0.40
+  57:
+    blocks:
+      BUDDING_AMETHYST: 0.10
+      AMETHYST_BLOCK: 0.10
+      EMERALD_BLOCK: 0.40
+      NETHERITE_BLOCK: 0.40
+  58:
+    blocks:
+      PURPUR_BLOCK: 0.10
+      END_STONE_BRICKS: 0.10
+      DIAMOND_BLOCK: 0.40
+      NETHERITE_BLOCK: 0.40
+  59:
+    blocks:
+      CRYING_OBSIDIAN: 0.10
+      OBSIDIAN: 0.10
+      EMERALD_BLOCK: 0.40
+      NETHERITE_BLOCK: 0.40
+  60:
+    blocks:
+      AMETHYST_BLOCK: 0.10
+      BUDDING_AMETHYST: 0.10
+      DIAMOND_BLOCK: 0.40
+      NETHERITE_BLOCK: 0.40
+
+  # --- TIERS CRYSTALS, OCEAN ET SPÉCIAUX (61-80) ---
+  61:
+    blocks:
+      PRISMARINE: 0.20
+      PRISMARINE_BRICKS: 0.20
+      DARK_PRISMARINE: 0.30
+      SEA_LANTERN: 0.30
+  62:
+    blocks:
+      PRISMARINE_BRICKS: 0.20
+      DARK_PRISMARINE: 0.20
+      SEA_LANTERN: 0.30
+      DIAMOND_BLOCK: 0.30
+  63:
+    blocks:
+      DARK_PRISMARINE: 0.20
+      SEA_LANTERN: 0.20
+      EMERALD_BLOCK: 0.30
+      NETHERITE_BLOCK: 0.30
+  64:
+    blocks:
+      AMETHYST_BLOCK: 0.20
+      BUDDING_AMETHYST: 0.20
+      DIAMOND_BLOCK: 0.30
+      EMERALD_BLOCK: 0.30
+  65:
+    blocks:
+      BUDDING_AMETHYST: 0.20
+      AMETHYST_BLOCK: 0.20
+      EMERALD_BLOCK: 0.30
+      NETHERITE_BLOCK: 0.30
+  66:
+    blocks:
+      COPPER_BLOCK: 0.20
+      GOLD_BLOCK: 0.20
+      DIAMOND_BLOCK: 0.30
+      NETHERITE_BLOCK: 0.30
+  67:
+    blocks:
+      GOLD_BLOCK: 0.20
+      IRON_BLOCK: 0.20
+      EMERALD_BLOCK: 0.30
+      NETHERITE_BLOCK: 0.30
+  68:
+    blocks:
+      IRON_BLOCK: 0.15
+      GOLD_BLOCK: 0.15
+      DIAMOND_BLOCK: 0.35
+      NETHERITE_BLOCK: 0.35
+  69:
+    blocks:
+      GOLD_BLOCK: 0.15
+      EMERALD_BLOCK: 0.15
+      DIAMOND_BLOCK: 0.35
+      NETHERITE_BLOCK: 0.35
+  70:
+    blocks:
+      EMERALD_BLOCK: 0.15
+      DIAMOND_BLOCK: 0.15
+      NETHERITE_BLOCK: 0.35
+      AMETHYST_BLOCK: 0.35
+  71:
+    blocks:
+      COPPER_BLOCK: 0.15
+      IRON_BLOCK: 0.15
+      DIAMOND_BLOCK: 0.35
+      NETHERITE_BLOCK: 0.35
+  72:
+    blocks:
+      IRON_BLOCK: 0.15
+      GOLD_BLOCK: 0.15
+      EMERALD_BLOCK: 0.35
+      NETHERITE_BLOCK: 0.35
+  73:
+    blocks:
+      GOLD_BLOCK: 0.15
+      DIAMOND_BLOCK: 0.15
+      EMERALD_BLOCK: 0.35
+      NETHERITE_BLOCK: 0.35
+  74:
+    blocks:
+      DIAMOND_BLOCK: 0.15
+      EMERALD_BLOCK: 0.15
+      GOLD_BLOCK: 0.30
+      NETHERITE_BLOCK: 0.40
+  75:
+    blocks:
+      EMERALD_BLOCK: 0.10
+      DIAMOND_BLOCK: 0.10
+      GOLD_BLOCK: 0.30
+      NETHERITE_BLOCK: 0.50
+  76:
+    blocks:
+      GOLD_BLOCK: 0.10
+      DIAMOND_BLOCK: 0.10
+      EMERALD_BLOCK: 0.30
+      NETHERITE_BLOCK: 0.50
+  77:
+    blocks:
+      DIAMOND_BLOCK: 0.10
+      EMERALD_BLOCK: 0.10
+      IRON_BLOCK: 0.30
+      NETHERITE_BLOCK: 0.50
+  78:
+    blocks:
+      EMERALD_BLOCK: 0.10
+      NETHERITE_BLOCK: 0.50
+      AMETHYST_BLOCK: 0.10
+      SEA_LANTERN: 0.30
+  79:
+    blocks:
+      DIAMOND_BLOCK: 0.10
+      NETHERITE_BLOCK: 0.50
+      BUDDING_AMETHYST: 0.10
+      GLOWSTONE: 0.30
+  80:
+    blocks:
+      DIAMOND_BLOCK: 0.20
+      EMERALD_BLOCK: 0.20
+      NETHERITE_BLOCK: 0.50
+      CRYING_OBSIDIAN: 0.10
+
+  # --- TIERS ULTIMES (81-100) ---
+  81:
+    blocks:
+      DIAMOND_BLOCK: 0.15
+      EMERALD_BLOCK: 0.15
+      NETHERITE_BLOCK: 0.60
+      OBSIDIAN: 0.10
+  82:
+    blocks:
+      EMERALD_BLOCK: 0.15
+      DIAMOND_BLOCK: 0.15
+      NETHERITE_BLOCK: 0.60
+      CRYING_OBSIDIAN: 0.10
+  83:
+    blocks:
+      DIAMOND_BLOCK: 0.10
+      EMERALD_BLOCK: 0.10
+      NETHERITE_BLOCK: 0.70
+      AMETHYST_BLOCK: 0.10
+  84:
+    blocks:
+      EMERALD_BLOCK: 0.10
+      DIAMOND_BLOCK: 0.10
+      NETHERITE_BLOCK: 0.70
+      BUDDING_AMETHYST: 0.10
+  85:
+    blocks:
+      DIAMOND_BLOCK: 0.05
+      EMERALD_BLOCK: 0.05
+      NETHERITE_BLOCK: 0.80
+      GOLD_BLOCK: 0.10
+  86:
+    blocks:
+      EMERALD_BLOCK: 0.05
+      DIAMOND_BLOCK: 0.05
+      NETHERITE_BLOCK: 0.80
+      AMETHYST_BLOCK: 0.10
+  87:
+    blocks:
+      DIAMOND_BLOCK: 0.05
+      EMERALD_BLOCK: 0.05
+      NETHERITE_BLOCK: 0.85
+      IRON_BLOCK: 0.05
+  88:
+    blocks:
+      EMERALD_BLOCK: 0.05
+      DIAMOND_BLOCK: 0.05
+      NETHERITE_BLOCK: 0.85
+      GOLD_BLOCK: 0.05
+  89:
+    blocks:
+      DIAMOND_BLOCK: 0.05
+      EMERALD_BLOCK: 0.05
+      NETHERITE_BLOCK: 0.85
+      AMETHYST_BLOCK: 0.05
+  90:
+    blocks:
+      EMERALD_BLOCK: 0.05
+      DIAMOND_BLOCK: 0.05
+      NETHERITE_BLOCK: 0.85
+      BUDDING_AMETHYST: 0.05
+  91:
+    blocks:
+      NETHERITE_BLOCK: 0.90
+      DIAMOND_BLOCK: 0.05
+      EMERALD_BLOCK: 0.05
+  92:
+    blocks:
+      NETHERITE_BLOCK: 0.90
+      EMERALD_BLOCK: 0.05
+      DIAMOND_BLOCK: 0.05
+  93:
+    blocks:
+      NETHERITE_BLOCK: 0.90
+      DIAMOND_BLOCK: 0.05
+      AMETHYST_BLOCK: 0.05
+  94:
+    blocks:
+      NETHERITE_BLOCK: 0.90
+      EMERALD_BLOCK: 0.05
+      BUDDING_AMETHYST: 0.05
+  95:
+    blocks:
+      NETHERITE_BLOCK: 0.95
+      DIAMOND_BLOCK: 0.025
+      EMERALD_BLOCK: 0.025
+  96:
+    blocks:
+      NETHERITE_BLOCK: 0.95
+      EMERALD_BLOCK: 0.025
+      DIAMOND_BLOCK: 0.025
+  97:
+    blocks:
+      NETHERITE_BLOCK: 0.95
+      DIAMOND_BLOCK: 0.025
+      AMETHYST_BLOCK: 0.025
+  98:
+    blocks:
+      NETHERITE_BLOCK: 0.95
+      EMERALD_BLOCK: 0.025
+      BUDDING_AMETHYST: 0.025
+  99:
+    blocks:
+      NETHERITE_BLOCK: 0.97
+      DIAMOND_BLOCK: 0.015
+      EMERALD_BLOCK: 0.015
+  100:
+    blocks:
+      NETHERITE_BLOCK: 0.97
+      EMERALD_BLOCK: 0.015
+      DIAMOND_BLOCK: 0.015 

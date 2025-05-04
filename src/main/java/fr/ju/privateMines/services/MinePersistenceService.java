@@ -84,7 +84,6 @@ public class MinePersistenceService {
         mineSection.set("world", null);
     }
     private void saveMineProperties(Mine mine, ConfigurationSection mineSection) {
-        mineSection.set("type", mine.getType());
         mineSection.set("size", mine.getSize());
         mineSection.set("tax", mine.getTax());
         mineSection.set("isOpen", mine.isOpen());
@@ -137,7 +136,7 @@ public class MinePersistenceService {
     public void loadAccessData(Mine mine, ConfigurationSection mineSection) {
         // Supprimer toute la logique liée à la persistance des bans/denys dans les mines
     }
-    public void loadMineData(MineManager mineManager, ConfigManager configManager, PrivateMines plugin, MineProtectionManager protectionManager, Map<String, Map<Material, Double>> mineTypes) {
+    public void loadMineData(MineManager mineManager, ConfigManager configManager, PrivateMines plugin, MineProtectionManager protectionManager, Map<Integer, Map<Material, Double>> mineTiers) {
         PrivateMines.debugLog("Chargement des données des mines...");
         configManager.reloadData();
         mineManager.mineMemoryService.clearPlayerMines();
@@ -192,8 +191,7 @@ public class MinePersistenceService {
                 double z = mineSection.getDouble("location.z");
                 Location location = new Location(world, x, y, z);
                 PrivateMines.debugLog("Position de la mine pour UUID " + key + ": " + world.getName() + ", " + x + ", " + y + ", " + z);
-                String type = mineSection.getString("type", "default");
-                Mine mine = new Mine(ownerUUID, location, type);
+                Mine mine = new Mine(ownerUUID, location);
                 mine.setSize(mineSection.getInt("size", 1));
                 mine.setTax(mineSection.getInt("tax", 0));
                 mine.setOpen(mineSection.getBoolean("isOpen", true));
@@ -244,8 +242,8 @@ public class MinePersistenceService {
                     }
                     mine.setBlocks(blocks);
                 } else {
-                    if (mineTypes.containsKey(type)) {
-                        mine.setBlocks(mineTypes.get(type));
+                    if (mineTiers.containsKey(mine.getTier())) {
+                        mine.setBlocks(mineTiers.get(mine.getTier()));
                     }
                 }
                 loadAccessData(mine, mineSection);
@@ -313,11 +311,10 @@ public class MinePersistenceService {
         plugin.getConfigManager().getData().set(path + ".location.z", mine.getLocation().getZ());
     }
     private void saveMineProperties(Mine mine, String path, PrivateMines plugin) {
-        plugin.getConfigManager().getData().set(path + ".type", mine.getType());
-        plugin.getConfigManager().getData().set(path + ".tier", mine.getTier());
         plugin.getConfigManager().getData().set(path + ".size", mine.getSize());
-        plugin.getConfigManager().getData().set(path + ".isOpen", mine.isOpen());
         plugin.getConfigManager().getData().set(path + ".tax", mine.getTax());
+        plugin.getConfigManager().getData().set(path + ".isOpen", mine.isOpen());
+        plugin.getConfigManager().getData().set(path + ".tier", mine.getTier());
     }
     private void saveMineAreaIfPresent(Mine mine, String path, PrivateMines plugin) {
         if (mine.hasMineArea()) {

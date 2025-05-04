@@ -53,7 +53,6 @@ public class PrivateMinesPlaceholders extends PlaceholderExpansion {
     }
     private String handleNullMine(String identifier) {
         switch (identifier) {
-            case "type":
             case "tier":
             case "size":
             case "tax":
@@ -85,7 +84,6 @@ public class PrivateMinesPlaceholders extends PlaceholderExpansion {
     }
     private String handleMinePlaceholders(Mine mine, String identifier) {
         switch (identifier) {
-            case "type": return mine.getType();
             case "tier": return String.valueOf(mine.getTier());
             case "size": return String.valueOf(mine.getSize());
             case "tax": return String.valueOf(mine.getTax());

@@ -36,7 +36,6 @@ public class MineStatsGUI {
         MineStats stats = mine.getStats();
         Inventory inventory = Bukkit.createInventory(null, 36, Component.text(ColorUtil.translateColors(GUI_TITLE))); 
         List<String> generalLore = new ArrayList<>();
-        generalLore.add("&7Type: &b" + mine.getType());
         generalLore.add("&7Palier: &b" + mine.getTier());
         generalLore.add("&7Taille: &b" + mine.getSize());
         generalLore.add("&7Taxe: &b" + mine.getTax() + "%");

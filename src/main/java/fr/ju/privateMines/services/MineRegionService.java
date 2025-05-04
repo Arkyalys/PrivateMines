@@ -62,13 +62,17 @@ public class MineRegionService {
         region.setFlag(Flags.PVP, StateFlag.State.DENY);
         region.setFlag(Flags.MOB_SPAWNING, StateFlag.State.DENY);
         region.setFlag(Flags.CHEST_ACCESS, StateFlag.State.ALLOW);
-        StateFlag invincibleFlag = (StateFlag) WorldGuard.getInstance().getFlagRegistry().get("invincible");
-        if (invincibleFlag != null) {
+        com.sk89q.worldguard.protection.flags.Flag<?> invincibleFlagRaw = WorldGuard.getInstance().getFlagRegistry().get("invincible");
+        if (invincibleFlagRaw instanceof StateFlag invincibleFlag) {
             region.setFlag(invincibleFlag, StateFlag.State.ALLOW);
+        } else if (invincibleFlagRaw != null) {
+            plugin.getLogger().warning("Le flag 'invincible' existe mais n'est pas un StateFlag !");
         }
-        StateFlag upcEnchantsFlag = (StateFlag) WorldGuard.getInstance().getFlagRegistry().get("upc-enchants");
-        if (upcEnchantsFlag != null) {
+        com.sk89q.worldguard.protection.flags.Flag<?> upcEnchantsFlagRaw = WorldGuard.getInstance().getFlagRegistry().get("upc-enchants");
+        if (upcEnchantsFlagRaw instanceof StateFlag upcEnchantsFlag) {
             region.setFlag(upcEnchantsFlag, StateFlag.State.ALLOW);
+        } else if (upcEnchantsFlagRaw != null) {
+            plugin.getLogger().warning("Le flag 'upc-enchants' existe mais n'est pas un StateFlag !");
         }
         region.getOwners().addPlayer(mine.getOwner());
         return region;

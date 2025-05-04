@@ -3,11 +3,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
+
 import fr.ju.privateMines.PrivateMines;
 import fr.ju.privateMines.utils.Permissions;
 public class MineTabCompleter implements TabCompleter {
@@ -55,19 +57,6 @@ public class MineTabCompleter implements TabCompleter {
                         return getOnlinePlayerNames(args[1]);
                     }
                     break;
-                case "settype":
-                    if (args.length == 2) {
-                        return getMineTypes(args[1]);
-                    }
-                    break;
-                case "pregen":
-                    if (!player.hasPermission(Permissions.ADMIN_PREGEN)) {
-                        return EMPTY_LIST;
-                    }
-                    if (args.length == 3) {
-                        return getMineTypes(args[2]);
-                    }
-                    break;
             }
         }
         if (player.hasPermission("privateMines.admin")) {
@@ -96,21 +85,5 @@ public class MineTabCompleter implements TabCompleter {
             .map(Player::getName)
             .filter(name -> name.toLowerCase().startsWith(prefix.toLowerCase()))
             .collect(Collectors.toList());
-    }
-    private List<String> getMineTypes(String prefix) {
-        List<String> types = new ArrayList<>();
-        try {
-            if (plugin.getConfigManager().getConfig().isConfigurationSection("Config.Mines.default.types")) {
-                types.addAll(plugin.getConfigManager().getConfig()
-                    .getConfigurationSection("Config.Mines.default.types")
-                    .getKeys(false));
-            }
-        } catch (Exception e) {
-            plugin.getLogger().warning("Erreur lors de la récupération des types de mines : " + e.getMessage());
-        }
-        if (types.isEmpty()) {
-            types.addAll(Arrays.asList("default", "diamond"));
-        }
-        return filterStartingWith(types, prefix);
     }
 } 
