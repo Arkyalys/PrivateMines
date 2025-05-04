@@ -54,7 +54,7 @@ public class MineRegionService {
     }
     private ProtectedRegion createProtectedRegion(String regionId, BlockVector3 min, BlockVector3 max, Mine mine) {
         ProtectedRegion region = new ProtectedCuboidRegion(regionId, min, max);
-        region.setPriority(1);
+        region.setPriority(10);
         region.setFlag(Flags.BLOCK_BREAK, StateFlag.State.ALLOW);
         region.setFlag(Flags.BLOCK_PLACE, StateFlag.State.DENY);
         region.setFlag(Flags.USE, StateFlag.State.ALLOW);

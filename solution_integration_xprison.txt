@@ -1,0 +1,122 @@
+Bonjour,
+
+J'ai analysé votre problème d'intégration entre X-Prison et PrivateMines concernant les enchantements qui ne se déclenchent pas dans les mines personnalisées. Voici mon évaluation et mes recommandations:
+
+## Analyse du problème
+
+Le problème semble être au niveau de la communication entre les deux plugins. Bien que vous configuriez correctement le flag WorldGuard "upc-enchants" sur la région de minage, l'événement BlockBreakEvent n'est probablement pas correctement traité par X-Prison dans le contexte de PrivateMines.
+
+## Évaluation de votre solution proposée
+
+La solution que vous proposez (appeler directement le gestionnaire d'enchantements de X-Prison) est techniquement viable, mais présente quelques risques:
+
+1. **Risque de double traitement** - Si X-Prison reçoit déjà l'événement mais ne le traite pas pour une autre raison
+2. **Dépendance forte** - Vous créez une dépendance explicite avec l'API interne de X-Prison qui pourrait changer
+3. **Maintenance future** - Toute mise à jour de X-Prison pourrait nécessiter des ajustements de votre code
+
+## Solutions recommandées (par ordre de préférence)
+
+### 1. Vérifier la priorité des régions WorldGuard
+
+La première chose à vérifier est si la région "fullmine-[uuid]" (priorité -1) n'interfère pas avec la région "mine-[uuid]" (priorité 1). WorldGuard utilise la région de plus haute priorité pour déterminer les flags applicables:
+
+```java
+// Augmenter la priorité de la région de mine
+region.setPriority(10); // Une valeur plus élevée que la région englobante
+```
+
+### 2. Utiliser l'interface d'API de X-Prison si disponible
+
+Vérifiez si X-Prison propose une API officielle pour les autres plugins. C'est toujours préférable d'utiliser une API publique plutôt que d'accéder directement aux classes internes.
+
+### 3. Solution par événement personnalisé
+
+Si X-Prison n'offre pas d'API, vous pouvez améliorer votre solution en évitant les doubles traitements:
+
+```java
+@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+public void onBlockBreak(BlockBreakEvent event) {
+    // Ne traiter que les événements dans vos mines
+    if (!hasMineAt(event.getBlock().getLocation())) {
+        return;
+    }
+    
+    // Vérifier si X-Prison est présent
+    Plugin xPrisonPlugin = Bukkit.getPluginManager().getPlugin("X-Prison");
+    if (xPrisonPlugin == null || !xPrisonPlugin.isEnabled()) {
+        return;
+    }
+    
+    // Vérifier si l'événement a déjà été traité par X-Prison
+    // Cette vérification nécessite de savoir comment X-Prison marque ses événements
+    if (event.hasMetadata("xprison_processed")) {
+        return;
+    }
+    
+    try {
+        // Marquer l'événement pour éviter un traitement en boucle
+        event.setMetadata("privatemines_processed", 
+            new FixedMetadataValue(this.plugin, true));
+        
+        // Accéder au gestionnaire d'enchantements via réflexion
+        Object xPrison = xPrisonPlugin;
+        Method getEnchantsMethod = xPrison.getClass().getMethod("getEnchants");
+        Object enchants = getEnchantsMethod.invoke(xPrison);
+        
+        if (enchants != null) {
+            Method isEnabledMethod = enchants.getClass().getMethod("isEnabled");
+            boolean enabled = (boolean) isEnabledMethod.invoke(enchants);
+            
+            if (enabled) {
+                Method getManagerMethod = enchants.getClass().getMethod("getEnchantsManager");
+                Object manager = getManagerMethod.invoke(enchants);
+                
+                Method handleBlockBreakMethod = manager.getClass().getMethod(
+                    "handleBlockBreak", BlockBreakEvent.class, ItemStack.class);
+                handleBlockBreakMethod.invoke(manager, event, event.getPlayer().getItemInHand());
+            }
+        }
+    } catch (Exception e) {
+        getLogger().warning("Erreur lors de l'appel à X-Prison: " + e.getMessage());
+    }
+}
+```
+
+### 4. Outil de débogage WorldGuard
+
+Ajoutez un code de débogage pour vérifier si le flag est correctement appliqué:
+
+```java
+public void debugRegionFlags(Location location) {
+    RegionContainer container = WorldGuard.getInstance().getPlatform().getRegionContainer();
+    RegionManager regions = container.get(BukkitAdapter.adapt(location.getWorld()));
+    ApplicableRegionSet regionSet = regions.getApplicableRegions(BukkitAdapter.asBlockVector(location));
+    
+    StateFlag enchantFlag = (StateFlag) WorldGuard.getInstance().getFlagRegistry().get("upc-enchants");
+    
+    getLogger().info("Régions à " + location.toString() + ":");
+    for (ProtectedRegion region : regionSet) {
+        getLogger().info("- " + region.getId() + " (priorité: " + region.getPriority() + ")");
+        getLogger().info("  Flag upc-enchants: " + region.getFlag(enchantFlag));
+    }
+    
+    // Vérifier la valeur effective du flag
+    boolean flagAllowed = regionSet.testState(null, enchantFlag);
+    getLogger().info("Valeur effective du flag upc-enchants: " + flagAllowed);
+}
+```
+
+## Recommandations supplémentaires
+
+1. **Ajouter X-Prison comme soft-dependency** dans votre plugin.yml:
+   ```yaml
+   softdepend: [X-Prison, WorldGuard]
+   ```
+
+2. **Tester isolément les régions WorldGuard** pour confirmer que le flag fonctionne correctement avec X-Prison sans PrivateMines
+
+3. **Envisager une solution de contournement** si l'intégration directe s'avère problématique:
+   - Créer un plugin intermédiaire spécifiquement pour l'intégration
+   - Mettre en œuvre un système d'enchantements simplifié dans PrivateMines qui imite celui de X-Prison
+
+J'espère que ces suggestions vous aideront à résoudre votre problème d'intégration. N'hésitez pas à me contacter si vous avez d'autres questions ou si vous avez besoin d'aide supplémentaire pour implémenter l'une de ces solutions. 

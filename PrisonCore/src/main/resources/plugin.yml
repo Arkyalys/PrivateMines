@@ -1,4 +1,0 @@
-name: PrisonCore
-version: '1.0-SNAPSHOT'
-main: fr.ju.prisonCore.PrisonCore
-api-version: '1.21'

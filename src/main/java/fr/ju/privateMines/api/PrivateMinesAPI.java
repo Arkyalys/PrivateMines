@@ -1,5 +1,6 @@
 package fr.ju.privateMines.api;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -7,6 +8,7 @@ import java.util.UUID;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
 import fr.ju.privateMines.PrivateMines;
@@ -60,6 +62,120 @@ public class PrivateMinesAPI {
     public boolean isBlockFromPlayerMine(Location location, Player player) { return isBlockFromPlayerMine(location, player.getUniqueId()); }
     public boolean isLocationInMineArea(Location location, Mine mine) { if (!mine.hasMineArea() || location.getWorld() == null) return false; if (location.getWorld().equals(mine.getLocation().getWorld())) { int x = location.getBlockX(); int y = location.getBlockY(); int z = location.getBlockZ(); return x >= mine.getMinX() && x <= mine.getMaxX() && y >= mine.getMinY() && y <= mine.getMaxY() && z >= mine.getMinZ() && z <= mine.getMaxZ(); } return false; }
     public boolean canAccessMine(Player player, Mine mine) { return mine != null && mine.canPlayerAccess(player.getUniqueId()); }
+
+    // Nouvelles méthodes pour l'enchantement Nuke
+    /**
+     * Récupère tous les blocs présents dans la mine
+     * @param mine La mine pour laquelle récupérer les blocs
+     * @return Une map contenant les blocs (Material) et leur position (Location)
+     */
+    public Map<Location, Material> getMineBlocks(Mine mine) {
+        if (mine == null || !mine.hasMineArea() || mine.getLocation().getWorld() == null) {
+            return new HashMap<>();
+        }
+        
+        Map<Location, Material> blocks = new HashMap<>();
+        World world = mine.getLocation().getWorld();
+        
+        for (int x = mine.getMinX(); x <= mine.getMaxX(); x++) {
+            for (int y = mine.getMinY(); y <= mine.getMaxY(); y++) {
+                for (int z = mine.getMinZ(); z <= mine.getMaxZ(); z++) {
+                    Block block = world.getBlockAt(x, y, z);
+                    Material material = block.getType();
+                    if (!material.isAir() && !material.equals(Material.BEDROCK)) {
+                        blocks.put(block.getLocation(), material);
+                    }
+                }
+            }
+        }
+        
+        return blocks;
+    }
+    
+    /**
+     * Calcule le pourcentage de remplissage actuel de la mine
+     * @param mine La mine pour laquelle calculer le remplissage
+     * @return Le pourcentage de remplissage (0-100)
+     */
+    public float getMineFillRatio(Mine mine) {
+        if (mine == null || !mine.hasMineArea()) {
+            return 0;
+        }
+        
+        int totalBlocks = getTotalBlockCount(mine);
+        if (totalBlocks <= 0) {
+            return 0;
+        }
+        
+        int breakableBlocks = getBreakableBlockCount(mine);
+        return (float) breakableBlocks / totalBlocks * 100;
+    }
+    
+    /**
+     * Calcule le nombre total théorique de blocs que peut contenir la mine
+     * @param mine La mine pour laquelle calculer le nombre total de blocs
+     * @return Le nombre total de blocs
+     */
+    public int getTotalBlockCount(Mine mine) {
+        if (mine == null || !mine.hasMineArea()) {
+            return 0;
+        }
+        
+        return (mine.getMaxX() - mine.getMinX() + 1) * 
+               (mine.getMaxY() - mine.getMinY() + 1) * 
+               (mine.getMaxZ() - mine.getMinZ() + 1);
+    }
+    
+    /**
+     * Récupère le type principal de bloc de la mine
+     * @param mine La mine pour laquelle récupérer le type de bloc
+     * @return Le type principal de bloc de la mine
+     */
+    public Material getMineBlockType(Mine mine) {
+        if (mine == null || mine.getBlocks() == null || mine.getBlocks().isEmpty()) {
+            return Material.STONE;
+        }
+        
+        Material mainBlock = Material.STONE;
+        double maxProbability = 0;
+        
+        for (Map.Entry<Material, Double> entry : mine.getBlocks().entrySet()) {
+            if (entry.getValue() > maxProbability) {
+                maxProbability = entry.getValue();
+                mainBlock = entry.getKey();
+            }
+        }
+        
+        return mainBlock;
+    }
+    
+    /**
+     * Compte le nombre de blocs cassables actuellement dans la mine
+     * @param mine La mine pour laquelle compter les blocs cassables
+     * @return Le nombre de blocs cassables
+     */
+    public int getBreakableBlockCount(Mine mine) {
+        if (mine == null || !mine.hasMineArea() || mine.getLocation().getWorld() == null) {
+            return 0;
+        }
+        
+        int count = 0;
+        World world = mine.getLocation().getWorld();
+        
+        for (int x = mine.getMinX(); x <= mine.getMaxX(); x++) {
+            for (int y = mine.getMinY(); y <= mine.getMaxY(); y++) {
+                for (int z = mine.getMinZ(); z <= mine.getMaxZ(); z++) {
+                    Block block = world.getBlockAt(x, y, z);
+                    Material material = block.getType();
+                    if (!material.isAir() && !material.equals(Material.BEDROCK)) {
+                        count++;
+                    }
+                }
+            }
+        }
+        
+        return count;
+    }
 
     // Accès et permissions
     public MineAccess getMineAccess(Player player) { Mine mine = getMine(player); return mine != null ? mine.getMineAccess() : null; }
