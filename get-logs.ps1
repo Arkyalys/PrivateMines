@@ -1,4 +1,8 @@
 # Script pour récupérer les logs du serveur Minecraft
+# Note: Write-Host est utilisé intentionnellement ici pour afficher des messages colorés à l'utilisateur
+# dans un contexte interactif où l'affichage console est garanti
+$ErrorActionPreference = "Stop"
+
 Write-Host "Récupération des logs du serveur PrivateMines..." -ForegroundColor Green
 
 # Dossier de destination pour les logs

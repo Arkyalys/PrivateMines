@@ -44,8 +44,27 @@ public class PrivateMinesAPI {
     public Mine createMine(Player player) { plugin.getMineManager().createMine(player); return getMine(player); }
     public boolean deleteMine(Player player) { return plugin.getMineManager().deleteMine(player); }
     public boolean deleteMine(UUID uuid) { Player p = plugin.getServer().getPlayer(uuid); return p != null && plugin.getMineManager().deleteMine(p); }
-    public boolean resetMine(Player player) { plugin.getMineManager().resetMine(player); return true; }
-    public boolean resetMine(UUID uuid) { plugin.getMineManager().resetMine(uuid); return true; }
+    public boolean resetMine(Player player) { 
+        plugin.getMineManager().resetMine(player); 
+        Mine mine = getMine(player);
+        if (mine != null) {
+            Location loc = plugin.getMineManager().getBetterTeleportLocation(mine);
+            player.teleport(loc);
+        }
+        return true; 
+    }
+    public boolean resetMine(UUID uuid) { 
+        plugin.getMineManager().resetMine(uuid); 
+        Player player = plugin.getServer().getPlayer(uuid);
+        if (player != null && player.isOnline()) {
+            Mine mine = getMine(uuid);
+            if (mine != null) {
+                Location loc = plugin.getMineManager().getBetterTeleportLocation(mine);
+                player.teleport(loc);
+            }
+        }
+        return true; 
+    }
     public boolean expandMine(Player player) { return plugin.getMineManager().expandMine(player); }
     public boolean expandMine(Player player, int expandSize) { return plugin.getMineManager().expandMine(player, expandSize); }
     public boolean upgradeMine(Player player) { return plugin.getMineManager().upgradeMine(player); }

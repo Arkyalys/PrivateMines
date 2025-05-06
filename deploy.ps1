@@ -1,4 +1,8 @@
 # Script de déploiement automatique
+# Note: Write-Host est utilisé intentionnellement ici pour afficher des messages colorés à l'utilisateur
+# dans un contexte interactif où l'affichage console est garanti
+$ErrorActionPreference = "Stop"
+
 Write-Host "Démarrage du processus de déploiement de PrivateMines..." -ForegroundColor Green
 
 # Compilation du plugin

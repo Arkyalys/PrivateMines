@@ -36,8 +36,8 @@ public class MineMemoryService {
         playerMines.remove(uuid);
     }
     public Mine findAvailablePregenMine() {
-        for (Map.Entry<UUID, Mine> entry : playerMines.entrySet()) {
-            return entry.getValue();
+        if (!playerMines.isEmpty()) {
+            return playerMines.values().iterator().next();
         }
         return null;
     }
