@@ -83,27 +83,52 @@ public class MineCommandUtils {
     }
     public static String formatDuration(long seconds) {
         if (seconds < 60) {
-            return seconds + " " + (seconds == 1 ? "seconde" : "secondes");
+            return formatTimeUnit(seconds, "seconde");
         }
+        
         long minutes = seconds / 60;
         if (minutes < 60) {
-            return minutes + " " + (minutes == 1 ? "minute" : "minutes");
+            return formatTimeUnit(minutes, "minute");
         }
+        
         long hours = minutes / 60;
         minutes = minutes % 60;
+        
         if (hours < 24) {
-            String result = hours + " " + (hours == 1 ? "heure" : "heures");
-            if (minutes > 0) {
-                result += " " + minutes + " " + (minutes == 1 ? "minute" : "minutes");
-            }
-            return result;
+            return formatCompoundDuration(hours, "heure", minutes, "minute");
         }
+        
         long days = hours / 24;
         hours = hours % 24;
-        String result = days + " " + (days == 1 ? "jour" : "jours");
-        if (hours > 0) {
-            result += " " + hours + " " + (hours == 1 ? "heure" : "heures");
+        
+        return formatCompoundDuration(days, "jour", hours, "heure");
+    }
+    
+    /**
+     * Formate une unité de temps avec le mot approprié (singulier ou pluriel)
+     */
+    private static String formatTimeUnit(long value, String unit) {
+        return value + " " + pluralize(value, unit);
+    }
+    
+    /**
+     * Retourne la forme singulier ou pluriel d'une unité de temps
+     */
+    private static String pluralize(long value, String unit) {
+        return value == 1 ? unit : unit + "s";
+    }
+    
+    /**
+     * Formate une durée composée de deux unités de temps
+     */
+    private static String formatCompoundDuration(long primaryValue, String primaryUnit,
+                                                long secondaryValue, String secondaryUnit) {
+        String result = formatTimeUnit(primaryValue, primaryUnit);
+        
+        if (secondaryValue > 0) {
+            result += " " + formatTimeUnit(secondaryValue, secondaryUnit);
         }
+        
         return result;
     }
     public static long parseDuration(String durationStr) {

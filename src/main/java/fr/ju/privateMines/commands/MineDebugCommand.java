@@ -11,11 +11,10 @@ import fr.ju.privateMines.utils.Permissions;
 
 public class MineDebugCommand implements SubCommand {
     private final ConfigManager configManager;
-    private final PrivateMines plugin;
 
     public MineDebugCommand(MineManager mineManager, ConfigManager configManager, PrivateMines plugin) {
         this.configManager = configManager;
-        this.plugin = plugin;
+        // Le paramètre plugin n'est pas utilisé dans cette classe
     }
 
     @Override

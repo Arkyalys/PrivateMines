@@ -176,51 +176,112 @@ public class GUIListener implements Listener {
         }
     }
     private void handleVisitorsGUIClick(Player player, ItemStack clickedItem, int slot, String inventoryType, InventoryClickEvent event) {
-        player.sendMessage("[DEBUG] handleVisitorsGUIClick: slot=" + slot + ", inventoryType=" + inventoryType);
+        int currentPage = extractCurrentPage(inventoryType);
+        
+        // Gestion des boutons de navigation
+        if (handleNavigationButtons(player, slot, currentPage)) {
+            return;
+        }
+        
+        // Gestion du bouton d'ajout de contributeur
+        if (slot == 6) {
+            handleAddContributorButton(player);
+            return;
+        }
+        
+        // Gestion d'un clic sur un contributeur
+        if (slot >= 9 && slot <= 44) {
+            handleContributorClick(player, slot, currentPage);
+        }
+    }
+    
+    private int extractCurrentPage(String inventoryType) {
         int currentPage = 0;
         String[] parts = inventoryType.split(":");
         if (parts.length > 1) {
             try {
                 currentPage = Integer.parseInt(parts[1]);
             } catch (NumberFormatException e) {
-                player.sendMessage("[DEBUG] Erreur parsing page: " + e.getMessage());
+                // Utiliser la page par défaut (0) en cas d'erreur
             }
         }
-        if (slot == 6) {
-            player.closeInventory();
-            player.sendMessage(ColorUtil.translateColors("&eÉcris le pseudo du joueur à ajouter comme contributeur dans le chat. Tape &c/cancel &epour annuler."));
-            awaitingContributorChat.put(player.getUniqueId(), true);
-            return;
-        }
+        return currentPage;
+    }
+    
+    private boolean handleNavigationButtons(Player player, int slot, int currentPage) {
+        // Bouton page précédente
         if (slot == 45 && currentPage > 0) {
-            player.sendMessage("[DEBUG] Clic page précédente");
             MineVisitorsGUI.openGUI(player, currentPage - 1);
-            return;
+            return true;
         }
+        
+        // Bouton page suivante
         if (slot == 53) {
-            player.sendMessage("[DEBUG] Clic page suivante");
             MineVisitorsGUI.openGUI(player, currentPage + 1);
-            return;
+            return true;
         }
+        
+        // Bouton retour
         if (slot == 49) {
-            player.sendMessage("[DEBUG] Clic bouton retour");
             MineMainGUI.openGUI(player);
+            return true;
+        }
+        
+        return false;
+    }
+    
+    private void handleAddContributorButton(Player player) {
+        player.closeInventory();
+        player.sendMessage(ColorUtil.translateColors("&eÉcris le pseudo du joueur à ajouter comme contributeur dans le chat. Tape &c/cancel &epour annuler."));
+        awaitingContributorChat.put(player.getUniqueId(), true);
+    }
+    
+    private void handleContributorClick(Player player, int slot, int currentPage) {
+        Mine mine = getMineForPlayer(player);
+        if (mine == null) {
             return;
         }
-        if (slot >= 9 && slot <= 44) {
-            player.sendMessage("[DEBUG] Clic sur une tête de contributeur, slot=" + slot);
-            PrivateMines plugin = PrivateMines.getInstance();
-            Mine mine = plugin.getMineManager().getMine(player).orElse(null);
-            if (mine == null) {
-                player.sendMessage("[DEBUG] Mine null");
-                player.closeInventory();
-                return;
-            }
+        
+        List<UUID> contributors = getContributorsForMine(mine);
+        if (contributors.isEmpty()) {
+            return;
+        }
+        
+        int startIndex = currentPage * MineVisitorsGUI.PAGE_SIZE;
+        int contributorIndex = startIndex + (slot - 9);
+        
+        if (contributorIndex < 0 || contributorIndex >= contributors.size()) {
+            player.closeInventory();
+            return;
+        }
+        
+        UUID targetId = contributors.get(contributorIndex);
+        MineVisitorsGUI.openActionGUI(player, targetId);
+    }
+    
+    private Mine getMineForPlayer(Player player) {
+        Mine mine = plugin.getMineManager().getMine(player).orElse(null);
+        if (mine == null) {
+            player.closeInventory();
+        }
+        return mine;
+    }
+    
+    private List<UUID> getContributorsForMine(Mine mine) {
+        List<UUID> contributors = new ArrayList<>();
+        
+        try {
             org.bukkit.World world = mine.getLocation().getWorld();
-            com.sk89q.worldguard.protection.managers.RegionManager regionManager = com.sk89q.worldguard.WorldGuard.getInstance().getPlatform().getRegionContainer().get(com.sk89q.worldedit.bukkit.BukkitAdapter.adapt(world));
+            com.sk89q.worldguard.protection.managers.RegionManager regionManager = 
+                com.sk89q.worldguard.WorldGuard.getInstance()
+                    .getPlatform()
+                    .getRegionContainer()
+                    .get(com.sk89q.worldedit.bukkit.BukkitAdapter.adapt(world));
+                    
             String regionId = "mine-" + mine.getOwner().toString();
-            com.sk89q.worldguard.protection.regions.ProtectedRegion region = regionManager != null ? regionManager.getRegion(regionId) : null;
-            List<UUID> contributors = new ArrayList<>();
+            com.sk89q.worldguard.protection.regions.ProtectedRegion region = 
+                regionManager != null ? regionManager.getRegion(regionId) : null;
+                
             if (region != null) {
                 for (String uuidStr : region.getMembers().getPlayers()) {
                     try {
@@ -228,20 +289,16 @@ public class GUIListener implements Listener {
                         if (!uuid.equals(mine.getOwner())) {
                             contributors.add(uuid);
                         }
-                    } catch (IllegalArgumentException ignored) {}
+                    } catch (IllegalArgumentException ignored) {
+                        // Ignorer les UUID invalides
+                    }
                 }
             }
-            int startIndex = currentPage * MineVisitorsGUI.PAGE_SIZE;
-            int contributorIndex = startIndex + (slot - 9);
-            if (contributorIndex < 0 || contributorIndex >= contributors.size()) {
-                player.sendMessage("[DEBUG] contributorIndex hors limite");
-                player.closeInventory();
-                return;
-            }
-            UUID targetId = contributors.get(contributorIndex);
-            player.sendMessage("[DEBUG] Ouvre menu action pour UUID=" + targetId);
-            MineVisitorsGUI.openActionGUI(player, targetId);
+        } catch (Exception e) {
+            // Gérer les exceptions potentielles lors de l'accès à WorldGuard
         }
+        
+        return contributors;
     }
     private void handleVisitorActionGUIClick(Player player, ItemStack clickedItem, int slot, String inventoryType) {
         String[] parts = inventoryType.split(":");
@@ -364,80 +421,94 @@ public class GUIListener implements Listener {
         player.sendMessage(ColorUtil.translateColors(message));
     }
     private void handleContributorAnvilClick(Player player, InventoryClickEvent event) {
-        player.sendMessage("[DEBUG] handleContributorAnvilClick: slot=" + event.getSlot());
-        if (event.getInventory().getType() != InventoryType.ANVIL) return;
-        if (event.getSlot() == 2) {
-            handleAnvilSlot2Click(player, event);
+        if (event.getInventory().getType() != InventoryType.ANVIL || event.getSlot() != 2) {
+            return;
+        }
+        
+        ItemStack result = event.getInventory().getItem(2);
+        if (result == null || result.getType() != Material.PAPER) {
+            return;
+        }
+        
+        // Essayer d'ajouter le contributeur
+        if (tryAddContributor(player, result)) {
+            // Succès - nettoyer l'UI
+            event.setCancelled(true);
+            player.closeInventory();
+            MineVisitorsGUI.openGUI(player, 0);
+        } else {
+            // Échec - annuler le clic uniquement
+            event.setCancelled(true);
         }
     }
-    private void handleAnvilSlot2Click(Player player, InventoryClickEvent event) {
-        ItemStack result = event.getInventory().getItem(2);
-        if (!isValidAnvilResult(result, player, event)) return;
-        String pseudo = extractPseudo(result);
-        player.sendMessage("[DEBUG] Pseudo saisi: " + pseudo);
-        if (!isValidPseudo(pseudo, player, event)) return;
-        Player target = plugin.getServer().getPlayerExact(pseudo.trim());
-        if (!isValidTarget(target, player, event)) return;
+    
+    /**
+     * Tente d'ajouter un contributeur à la mine du joueur
+     * @return true si l'ajout a réussi, false sinon
+     */
+    private boolean tryAddContributor(Player player, ItemStack result) {
+        // Extraire le nom du joueur
+        String targetName = extractTargetName(result);
+        if (targetName == null || targetName.trim().isEmpty() || targetName.equals("Entrer le pseudo")) {
+            player.sendMessage(ColorUtil.translateColors("&cPseudo invalide."));
+            return false;
+        }
+        
+        // Trouver le joueur cible
+        Player target = plugin.getServer().getPlayerExact(targetName.trim());
+        if (target == null) {
+            player.sendMessage(ColorUtil.translateColors("&cJoueur introuvable."));
+            return false;
+        }
+        
+        // Trouver la mine du joueur
         Mine mine = plugin.getMineManager().getMine(player).orElse(null);
-        if (!isValidMine(mine, player, event)) return;
-        org.bukkit.World world = mine.getLocation().getWorld();
-        com.sk89q.worldguard.protection.managers.RegionManager regionManager = com.sk89q.worldguard.WorldGuard.getInstance().getPlatform().getRegionContainer().get(com.sk89q.worldedit.bukkit.BukkitAdapter.adapt(world));
-        String regionId = "mine-" + mine.getOwner().toString();
-        com.sk89q.worldguard.protection.regions.ProtectedRegion region = regionManager != null ? regionManager.getRegion(regionId) : null;
-        if (!isValidRegion(region, player, event)) return;
+        if (mine == null) {
+            player.sendMessage(ColorUtil.translateColors("&cVous n'avez pas de mine."));
+            return false;
+        }
         
-        if (region == null) return;
+        // Accéder à la région WorldGuard
+        com.sk89q.worldguard.protection.regions.ProtectedRegion region = getPlayerMineRegion(player, mine);
+        if (region == null) {
+            player.sendMessage(ColorUtil.translateColors("&cErreur lors de l'accès à la région de votre mine."));
+            return false;
+        }
         
+        // Ajouter le joueur à la région
         region.getMembers().addPlayer(target.getUniqueId());
         player.sendMessage(ColorUtil.translateColors("&aContributeur ajouté !"));
         awaitingContributorName.remove(player.getUniqueId());
-        MineVisitorsGUI.openGUI(player, 0);
-        event.setCancelled(true);
-        player.closeInventory();
-    }
-    private boolean isValidAnvilResult(ItemStack result, Player player, InventoryClickEvent event) {
-        if (result == null || result.getType() != Material.PAPER) {
-            player.sendMessage("[DEBUG] Pas de papier dans le slot 2");
-            return false;
-        }
+        
         return true;
     }
-    private String extractPseudo(ItemStack result) {
-        if (result.getItemMeta() != null && result.getItemMeta().hasDisplayName()) {
-            return PlainTextComponentSerializer.plainText().serialize(result.getItemMeta().displayName());
+    
+    /**
+     * Extrait le nom du joueur à partir d'un ItemStack
+     */
+    private String extractTargetName(ItemStack item) {
+        if (item.getItemMeta() != null && item.getItemMeta().hasDisplayName()) {
+            return PlainTextComponentSerializer.plainText().serialize(item.getItemMeta().displayName());
         }
         return null;
     }
-    private boolean isValidPseudo(String pseudo, Player player, InventoryClickEvent event) {
-        if (pseudo == null || pseudo.trim().isEmpty() || pseudo.equals("Entrer le pseudo")) {
-            player.sendMessage(ColorUtil.translateColors("&cPseudo invalide."));
-            event.setCancelled(true);
-            return false;
+    
+    /**
+     * Récupère la région WorldGuard associée à la mine du joueur
+     */
+    private com.sk89q.worldguard.protection.regions.ProtectedRegion getPlayerMineRegion(Player player, Mine mine) {
+        try {
+            org.bukkit.World world = mine.getLocation().getWorld();
+            com.sk89q.worldguard.protection.managers.RegionManager regionManager = 
+                com.sk89q.worldguard.WorldGuard.getInstance()
+                    .getPlatform()
+                    .getRegionContainer()
+                    .get(com.sk89q.worldedit.bukkit.BukkitAdapter.adapt(world));
+                    
+            String regionId = "mine-" + mine.getOwner().toString();
+            return regionManager != null ? regionManager.getRegion(regionId) : null;
+        } catch (Exception e) {
+            return null;
         }
-        return true;
-    }
-    private boolean isValidTarget(Player target, Player player, InventoryClickEvent event) {
-        if (target == null) {
-            player.sendMessage(ColorUtil.translateColors("&cJoueur introuvable."));
-            event.setCancelled(true);
-            return false;
-        }
-        return true;
-    }
-    private boolean isValidMine(Mine mine, Player player, InventoryClickEvent event) {
-        if (mine == null) {
-            player.sendMessage(ColorUtil.translateColors("&cErreur mine."));
-            event.setCancelled(true);
-            return false;
-        }
-        return true;
-    }
-    private boolean isValidRegion(com.sk89q.worldguard.protection.regions.ProtectedRegion region, Player player, InventoryClickEvent event) {
-        if (region == null) {
-            player.sendMessage(ColorUtil.translateColors("&cErreur région."));
-            event.setCancelled(true);
-            return false;
-        }
-        return true;
     }
 } 

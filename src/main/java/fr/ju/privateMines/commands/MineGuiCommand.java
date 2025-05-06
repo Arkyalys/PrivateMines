@@ -10,13 +10,10 @@ import fr.ju.privateMines.managers.MineManager;
 import fr.ju.privateMines.utils.ConfigManager;
 
 public class MineGuiCommand implements SubCommand {
-    // Déclaration des champs pour cohérence avec les autres sous-commandes
-    private final MineManager mineManager;
-    private final ConfigManager configManager;
+    // Cette commande n'a pas besoin de champs, car elle utilise seulement MineMainGUI.openGUI
 
     public MineGuiCommand(MineManager mineManager, ConfigManager configManager, PrivateMines plugin) {
-        this.mineManager = mineManager;
-        this.configManager = configManager;
+        // Constructeur vide, conservé pour compatibilité avec l'interface SubCommand
     }
 
     @Override
