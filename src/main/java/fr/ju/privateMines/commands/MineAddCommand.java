@@ -13,12 +13,10 @@ import fr.ju.privateMines.utils.ConfigManager;
 public class MineAddCommand implements SubCommand {
     private final MineManager mineManager;
     private final ConfigManager configManager;
-    private final PrivateMines plugin;
 
     public MineAddCommand(MineManager mineManager, ConfigManager configManager, PrivateMines plugin) {
         this.mineManager = mineManager;
         this.configManager = configManager;
-        this.plugin = plugin;
     }
 
     @Override

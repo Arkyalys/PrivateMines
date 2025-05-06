@@ -9,12 +9,9 @@ import fr.ju.privateMines.managers.MineManager;
 import fr.ju.privateMines.utils.ConfigManager;
 
 public class MineGuiCommand implements SubCommand {
-    private final MineManager mineManager;
-    private final ConfigManager configManager;
 
     public MineGuiCommand(MineManager mineManager, ConfigManager configManager) {
-        this.mineManager = mineManager;
-        this.configManager = configManager;
+        // Constructeur conservé pour cohérence avec les autres sous-commandes
     }
 
     @Override
