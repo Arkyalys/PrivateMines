@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.BiConsumer;
 
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -30,49 +31,117 @@ public class GUIListener implements Listener {
     private final PrivateMines plugin;
     private final Map<UUID, Boolean> awaitingContributorName = new HashMap<>();
     private final Map<UUID, Boolean> awaitingContributorChat = new HashMap<>();
+    
+    // Map associant chaque type d'inventaire à son gestionnaire de clic
+    private final Map<String, BiConsumer<Player, InventoryClickContext>> clickHandlers = new HashMap<>();
+    
     public GUIListener(PrivateMines plugin) {
         this.plugin = plugin;
+        initializeClickHandlers();
     }
+    
+    /**
+     * Initialise la map des gestionnaires de clic pour chaque type d'inventaire
+     */
+    private void initializeClickHandlers() {
+        clickHandlers.put("mine_main", (player, context) -> 
+            handleMainGUIClick(player, context.clickedItem, context.slot));
+            
+        clickHandlers.put("mine_stats", (player, context) -> 
+            handleStatsGUIClick(player, context.clickedItem, context.slot));
+            
+        clickHandlers.put("mine_visitors", (player, context) -> 
+            handleVisitorsGUIClick(player, context.clickedItem, context.slot, context.inventoryType, context.event));
+            
+        clickHandlers.put("mine_contributors", (player, context) -> 
+            handleVisitorsGUIClick(player, context.clickedItem, context.slot, context.inventoryType, context.event));
+            
+        clickHandlers.put("mine_visitor_action", (player, context) -> 
+            handleVisitorActionGUIClick(player, context.clickedItem, context.slot, context.inventoryType));
+            
+        clickHandlers.put("mine_settings", (player, context) -> 
+            handleSettingsGUIClick(player, context.clickedItem, context.slot));
+            
+        clickHandlers.put("mine_expand", (player, context) -> 
+            handleExpandGUIClick(player, context.clickedItem, context.slot));
+            
+        clickHandlers.put("mine_composition", (player, context) -> 
+            handleCompositionGUIClick(player, context.clickedItem, context.slot));
+            
+        clickHandlers.put("mine_contributor_anvil", (player, context) -> 
+            handleContributorAnvilClick(player, context.event));
+    }
+    
+    /**
+     * Classe pour regrouper les informations de contexte d'un clic d'inventaire
+     */
+    private static class InventoryClickContext {
+        final ItemStack clickedItem;
+        final int slot;
+        final String inventoryType;
+        final InventoryClickEvent event;
+        
+        InventoryClickContext(ItemStack clickedItem, int slot, String inventoryType, InventoryClickEvent event) {
+            this.clickedItem = clickedItem;
+            this.slot = slot;
+            this.inventoryType = inventoryType;
+            this.event = event;
+        }
+    }
+    
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if (event.getClickedInventory() == null) return;
+        // Vérifications préliminaires
+        if (!isValidInventoryClick(event)) {
+            return;
+        }
+        
         Player player = (Player) event.getWhoClicked();
-        String inventoryType = plugin.getGUIManager().getOpenInventoryType(player);
-        if (inventoryType == null) return;
-        String type = inventoryType.split(":")[0];
-        if (!type.equals("mine_contributor_anvil")) {
+        
+        // Déterminer le type d'inventaire
+        String inventoryInfo = plugin.getGUIManager().getOpenInventoryType(player);
+        if (inventoryInfo == null) {
+            return;
+        }
+        
+        // Extraire le type de base de l'inventaire (première partie avant les ':')
+        String baseType = extractBaseType(inventoryInfo);
+        
+        // Vérifier si c'est un inventaire spécial qui ne doit pas annuler les clics
+        if (!baseType.equals("mine_contributor_anvil")) {
             event.setCancelled(true);
         }
+        
+        // Vérifier l'item cliqué
         ItemStack clickedItem = event.getCurrentItem();
-        if (clickedItem == null || clickedItem.getType() == Material.AIR) return;
-        switch (type) {
-            case "mine_main":
-                handleMainGUIClick(player, clickedItem, event.getSlot());
-                break;
-            case "mine_stats":
-                handleStatsGUIClick(player, clickedItem, event.getSlot());
-                break;
-            case "mine_visitors":
-            case "mine_contributors":
-                handleVisitorsGUIClick(player, clickedItem, event.getSlot(), inventoryType, event);
-                break;
-            case "mine_visitor_action":
-                handleVisitorActionGUIClick(player, clickedItem, event.getSlot(), inventoryType);
-                break;
-            case "mine_settings":
-                handleSettingsGUIClick(player, clickedItem, event.getSlot());
-                break;
-            case "mine_expand":
-                handleExpandGUIClick(player, clickedItem, event.getSlot());
-                break;
-            case "mine_composition":
-                handleCompositionGUIClick(player, clickedItem, event.getSlot());
-                break;
-            case "mine_contributor_anvil":
-                handleContributorAnvilClick(player, event);
-                break;
+        if (clickedItem == null || clickedItem.getType() == Material.AIR) {
+            return;
+        }
+        
+        // Trouver et exécuter le gestionnaire approprié
+        BiConsumer<Player, InventoryClickContext> handler = clickHandlers.get(baseType);
+        if (handler != null) {
+            InventoryClickContext context = new InventoryClickContext(
+                clickedItem, event.getSlot(), inventoryInfo, event);
+            handler.accept(player, context);
         }
     }
+    
+    /**
+     * Vérifie si un clic d'inventaire est valide pour le traitement
+     */
+    private boolean isValidInventoryClick(InventoryClickEvent event) {
+        return event.getClickedInventory() != null && event.getWhoClicked() instanceof Player;
+    }
+    
+    /**
+     * Extrait le type de base d'un identifiant d'inventaire (partie avant les ':')
+     */
+    private String extractBaseType(String inventoryInfo) {
+        String[] parts = inventoryInfo.split(":");
+        return parts[0];
+    }
+    
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent event) {
         Player player = (Player) event.getPlayer();
