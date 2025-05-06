@@ -8,6 +8,7 @@ import fr.ju.privateMines.PrivateMines;
 import fr.ju.privateMines.managers.MineManager;
 import fr.ju.privateMines.models.Mine;
 import fr.ju.privateMines.utils.ConfigManager;
+import fr.ju.privateMines.utils.Permissions;
 
 public class MineStatsSyncCommand implements SubCommand {
     private final ConfigManager configManager;
@@ -20,7 +21,7 @@ public class MineStatsSyncCommand implements SubCommand {
 
     @Override
     public boolean execute(Player player, String[] args, CommandSender sender, Command command, String label) {
-        if (!player.hasPermission("privateMines.admin")) {
+        if (!player.hasPermission(Permissions.ADMIN)) {
             player.sendMessage(configManager.getMessage("mine-no-permission"));
             return true;
         }

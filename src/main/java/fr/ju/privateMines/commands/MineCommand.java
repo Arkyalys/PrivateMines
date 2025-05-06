@@ -52,8 +52,8 @@ public class MineCommand implements CommandExecutor {
         subCommands.put("visit", new MineVisitCommand(mineManager, configManager));
         
         // Nouvelles sous-commandes
-        subCommands.put("gui", new MineGuiCommand(mineManager, configManager));
-        subCommands.put("menu", new MineGuiCommand(mineManager, configManager));
+        subCommands.put("gui", new MineGuiCommand(mineManager, configManager, plugin));
+        subCommands.put("menu", new MineGuiCommand(mineManager, configManager, plugin));
         subCommands.put("pregen", new MinePregenCommand(mineManager, configManager));
         subCommands.put("savestats", new MineSaveStatsCommand(mineManager, configManager, plugin));
         subCommands.put("stats", new MineStatsCommand(mineManager, configManager, plugin));

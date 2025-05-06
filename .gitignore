@@ -38,5 +38,9 @@ hs_err_pid*
 logs/
 cursor/*
 
+# Deployment scripts
+deploy.ps1
+get-logs.ps1
+
 # Plugin source
 edprivatemines-1.9-HOTFIX6/ 

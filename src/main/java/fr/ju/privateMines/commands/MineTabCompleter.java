@@ -29,6 +29,7 @@ public class MineTabCompleter implements TabCompleter {
     );
     
     private static final List<String> TIER_OPTIONS = Arrays.asList("1", "2", "3", "4", "5");
+    private static final List<String> DEBUG_OPTIONS = Arrays.asList("on", "off");
     
     // Map de gestionnaires de complétion pour les sous-commandes
     private final Map<String, BiFunction<Player, String[], List<String>>> subCommandCompleters = new HashMap<>();
@@ -38,14 +39,21 @@ public class MineTabCompleter implements TabCompleter {
     }
     
     private void initializeSubCommandCompleters() {
-        // Ajout des gestionnaires pour chaque sous-commande
+        // Gestionnaires spécifiques
         subCommandCompleters.put("settier", this::getSettierTabCompletions);
-        subCommandCompleters.put("stats", this::getStatsTabCompletions);
-        subCommandCompleters.put("visit", this::getVisitTabCompletions);
-        subCommandCompleters.put("add", this::getPlayerListCompletions);
-        subCommandCompleters.put("remove", this::getPlayerListCompletions);
-        subCommandCompleters.put("stats-sync", this::getPlayerListCompletions);
-        subCommandCompleters.put("debug", this::getDebugTabCompletions);
+        
+        // Gestionnaires pour les commandes qui proposent des joueurs en ligne
+        BiFunction<Player, String[], List<String>> playerListCompleter = this::getPlayerListCompletions;
+        Arrays.asList("stats", "visit", "add", "remove", "stats-sync")
+            .forEach(cmd -> subCommandCompleters.put(cmd, playerListCompleter));
+        
+        // Gestionnaire pour debug avec options on/off
+        subCommandCompleters.put("debug", (player, args) -> {
+            if (!player.hasPermission(Permissions.ADMIN) || args.length != 2) {
+                return EMPTY_LIST;
+            }
+            return filterStartingWith(DEBUG_OPTIONS, args[1]);
+        });
     }
     
     @Override
@@ -60,7 +68,7 @@ public class MineTabCompleter implements TabCompleter {
         if (args.length == 1) {
             List<String> suggestions = new ArrayList<>(BASE_COMMANDS);
             
-            if (player.hasPermission("privateMines.admin")) {
+            if (player.hasPermission(Permissions.ADMIN)) {
                 suggestions.addAll(ADMIN_COMMANDS);
             }
             
@@ -92,41 +100,16 @@ public class MineTabCompleter implements TabCompleter {
         return EMPTY_LIST;
     }
     
-    private List<String> getStatsTabCompletions(Player player, String[] args) {
-        if (args.length == 2) {
-            List<String> suggestions = new ArrayList<>(getOnlinePlayerNames(args[1]));
-            if ("top".startsWith(args[1].toLowerCase())) {
-                suggestions.add("top");
-            }
-            return suggestions;
-        }
-        
-        return EMPTY_LIST;
-    }
-    
-    private List<String> getVisitTabCompletions(Player player, String[] args) {
-        if (args.length == 2) {
-            return getOnlinePlayerNames(args[1]);
-        }
-        
-        return EMPTY_LIST;
-    }
-    
     private List<String> getPlayerListCompletions(Player player, String[] args) {
         if (args.length == 2) {
-            return getOnlinePlayerNames(args[1]);
-        }
-        
-        return EMPTY_LIST;
-    }
-    
-    private List<String> getDebugTabCompletions(Player player, String[] args) {
-        if (!player.hasPermission(Permissions.ADMIN)) {
-            return EMPTY_LIST;
-        }
-        
-        if (args.length == 2) {
-            return filterStartingWith(Arrays.asList("on", "off"), args[1]);
+            List<String> suggestions = getOnlinePlayerNames(args[1]);
+            
+            // Cas spécial pour la commande stats qui propose également "top"
+            if ("stats".equalsIgnoreCase(args[0]) && "top".startsWith(args[1].toLowerCase())) {
+                suggestions.add("top");
+            }
+            
+            return suggestions;
         }
         
         return EMPTY_LIST;
