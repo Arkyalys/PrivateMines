@@ -1,6 +1,7 @@
 package fr.ju.privateMines.services;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.bukkit.Location;
@@ -140,122 +141,41 @@ public class MinePersistenceService {
         PrivateMines.debugLog("Chargement des données des mines...");
         configManager.reloadData();
         mineManager.mineMemoryService.clearPlayerMines();
+        
         ConfigurationSection minesSection = configManager.getData().getConfigurationSection("mines");
         if (minesSection == null) {
             PrivateMines.debugLog("Aucune donnée de mine trouvée.");
             return;
         }
+        
         int count = 0;
         int errorCount = 0;
         PrivateMines.debugLog("UUIDs trouvés dans le fichier de données: " + String.join(", ", minesSection.getKeys(false)));
+        
         for (String key : minesSection.getKeys(false)) {
             try {
                 PrivateMines.debugLog("Tentative de chargement de la mine pour UUID: " + key);
-                ConfigurationSection mineSection = minesSection.getConfigurationSection(key);
-                if (mineSection == null) {
-                    PrivateMines.debugLog("Section de configuration nulle pour UUID: " + key);
-                    continue;
-                }
-                UUID ownerUUID;
-                try {
-                    ownerUUID = UUID.fromString(key);
-                } catch (IllegalArgumentException e) {
-                    PrivateMines.debugLog("UUID invalide: " + key + " - " + e.getMessage());
-                    errorCount++;
-                    continue;
-                }
-                String worldName = mineSection.getString("location.world");
-                if (worldName == null) {
-                    PrivateMines.debugLog("Nom du monde manquant pour UUID: " + key);
-                    errorCount++;
-                    continue;
-                }
-                World world = plugin.getServer().getWorld(worldName);
-                if (world == null) {
-                    PrivateMines.debugLog("Le monde '" + worldName + "' n'existe pas pour la mine de " + key + ". Création du monde...");
-                    if (plugin.getMineWorldManager() != null) {
-                        world = plugin.getMineWorldManager().getMineWorld();
-                        if (world == null) {
-                            PrivateMines.debugLog("Impossible de créer le monde. La mine de " + key + " ne sera pas chargée.");
-                            errorCount++;
-                            continue;
-                        }
-                    } else {
-                        PrivateMines.debugLog("MineWorldManager non disponible. La mine de " + key + " ne sera pas chargée.");
-                        errorCount++;
-                        continue;
+                Optional<Mine> mineOptional = loadMineFromSection(key, minesSection, plugin, mineTiers);
+                
+                if (mineOptional.isPresent()) {
+                    Mine mine = mineOptional.get();
+                    UUID ownerUUID = mine.getOwner();
+                    
+                    // Finalisation du chargement
+                    mineManager.addMineToMap(ownerUUID, mine);
+                    count++;
+                    PrivateMines.debugLog("Mine chargée avec succès pour UUID: " + key);
+                    PrivateMines.debugLog("UUID " + ownerUUID + " ajouté à la map. Taille actuelle: " + mineManager.mineMemoryService.getPlayerMines().size());
+                    
+                    // Protection et stats
+                    if (protectionManager != null) {
+                        protectionManager.protectMine(mine, null);
                     }
-                }
-                double x = mineSection.getDouble("location.x");
-                double y = mineSection.getDouble("location.y");
-                double z = mineSection.getDouble("location.z");
-                Location location = new Location(world, x, y, z);
-                PrivateMines.debugLog("Position de la mine pour UUID " + key + ": " + world.getName() + ", " + x + ", " + y + ", " + z);
-                Mine mine = new Mine(ownerUUID, location);
-                mine.setSize(mineSection.getInt("size", 1));
-                mine.setTax(mineSection.getInt("tax", 0));
-                mine.setOpen(mineSection.getBoolean("isOpen", true));
-                mine.setTier(mineSection.getInt("tier", 1));
-                if (mineSection.contains("teleport")) {
-                    String tpWorldName = mineSection.getString("teleport.world", worldName);
-                    World tpWorld = plugin.getServer().getWorld(tpWorldName);
-                    if (tpWorld == null) tpWorld = world;
-                    double tpX = mineSection.getDouble("teleport.x");
-                    double tpY = mineSection.getDouble("teleport.y");
-                    double tpZ = mineSection.getDouble("teleport.z");
-                    float tpYaw = (float) mineSection.getDouble("teleport.yaw", 0);
-                    float tpPitch = (float) mineSection.getDouble("teleport.pitch", 0);
-                    Location teleportLocation = new Location(tpWorld, tpX, tpY, tpZ, tpYaw, tpPitch);
-                    mine.setTeleportLocation(teleportLocation);
-                }
-                if (mineSection.contains("area")) {
-                    int minX = mineSection.getInt("area.minX");
-                    int minY = mineSection.getInt("area.minY");
-                    int minZ = mineSection.getInt("area.minZ");
-                    int maxX = mineSection.getInt("area.maxX");
-                    int maxY = mineSection.getInt("area.maxY");
-                    int maxZ = mineSection.getInt("area.maxZ");
-                    mine.setMineArea(minX, minY, minZ, maxX, maxY, maxZ);
-                    PrivateMines.debugLog("Zone de la mine définie: " + minX + "," + minY + "," + minZ + " à " + maxX + "," + maxY + "," + maxZ);
-                }
-                if (mineSection.contains("schematic")) {
-                    double minX = mineSection.getDouble("schematic.minX");
-                    double minY = mineSection.getDouble("schematic.minY");
-                    double minZ = mineSection.getDouble("schematic.minZ");
-                    double maxX = mineSection.getDouble("schematic.maxX");
-                    double maxY = mineSection.getDouble("schematic.maxY");
-                    double maxZ = mineSection.getDouble("schematic.maxZ");
-                    mine.setSchematicBounds(minX, minY, minZ, maxX, maxY, maxZ);
-                    PrivateMines.debugLog("[DEBUG-LOAD] Bounds schematic pour la mine " + key + " : min=(" + minX + ", " + minY + ", " + minZ + "), max=(" + maxX + ", " + maxY + ", " + maxZ + ")");
-                }
-                if (mineSection.contains("blocks")) {
-                    ConfigurationSection blocksSection = mineSection.getConfigurationSection("blocks");
-                    Map<Material, Double> blocks = new HashMap<>();
-                    for (String materialName : blocksSection.getKeys(false)) {
-                        try {
-                            Material material = Material.valueOf(materialName);
-                            double chance = blocksSection.getDouble(materialName);
-                            blocks.put(material, chance);
-                        } catch (IllegalArgumentException e) {
-                            PrivateMines.debugLog("Type de bloc invalide: " + materialName);
-                        }
+                    if (plugin.getStatsManager() != null) {
+                        plugin.getStatsManager().syncMineStats(mine);
                     }
-                    mine.setBlocks(blocks);
                 } else {
-                    if (mineTiers.containsKey(mine.getTier())) {
-                        mine.setBlocks(mineTiers.get(mine.getTier()));
-                    }
-                }
-                loadAccessData(mine, mineSection);
-                mineManager.addMineToMap(ownerUUID, mine);
-                count++;
-                PrivateMines.debugLog("Mine chargée avec succès pour UUID: " + key);
-                PrivateMines.debugLog("UUID " + ownerUUID + " ajouté à la map. Taille actuelle: " + mineManager.mineMemoryService.getPlayerMines().size());
-                if (protectionManager != null) {
-                    protectionManager.protectMine(mine, null);
-                }
-                if (plugin.getStatsManager() != null) {
-                    plugin.getStatsManager().syncMineStats(mine);
+                    errorCount++;
                 }
             } catch (Exception e) {
                 PrivateMines.debugLog("Erreur lors du chargement de la mine " + key + ": " + e.getMessage());
@@ -263,7 +183,168 @@ public class MinePersistenceService {
                 errorCount++;
             }
         }
+        
         PrivateMines.debugLog(count + " mines ont été chargées avec succès. " + errorCount + " mines ont échoué au chargement.");
+        logLoadedMineUUIDs(mineManager);
+    }
+    private Optional<Mine> loadMineFromSection(String key, ConfigurationSection minesSection, PrivateMines plugin, Map<Integer, Map<Material, Double>> mineTiers) {
+        ConfigurationSection mineSection = minesSection.getConfigurationSection(key);
+        if (mineSection == null) {
+            PrivateMines.debugLog("Section de configuration nulle pour UUID: " + key);
+            return Optional.empty();
+        }
+        
+        // Validation de l'UUID du propriétaire
+        UUID ownerUUID = validateOwnerUUID(key);
+        if (ownerUUID == null) {
+            return Optional.empty();
+        }
+        
+        // Chargement et validation du monde
+        World world = loadAndValidateWorld(key, mineSection, plugin);
+        if (world == null) {
+            return Optional.empty();
+        }
+        
+        // Chargement de la position
+        Location location = loadMineLocation(key, mineSection, world);
+        
+        // Création de la mine
+        Mine mine = new Mine(ownerUUID, location);
+        
+        // Configuration des propriétés de base
+        loadMineProperties(mine, mineSection);
+        
+        // Chargement de la position de téléportation
+        loadTeleportLocation(mine, mineSection, world, plugin);
+        
+        // Chargement de la zone de mine
+        loadMineArea(mine, mineSection, key);
+        
+        // Chargement des limites du schéma
+        loadSchematicBounds(mine, mineSection, key);
+        
+        // Chargement des blocs
+        loadMineBlocks(mine, mineSection, mineTiers);
+        
+        // Chargement des données d'accès
+        loadAccessData(mine, mineSection);
+        
+        return Optional.of(mine);
+    }
+    private UUID validateOwnerUUID(String key) {
+        try {
+            return UUID.fromString(key);
+        } catch (IllegalArgumentException e) {
+            PrivateMines.debugLog("UUID invalide: " + key + " - " + e.getMessage());
+            return null;
+        }
+    }
+    private World loadAndValidateWorld(String key, ConfigurationSection mineSection, PrivateMines plugin) {
+        String worldName = mineSection.getString("location.world");
+        if (worldName == null) {
+            PrivateMines.debugLog("Nom du monde manquant pour UUID: " + key);
+            return null;
+        }
+        
+        World world = plugin.getServer().getWorld(worldName);
+        if (world == null) {
+            PrivateMines.debugLog("Le monde '" + worldName + "' n'existe pas pour la mine de " + key + ". Création du monde...");
+            if (plugin.getMineWorldManager() != null) {
+                world = plugin.getMineWorldManager().getMineWorld();
+                if (world == null) {
+                    PrivateMines.debugLog("Impossible de créer le monde. La mine de " + key + " ne sera pas chargée.");
+                    return null;
+                }
+            } else {
+                PrivateMines.debugLog("MineWorldManager non disponible. La mine de " + key + " ne sera pas chargée.");
+                return null;
+            }
+        }
+        
+        return world;
+    }
+    private Location loadMineLocation(String key, ConfigurationSection mineSection, World world) {
+        double x = mineSection.getDouble("location.x");
+        double y = mineSection.getDouble("location.y");
+        double z = mineSection.getDouble("location.z");
+        
+        Location location = new Location(world, x, y, z);
+        PrivateMines.debugLog("Position de la mine pour UUID " + key + ": " + world.getName() + ", " + x + ", " + y + ", " + z);
+        
+        return location;
+    }
+    private void loadMineProperties(Mine mine, ConfigurationSection mineSection) {
+        mine.setSize(mineSection.getInt("size", 1));
+        mine.setTax(mineSection.getInt("tax", 0));
+        mine.setOpen(mineSection.getBoolean("isOpen", true));
+        mine.setTier(mineSection.getInt("tier", 1));
+    }
+    private void loadTeleportLocation(Mine mine, ConfigurationSection mineSection, World defaultWorld, PrivateMines plugin) {
+        if (mineSection.contains("teleport")) {
+            String tpWorldName = mineSection.getString("teleport.world", defaultWorld.getName());
+            World tpWorld = plugin.getServer().getWorld(tpWorldName);
+            if (tpWorld == null) tpWorld = defaultWorld;
+            
+            double tpX = mineSection.getDouble("teleport.x");
+            double tpY = mineSection.getDouble("teleport.y");
+            double tpZ = mineSection.getDouble("teleport.z");
+            float tpYaw = (float) mineSection.getDouble("teleport.yaw", 0);
+            float tpPitch = (float) mineSection.getDouble("teleport.pitch", 0);
+            
+            Location teleportLocation = new Location(tpWorld, tpX, tpY, tpZ, tpYaw, tpPitch);
+            mine.setTeleportLocation(teleportLocation);
+        }
+    }
+    private void loadMineArea(Mine mine, ConfigurationSection mineSection, String key) {
+        if (mineSection.contains("area")) {
+            int minX = mineSection.getInt("area.minX");
+            int minY = mineSection.getInt("area.minY");
+            int minZ = mineSection.getInt("area.minZ");
+            int maxX = mineSection.getInt("area.maxX");
+            int maxY = mineSection.getInt("area.maxY");
+            int maxZ = mineSection.getInt("area.maxZ");
+            
+            mine.setMineArea(minX, minY, minZ, maxX, maxY, maxZ);
+            PrivateMines.debugLog("Zone de la mine définie: " + minX + "," + minY + "," + minZ + " à " + maxX + "," + maxY + "," + maxZ);
+        }
+    }
+    private void loadSchematicBounds(Mine mine, ConfigurationSection mineSection, String key) {
+        if (mineSection.contains("schematic")) {
+            double minX = mineSection.getDouble("schematic.minX");
+            double minY = mineSection.getDouble("schematic.minY");
+            double minZ = mineSection.getDouble("schematic.minZ");
+            double maxX = mineSection.getDouble("schematic.maxX");
+            double maxY = mineSection.getDouble("schematic.maxY");
+            double maxZ = mineSection.getDouble("schematic.maxZ");
+            
+            mine.setSchematicBounds(minX, minY, minZ, maxX, maxY, maxZ);
+            PrivateMines.debugLog("[DEBUG-LOAD] Bounds schematic pour la mine " + key + " : min=(" + minX + ", " + minY + ", " + minZ + "), max=(" + maxX + ", " + maxY + ", " + maxZ + ")");
+        }
+    }
+    private void loadMineBlocks(Mine mine, ConfigurationSection mineSection, Map<Integer, Map<Material, Double>> mineTiers) {
+        if (mineSection.contains("blocks")) {
+            ConfigurationSection blocksSection = mineSection.getConfigurationSection("blocks");
+            Map<Material, Double> blocks = new HashMap<>();
+            
+            for (String materialName : blocksSection.getKeys(false)) {
+                try {
+                    Material material = Material.valueOf(materialName);
+                    double chance = blocksSection.getDouble(materialName);
+                    blocks.put(material, chance);
+                } catch (IllegalArgumentException e) {
+                    PrivateMines.debugLog("Type de bloc invalide: " + materialName);
+                }
+            }
+            
+            mine.setBlocks(blocks);
+        } else {
+            if (mineTiers.containsKey(mine.getTier())) {
+                mine.setBlocks(mineTiers.get(mine.getTier()));
+            }
+        }
+    }
+    private void logLoadedMineUUIDs(MineManager mineManager) {
         StringBuilder uuids = new StringBuilder("UUIDs des mines en mémoire: ");
         for (UUID uuid : mineManager.mineMemoryService.getPlayerMines().keySet()) {
             uuids.append(uuid.toString()).append(", ");

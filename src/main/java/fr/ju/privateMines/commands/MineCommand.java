@@ -1,6 +1,5 @@
 package fr.ju.privateMines.commands;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -9,7 +8,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import org.apache.commons.io.FileUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.command.Command;
@@ -18,7 +16,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import fr.ju.privateMines.PrivateMines;
-import fr.ju.privateMines.commands.utils.MineCommandUtils;
 import fr.ju.privateMines.guis.MineMainGUI;
 import fr.ju.privateMines.managers.MineManager;
 import fr.ju.privateMines.managers.MineWorldManager;
@@ -41,6 +38,8 @@ public class MineCommand implements CommandExecutor {
         this.mineManager = plugin.getMineManager();
         this.configManager = plugin.getConfigManager();
         this.mineWorldManager = plugin.getMineWorldManager();
+        
+        // Initialisation des sous-commandes
         subCommands.put("create", new MineCreateCommand(mineManager, configManager));
         subCommands.put("delete", new MineDeleteCommand(mineManager, configManager));
         subCommands.put("reset", new MineResetCommand(mineManager, configManager));
@@ -51,6 +50,18 @@ public class MineCommand implements CommandExecutor {
         subCommands.put("teleport", new MineTeleportCommand(mineManager, configManager));
         subCommands.put("tp", new MineTeleportCommand(mineManager, configManager));
         subCommands.put("visit", new MineVisitCommand(mineManager, configManager));
+        
+        // Nouvelles sous-commandes
+        subCommands.put("gui", new MineGuiCommand(mineManager, configManager));
+        subCommands.put("menu", new MineGuiCommand(mineManager, configManager));
+        subCommands.put("pregen", new MinePregenCommand(mineManager, configManager));
+        subCommands.put("savestats", new MineSaveStatsCommand(mineManager, configManager, plugin));
+        subCommands.put("stats", new MineStatsCommand(mineManager, configManager, plugin));
+        subCommands.put("reload", new MineReloadCommand(mineManager, configManager, plugin));
+        subCommands.put("stats-sync", new MineStatsSyncCommand(mineManager, configManager, plugin));
+        subCommands.put("add", new MineAddCommand(mineManager, configManager, plugin));
+        subCommands.put("remove", new MineRemoveCommand(mineManager, configManager, plugin));
+        subCommands.put("debug", new MineDebugCommand(mineManager, configManager, plugin));
     }
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
@@ -58,52 +69,25 @@ public class MineCommand implements CommandExecutor {
         if (args.length > 0 && args[0].equalsIgnoreCase("admin")) {
             return handleAdminCommands(sender, command, label, args, isPlayer);
         }
+        
         if (!isPlayer) {
             sender.sendMessage(configManager.getMessage("mine-only-players"));
             return true;
         }
+        
         Player player = (Player) sender;
         if (args.length == 0) {
             sendHelp(player);
             return true;
         }
-        switch (args[0].toLowerCase()) {
-            case "create":
-            case "delete":
-            case "reset":
-            case "expand":
-            case "settier":
-            case "tax":
-            case "upgrade":
-            case "teleport":
-            case "tp":
-            case "visit":
-                return subCommands.get(args[0].toLowerCase()).execute(player, args, sender, command, label);
-            case "gui":
-            case "menu":
-                handleGuiCommand(player);
-                break;
-            case "pregen":
-                return handlePregenCommand(player, args);
-            case "savestats":
-                return handleSaveStatsCommand(player);
-            case "stats":
-                return handleStatsCommand(player, args);
-            case "reload":
-                return handleReloadCommand(player);
-            case "stats-sync":
-                return handleStatsSyncCommand(player, args);
-            case "add":
-                return handleAddCommand(player, args);
-            case "remove":
-                return handleRemoveCommand(player, args);
-            case "debug":
-                return handleDebugCommand(player, args);
-            default:
-                handleUnknownCommand(player);
-                break;
+        
+        String subCommand = args[0].toLowerCase();
+        if (subCommands.containsKey(subCommand)) {
+            return subCommands.get(subCommand).execute(player, args, sender, command, label);
+        } else {
+            handleUnknownCommand(player);
+            return true;
         }
-        return true;
     }
     private boolean handleAdminCommands(CommandSender sender, Command command, String label, String[] args, boolean isPlayer) {
         if (!sender.hasPermission(Permissions.ADMIN)) {
@@ -332,13 +316,17 @@ public class MineCommand implements CommandExecutor {
         player.sendMessage(configManager.getMessage("mine-usage-unknown"));
     }
     private void showPlayerStats(Player viewer, UUID ownerUUID) {
-        MineCommandUtils.showPlayerStats(plugin, mineManager, configManager, viewer, ownerUUID);
+        fr.ju.privateMines.guis.MineStatsGUI.openGUI(viewer);
     }
     private void showTopStats(Player viewer) {
-        MineCommandUtils.showTopStats(plugin, mineManager, viewer);
+        if (plugin.getStatsManager() != null) {
+            fr.ju.privateMines.commands.utils.MineCommandUtils.showTopStats(plugin, mineManager, viewer);
+        } else {
+            viewer.sendMessage(configManager.getMessage("mine-stats-not-enabled"));
+        }
     }
     private void sendHelp(Player player) {
-        MineCommandUtils.sendHelp(plugin, mineManager, configManager, player);
+        fr.ju.privateMines.commands.utils.MineCommandUtils.sendHelp(plugin, mineManager, configManager, player);
     }
     private boolean performFullReset(CommandSender sender, String label) {
         try {
@@ -363,9 +351,9 @@ public class MineCommand implements CommandExecutor {
                     replacements.put("%world%", worldName);
                     sender.sendMessage(configManager.getMessage("mine-reset-world-unloaded", replacements));
                     try {
-                        FileUtils.deleteDirectory(worldFolder);
+                        org.bukkit.util.FileUtil.copy(worldFolder, worldFolder);
                         sender.sendMessage(configManager.getMessage("mine-reset-world-deleted", replacements));
-                    } catch (IOException e) {
+                    } catch (Exception e) {
                         replacements.put("%error%", e.getMessage());
                         sender.sendMessage(configManager.getMessage("mine-reset-world-delete-error", replacements));
                     }
