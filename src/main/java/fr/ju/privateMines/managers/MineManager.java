@@ -53,6 +53,17 @@ public class MineManager {
         loadMineTiers();
         loadMineData();
     }
+    /**
+     * Charge les tiers de mines depuis le fichier de configuration.
+     * Cette méthode a été refactorisée pour réduire sa complexité cyclomatique en
+     * déléguant les différentes étapes à des méthodes d'assistance spécialisées :
+     * - validateTiersConfig : vérifie la validité de base du fichier de configuration
+     * - getTiersSection : extrait la section de configuration des tiers
+     * - processTiersSections : traite chaque section de tier
+     * - processBlocksForTier : traite les blocs pour un tier spécifique
+     * - loadBlocksForTier : charge les types de blocs et leur probabilité
+     * - logTierLoaded : journalise les informations de chargement
+     */
     public void loadMineTiers() {
         mineTiers.clear();
         plugin.getLogger().info("Chargement des tiers de mines...");

@@ -98,6 +98,15 @@ public class FAWESchematicManager {
         }
         return clipboard;
     }
+    /**
+     * Colle une schématique de manière asynchrone à l'emplacement spécifié.
+     * Cette méthode a été refactorisée pour réduire sa complexité cyclomatique en
+     * déléguant les différentes étapes à des méthodes d'assistance spécialisées.
+     * 
+     * @param schematicName Nom de la schématique à coller
+     * @param location Emplacement où coller la schématique
+     * @param callback Fonction à appeler après le collage avec les limites [min, max] de la structure
+     */
     public void pasteSchematicAsync(String schematicName, Location location, Consumer<BlockVector3[]> callback) {
         if (!validateSchematicParameters(schematicName, location, callback)) {
             return;
@@ -188,6 +197,14 @@ public class FAWESchematicManager {
         e.printStackTrace();
         executeCallback(callback, null);
     }
+    /**
+     * Supprime de manière asynchrone la structure d'une mine.
+     * Cette méthode a été refactorisée pour réduire sa complexité cyclomatique en
+     * déléguant les différentes étapes à des méthodes d'assistance spécialisées.
+     * 
+     * @param mine La mine dont la structure doit être supprimée
+     * @param callback Fonction à appeler après la suppression avec le résultat (succès/échec)
+     */
     public void deleteMineStructureAsync(Mine mine, Consumer<Boolean> callback) {
         if (!validateMineForDeletion(mine, callback)) {
             return;

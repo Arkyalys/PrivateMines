@@ -101,10 +101,10 @@ public class PrivateMinesPlaceholders extends PlaceholderExpansion {
         MineStats stats = mine.getStats();
         
         switch (identifier) {
-            case "blocks_mined": return String.valueOf(stats.getBlocksMined());
-            case "total_blocks": return String.valueOf(stats.getTotalBlocks());
-            case "percentage_mined": return String.valueOf(stats.getPercentageMined());
-            case "visits": return String.valueOf(stats.getVisits());
+            case "blocks_mined": return getStatValueAsString(stats, StatsValueType.BLOCKS_MINED);
+            case "total_blocks": return getStatValueAsString(stats, StatsValueType.TOTAL_BLOCKS);
+            case "percentage_mined": return getStatValueAsString(stats, StatsValueType.PERCENTAGE_MINED);
+            case "visits": return getStatValueAsString(stats, StatsValueType.VISITS);
             case "last_reset": return formatDate(stats.getLastReset());
             case "block_ratio": return getBlockRatio(stats);
             case "reset_count": return getResetCount(mine);
@@ -327,6 +327,26 @@ public class PrivateMinesPlaceholders extends PlaceholderExpansion {
             case "blocks": return String.valueOf(stats.getBlocksMined());
             case "visits": return String.valueOf(stats.getVisits());
             case "tier": return String.valueOf(topMine.getTier());
+            default: return "N/A";
+        }
+    }
+    
+    /**
+     * Énumération pour les différents types de valeurs statistiques
+     */
+    private enum StatsValueType {
+        BLOCKS_MINED, TOTAL_BLOCKS, PERCENTAGE_MINED, VISITS
+    }
+    
+    /**
+     * Récupère une valeur statistique sous forme de chaîne
+     */
+    private String getStatValueAsString(MineStats stats, StatsValueType type) {
+        switch (type) {
+            case BLOCKS_MINED: return String.valueOf(stats.getBlocksMined());
+            case TOTAL_BLOCKS: return String.valueOf(stats.getTotalBlocks());
+            case PERCENTAGE_MINED: return String.valueOf(stats.getPercentageMined());
+            case VISITS: return String.valueOf(stats.getVisits());
             default: return "N/A";
         }
     }
