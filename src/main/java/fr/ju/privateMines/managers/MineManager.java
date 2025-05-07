@@ -58,50 +58,108 @@ public class MineManager {
         plugin.getLogger().info("Chargement des tiers de mines...");
         
         org.bukkit.configuration.file.FileConfiguration tiersConfig = plugin.getConfigManager().getTiersConfig();
+        if (!validateTiersConfig(tiersConfig)) {
+            return;
+        }
+        
+        org.bukkit.configuration.ConfigurationSection tiersSection = getTiersSection(tiersConfig);
+        if (tiersSection == null) {
+            return;
+        }
+        
+        processTiersSections(tiersSection);
+        
+        plugin.getLogger().info(mineTiers.size() + " tiers de mines chargés");
+    }
+    
+    /**
+     * Valide le fichier de configuration des tiers
+     * @return true si la configuration est valide, false sinon
+     */
+    private boolean validateTiersConfig(org.bukkit.configuration.file.FileConfiguration tiersConfig) {
         if (tiersConfig == null) {
             plugin.getLogger().warning("Erreur: Impossible de charger le fichier tiers.yml");
-            return;
+            return false;
         }
         
         if (!tiersConfig.isConfigurationSection("tiers")) {
             plugin.getLogger().warning("Erreur: La section 'tiers' n'existe pas dans tiers.yml");
-            return;
+            return false;
         }
         
+        return true;
+    }
+    
+    /**
+     * Récupère la section de configuration des tiers
+     * @return la section ou null si elle est invalide
+     */
+    private org.bukkit.configuration.ConfigurationSection getTiersSection(org.bukkit.configuration.file.FileConfiguration tiersConfig) {
         org.bukkit.configuration.ConfigurationSection tiersSection = tiersConfig.getConfigurationSection("tiers");
         if (tiersSection == null) {
             plugin.getLogger().warning("Erreur: La section 'tiers' est invalide dans tiers.yml");
-            return;
+            return null;
         }
-        
+        return tiersSection;
+    }
+    
+    /**
+     * Traite toutes les sections de tiers
+     */
+    private void processTiersSections(org.bukkit.configuration.ConfigurationSection tiersSection) {
         for (String tierKey : tiersSection.getKeys(false)) {
             try {
                 int tier = Integer.parseInt(tierKey);
-                Map<Material, Double> blocks = new HashMap<>();
-                
-                org.bukkit.configuration.ConfigurationSection blocksSection = tiersSection.getConfigurationSection(tierKey + ".blocks");
-                if (blocksSection != null) {
-                    for (String blockKey : blocksSection.getKeys(false)) {
-                        try {
-                            Material material = Material.valueOf(blockKey);
-                            double chance = blocksSection.getDouble(blockKey);
-                            blocks.put(material, chance);
-                        } catch (IllegalArgumentException e) {
-                            plugin.getLogger().warning("Erreur: Matériau invalide '" + blockKey + "' dans le tier " + tier);
-                        }
-                    }
-                    
-                    mineTiers.put(tier, blocks);
-                    if (PrivateMines.isDebugMode()) {
-                        plugin.getLogger().info("Tier " + tier + " chargé avec " + blocks.size() + " blocs");
-                    }
-                }
+                processBlocksForTier(tiersSection, tierKey, tier);
             } catch (NumberFormatException e) {
                 plugin.getLogger().warning("Erreur: Tier invalide '" + tierKey + "' dans tiers.yml");
             }
         }
+    }
+    
+    /**
+     * Traite les blocs pour un tier spécifique
+     */
+    private void processBlocksForTier(org.bukkit.configuration.ConfigurationSection tiersSection, String tierKey, int tier) {
+        org.bukkit.configuration.ConfigurationSection blocksSection = tiersSection.getConfigurationSection(tierKey + ".blocks");
+        if (blocksSection == null) {
+            return;
+        }
         
-        plugin.getLogger().info(mineTiers.size() + " tiers de mines chargés");
+        Map<Material, Double> blocks = loadBlocksForTier(blocksSection, tier);
+        
+        if (!blocks.isEmpty()) {
+            mineTiers.put(tier, blocks);
+            logTierLoaded(tier, blocks);
+        }
+    }
+    
+    /**
+     * Charge les types de blocs et leurs probabilités pour un tier
+     */
+    private Map<Material, Double> loadBlocksForTier(org.bukkit.configuration.ConfigurationSection blocksSection, int tier) {
+        Map<Material, Double> blocks = new HashMap<>();
+        
+        for (String blockKey : blocksSection.getKeys(false)) {
+            try {
+                Material material = Material.valueOf(blockKey);
+                double chance = blocksSection.getDouble(blockKey);
+                blocks.put(material, chance);
+            } catch (IllegalArgumentException e) {
+                plugin.getLogger().warning("Erreur: Matériau invalide '" + blockKey + "' dans le tier " + tier);
+            }
+        }
+        
+        return blocks;
+    }
+    
+    /**
+     * Journalise l'information sur un tier chargé (en mode debug)
+     */
+    private void logTierLoaded(int tier, Map<Material, Double> blocks) {
+        if (PrivateMines.isDebugMode()) {
+            plugin.getLogger().info("Tier " + tier + " chargé avec " + blocks.size() + " blocs");
+        }
     }
     public Collection<Mine> getAllMines() {
         return mineMemoryService.getAllMines();
