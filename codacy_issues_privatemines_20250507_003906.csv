@@ -1,2 +1,0 @@
-﻿"Level","Category","File","Line","Message","Tool"
-"Warning","ErrorProne","src/main/java/fr/ju/privateMines/listeners/GUIListener.java","37","The method 'onInventoryClick(InventoryClickEvent)' has an NPath complexity of 240, current threshold is 200","PMD"
