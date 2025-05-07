@@ -1,5 +1,6 @@
 # Maven target directory
 target/
+dependency-reduced-pom.xml
 
 # IntelliJ IDEA
 .idea/
@@ -43,6 +44,7 @@ deploy.ps1
 get-logs.ps1
 get_codacy_issues_privatemines.ps1
 server_logs/
+codacy_issues_privatemines_*.csv
 
 # Plugin source
 edprivatemines-1.9-HOTFIX6/ 
