@@ -184,60 +184,89 @@ public class GUIListener implements Listener {
     }
     
     private void handleOwnerMainGUIClick(Player player, int slot) {
+        // Table de correspondance slot -> action
         switch (slot) {
-            case 4: // Stats
-                MineStatsGUI.openGUI(player);
-                break;
-            case 20: // Teleport
-                teleportToOwnMine(player);
-                break;
-            case 21: // Reset
-                resetOwnMine(player);
-                break;
-            case 22: // Toggle access
-                toggleMineAccess(player);
-                MineMainGUI.openGUI(player);
-                break;
-            case 23: // Settings
-                MineSettingsGUI.openGUI(player);
-                break;
-            case 24: // Visitors
-                MineVisitorsGUI.openGUI(player, 0);
-                break;
-            case 30: // Expand
-                MineExpandGUI.openGUI(player);
-                break;
-            case 31: // Upgrade
-                upgradeMine(player);
-                break;
-            case 32: // Delete
-                showDeleteConfirmation(player);
-                break;
+            case 4: handleStatsButton(player); break;
+            case 20: handleTeleportButton(player); break;
+            case 21: handleResetButton(player); break;
+            case 22: handleToggleAccessButton(player); break;
+            case 23: handleSettingsButton(player); break;
+            case 24: handleVisitorsButton(player); break;
+            case 30: handleExpandButton(player); break;
+            case 31: handleUpgradeButton(player); break;
+            case 32: handleDeleteButton(player); break;
         }
     }
     
-    private void teleportToOwnMine(Player player) {
+    /**
+     * Gère le clic sur le bouton des statistiques
+     */
+    private void handleStatsButton(Player player) {
+        MineStatsGUI.openGUI(player);
+    }
+    
+    /**
+     * Gère le clic sur le bouton de téléportation
+     */
+    private void handleTeleportButton(Player player) {
         player.closeInventory();
         plugin.getMineManager().teleportToMine(player, player);
         player.sendMessage(ColorUtil.translateColors("&aTéléportation à votre mine..."));
     }
     
-    private void resetOwnMine(Player player) {
+    /**
+     * Gère le clic sur le bouton de réinitialisation
+     */
+    private void handleResetButton(Player player) {
         player.closeInventory();
         plugin.getMineManager().resetMine(player);
     }
     
-    private void upgradeMine(Player player) {
-        boolean upgradeResult = plugin.getMineManager().upgradeMine(player);
-        player.closeInventory();
-        if (upgradeResult) {
-            // Le message de succès est géré par la méthode upgradeMine
-        } else {
-            MineMainGUI.openGUI(player);
-        }
+    /**
+     * Gère le clic sur le bouton de basculement d'accès
+     */
+    private void handleToggleAccessButton(Player player) {
+        toggleMineAccess(player);
+        MineMainGUI.openGUI(player);
     }
     
-    private void showDeleteConfirmation(Player player) {
+    /**
+     * Gère le clic sur le bouton des paramètres
+     */
+    private void handleSettingsButton(Player player) {
+        MineSettingsGUI.openGUI(player);
+    }
+    
+    /**
+     * Gère le clic sur le bouton des visiteurs
+     */
+    private void handleVisitorsButton(Player player) {
+        MineVisitorsGUI.openGUI(player, 0);
+    }
+    
+    /**
+     * Gère le clic sur le bouton d'expansion
+     */
+    private void handleExpandButton(Player player) {
+        MineExpandGUI.openGUI(player);
+    }
+    
+    /**
+     * Gère le clic sur le bouton d'amélioration
+     */
+    private void handleUpgradeButton(Player player) {
+        boolean upgradeResult = plugin.getMineManager().upgradeMine(player);
+        player.closeInventory();
+        if (!upgradeResult) {
+            MineMainGUI.openGUI(player);
+        }
+        // Le message de succès est géré par la méthode upgradeMine
+    }
+    
+    /**
+     * Gère le clic sur le bouton de suppression
+     */
+    private void handleDeleteButton(Player player) {
         player.closeInventory();
         player.sendMessage(ColorUtil.translateColors("&c⚠ Pour confirmer la suppression de votre mine, tapez &e/jumine delete&c."));
     }

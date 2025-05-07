@@ -6,10 +6,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.World;
 import org.bukkit.entity.Player;
 
 import fr.ju.privateMines.PrivateMines;
@@ -34,6 +32,7 @@ public class MineManager {
     private final MineUpgradeService mineUpgradeService;
     private final MinePregenService minePregenService;
     private final MinePersistenceService minePersistenceService;
+    private final MineTeleportService mineTeleportService;
     public final MineMemoryService mineMemoryService;
     public MineManager(PrivateMines plugin) {
         this.plugin = plugin;
@@ -49,6 +48,7 @@ public class MineManager {
         this.mineUpgradeService = new MineUpgradeService(plugin, this);
         this.minePregenService = new MinePregenService(plugin, this);
         this.minePersistenceService = new MinePersistenceService(plugin);
+        this.mineTeleportService = new MineTeleportService(plugin);
         this.mineMemoryService = new MineMemoryService();
         loadMineTiers();
         loadMineData();
@@ -217,71 +217,10 @@ public class MineManager {
     }
     /**
      * Retourne la meilleure position de téléportation pour une mine.
+     * Délègue au service MineTeleportService.
      */
     public Location getBetterTeleportLocation(Mine mine) {
-        debug("[DEBUG] Calcul du point de téléportation pour la mine de " + 
-               (mine.getOwner() != null ? Bukkit.getOfflinePlayer(mine.getOwner()).getName() : "inconnu") + 
-               " (UUID: " + mine.getOwner() + ")");
-        if (mine.getTeleportLocation() != null && mine.getTeleportLocation().getWorld() != null) {
-            debug("[DEBUG] Utilisation du point de téléportation personnalisé");
-            return mine.getTeleportLocation();
-        }
-        if (mine.hasMineArea()) {
-            debug("[DEBUG] Calcul d'un point de téléportation basé sur les limites de la mine");
-            World world = mine.getLocation().getWorld();
-            if (world == null) {
-                plugin.getLogger().warning("[DEBUG] Le monde de la mine est null, utilisation de la position de base");
-                return mine.getLocation().clone().add(0.5, 1, 0.5);
-            }
-            debug("[DEBUG] Position de la mine: " + mine.getLocation().getWorld().getName() + 
-                   " [" + mine.getLocation().getX() + "," + 
-                   mine.getLocation().getY() + "," + 
-                   mine.getLocation().getZ() + "]");
-            debug("[DEBUG] Zone de la mine: (" + mine.getMinX() + "," + mine.getMinY() + "," + mine.getMinZ() + 
-                   ") à (" + mine.getMaxX() + "," + mine.getMaxY() + "," + mine.getMaxZ() + ")");
-            int centerZ = (mine.getMinZ() + mine.getMaxZ()) / 2;
-            int teleportX = mine.getMinX() - 2; 
-            int teleportZ = centerZ; 
-            int teleportY = Math.max(64, mine.getMinY() + 1);
-            Location teleportLocation = new Location(world, teleportX + 0.5, teleportY, teleportZ + 0.5);
-            teleportLocation.setYaw(90); 
-            debug("[DEBUG] Point de téléportation calculé: " + teleportLocation.getWorld().getName() + 
-                   " [" + teleportLocation.getX() + "," + 
-                   teleportLocation.getY() + "," + 
-                   teleportLocation.getZ() + "]");
-            if (teleportLocation.getBlock().getType() != Material.AIR || 
-                teleportLocation.clone().add(0, 1, 0).getBlock().getType() != Material.AIR) {
-                debug("[DEBUG] La position calculée n'est pas sûre, recherche d'une position alternative");
-                for (int checkY = teleportY; checkY < Math.min(255, teleportY + 20); checkY++) {
-                    Location check = new Location(world, teleportX + 0.5, checkY, teleportZ + 0.5);
-                    check.setYaw(90); 
-                    if (check.getBlock().getType() == Material.AIR && 
-                        check.clone().add(0, 1, 0).getBlock().getType() == Material.AIR) {
-                        debug("[DEBUG] Position sûre trouvée à Y=" + checkY);
-                        return check;
-                    }
-                }
-                plugin.getLogger().warning("[DEBUG] Aucune position sûre trouvée, retour à la position de base");
-                Location baseLoc = mine.getLocation().clone().add(0.5, 1, 0.5);
-                baseLoc.setYaw(90);
-                return baseLoc;
-            }
-            return teleportLocation;
-        }
-        else if (mine.hasSchematicBounds()) {
-            plugin.getLogger().info("[DEBUG] Utilisation des limites du schéma pour la téléportation");
-            double teleportX = mine.getSchematicMinX() - 2;
-            double centerY = Math.max(64, mine.getSchematicMinY() + 1);
-            double centerZ = (mine.getSchematicMinZ() + mine.getSchematicMaxZ()) / 2;
-            Location schematicCenter = new Location(mine.getLocation().getWorld(), teleportX, centerY, centerZ);
-            schematicCenter.setYaw(90); 
-            plugin.getLogger().info("[DEBUG] Point de téléportation basé sur le schéma: " + schematicCenter.toString());
-            return schematicCenter;
-        }
-        plugin.getLogger().info("[DEBUG] Aucune zone ou schéma défini, utilisation de la position de base de la mine");
-        Location baseLoc = mine.getLocation().clone().add(0.5, 1, 0.5);
-        baseLoc.setYaw(90); 
-        return baseLoc;
+        return mineTeleportService.getBetterTeleportLocation(mine);
     }
     public MineProtectionManager getMineProtectionManager() {
         return protectionManager;
@@ -347,9 +286,15 @@ public class MineManager {
             owner.sendMessage(ColorUtil.deserialize("&cErreur lors de la récupération de votre mine."));
             return false;
         }
-        teleportPlayerToMine(visitor, mineOpt.get());
-        visitor.sendMessage(ColorUtil.deserialize("&aVous avez été téléporté à la mine de " + owner.getName() + "."));
-        return true;
+        
+        Mine mine = mineOpt.get();
+        boolean success = mineTeleportService.teleportToMine(owner, visitor, mine);
+        
+        if (success) {
+            visitor.sendMessage(ColorUtil.deserialize("&aVous avez été téléporté à la mine de " + owner.getName() + "."));
+        }
+        
+        return success;
     }
     public void addMineToMap(UUID uuid, Mine mine) {
         mineMemoryService.addMineToMap(uuid, mine);
