@@ -100,17 +100,85 @@ public class PrivateMinesPlaceholders extends PlaceholderExpansion {
     private String handleMineStatsInfo(Mine mine, String identifier) {
         MineStats stats = mine.getStats();
         
+        // Grouper par catégories pour réduire la complexité
+        if (isBasicStat(identifier)) {
+            return getStatValueAsString(stats, getBasicStatType(identifier));
+        }
+        
+        if (isVisitorStat(identifier)) {
+            return getVisitorStatValue(mine, identifier);
+        }
+        
+        if (isTimeStat(identifier)) {
+            return getTimeStatValue(mine, stats, identifier);
+        }
+        
+        // Gérer le cas spécifique du ratio de blocs
+        if ("block_ratio".equals(identifier)) {
+            return getBlockRatio(stats);
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Vérifie si l'identifiant correspond à une statistique de base
+     */
+    private boolean isBasicStat(String identifier) {
+        return "blocks_mined".equals(identifier) || 
+               "total_blocks".equals(identifier) || 
+               "percentage_mined".equals(identifier) || 
+               "visits".equals(identifier);
+    }
+    
+    /**
+     * Récupère le type de statistique de base correspondant à l'identifiant
+     */
+    private StatsValueType getBasicStatType(String identifier) {
         switch (identifier) {
-            case "blocks_mined": return getStatValueAsString(stats, StatsValueType.BLOCKS_MINED);
-            case "total_blocks": return getStatValueAsString(stats, StatsValueType.TOTAL_BLOCKS);
-            case "percentage_mined": return getStatValueAsString(stats, StatsValueType.PERCENTAGE_MINED);
-            case "visits": return getStatValueAsString(stats, StatsValueType.VISITS);
-            case "last_reset": return formatDate(stats.getLastReset());
-            case "block_ratio": return getBlockRatio(stats);
-            case "reset_count": return getResetCount(mine);
+            case "blocks_mined": return StatsValueType.BLOCKS_MINED;
+            case "total_blocks": return StatsValueType.TOTAL_BLOCKS;
+            case "percentage_mined": return StatsValueType.PERCENTAGE_MINED;
+            case "visits": return StatsValueType.VISITS;
+            default: throw new IllegalArgumentException("Identifiant de statistique non supporté: " + identifier);
+        }
+    }
+    
+    /**
+     * Vérifie si l'identifiant correspond à une statistique liée aux visiteurs
+     */
+    private boolean isVisitorStat(String identifier) {
+        return "visitor_last".equals(identifier) || 
+               "visitor_count_unique".equals(identifier);
+    }
+    
+    /**
+     * Récupère la valeur d'une statistique liée aux visiteurs
+     */
+    private String getVisitorStatValue(Mine mine, String identifier) {
+        switch (identifier) {
             case "visitor_last": return getLastVisitor(mine);
-            case "visitor_count_unique": return String.valueOf(stats.getVisitorStats().size());
-            default: return null;
+            case "visitor_count_unique": return String.valueOf(mine.getStats().getVisitorStats().size());
+            default: return "N/A";
+        }
+    }
+    
+    /**
+     * Vérifie si l'identifiant correspond à une statistique liée au temps
+     */
+    private boolean isTimeStat(String identifier) {
+        return "last_reset".equals(identifier) || 
+               "reset_count".equals(identifier);
+    }
+    
+    /**
+     * Récupère la valeur d'une statistique liée au temps
+     */
+    private String getTimeStatValue(Mine mine, MineStats stats, String identifier) {
+        switch (identifier) {
+            case "last_reset": return formatDate(stats.getLastReset());
+            case "reset_count": return getResetCount(mine);
+            default: return "N/A";
         }
     }
     private String handleMineLocationInfo(Mine mine, String identifier) {
