@@ -16,11 +16,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import fr.ju.privateMines.PrivateMines;
-import fr.ju.privateMines.guis.MineMainGUI;
 import fr.ju.privateMines.managers.MineManager;
 import fr.ju.privateMines.managers.MineWorldManager;
-import fr.ju.privateMines.models.Mine;
-import fr.ju.privateMines.utils.ColorUtil;
 import fr.ju.privateMines.utils.ConfigManager;
 import fr.ju.privateMines.utils.Permissions;
 public class MineCommand implements CommandExecutor {
@@ -159,172 +156,6 @@ public class MineCommand implements CommandExecutor {
         sender.sendMessage(configManager.getMessage("mine-usage-admin-reset").replace("%command%", label));
         sender.sendMessage(configManager.getMessage("mine-usage-admin-gui").replace("%command%", label));
     }
-    private void handleGuiCommand(Player player) {
-        MineMainGUI.openGUI(player);
-    }
-    private boolean handlePregenCommand(Player player, String[] args) {
-        if (!player.hasPermission(Permissions.ADMIN_PREGEN)) {
-            player.sendMessage(configManager.getMessage("mine-no-permission"));
-            return true;
-        }
-        if (args.length < 2) {
-            player.sendMessage(configManager.getMessage("mine-usage-pregen"));
-            return true;
-        }
-        try {
-            int count = Integer.parseInt(args[1]);
-            String type = args.length > 2 ? args[2] : "default";
-            mineManager.pregenMines(player, count, type);
-        } catch (NumberFormatException e) {
-            player.sendMessage(configManager.getMessage("mine-invalid-number"));
-        }
-        return true;
-    }
-    private boolean handleSaveStatsCommand(Player player) {
-        if (!player.hasPermission(Permissions.ADMIN_RELOAD)) {
-            player.sendMessage(configManager.getMessage("mine-no-permission"));
-            return true;
-        }
-        player.sendMessage(configManager.getMessage("mine-stats-saving"));
-        if (plugin.getStatsManager() != null) {
-            plugin.getStatsManager().saveStats();
-            player.sendMessage(configManager.getMessage("mine-stats-saved"));
-        } else {
-            player.sendMessage(configManager.getMessage("mine-stats-not-enabled"));
-        }
-        return true;
-    }
-    private boolean handleStatsCommand(Player player, String[] args) {
-        if (args.length > 1) {
-            if (args[1].equalsIgnoreCase("top")) {
-                showTopStats(player);
-                return true;
-            }
-            Player target = Bukkit.getPlayer(args[1]);
-            if (target == null) {
-                player.sendMessage(configManager.getMessage("mine-invalid-player"));
-                return true;
-            }
-            showPlayerStats(player, target.getUniqueId());
-        } else {
-            showPlayerStats(player, player.getUniqueId());
-        }
-        return true;
-    }
-    private boolean handleReloadCommand(Player player) {
-        if (!player.hasPermission(Permissions.ADMIN_RELOAD)) {
-            player.sendMessage(configManager.getMessage("mine-no-permission"));
-            return true;
-        }
-        player.sendMessage(configManager.getMessage("mine-reload-start"));
-        if (plugin.reloadPlugin()) {
-            player.sendMessage(configManager.getMessage("mine-reload-success"));
-        } else {
-            player.sendMessage(configManager.getMessage("mine-reload-failed"));
-        }
-        return true;
-    }
-    private boolean handleStatsSyncCommand(Player player, String[] args) {
-        if (!player.hasPermission("privateMines.admin")) {
-            player.sendMessage(configManager.getMessage("mine-no-permission"));
-            return true;
-        }
-        if (args.length > 1) {
-            Player target = plugin.getServer().getPlayer(args[1]);
-            if (target == null) {
-                player.sendMessage("§cJoueur non trouvé: " + args[1]);
-                return true;
-            }
-            if (!mineManager.hasMine(target)) {
-                player.sendMessage("§cCe joueur n'a pas de mine.");
-                return true;
-            }
-            Mine targetMine = mineManager.getMine(target).orElse(null);
-            if (targetMine != null) {
-                if (targetMine.hasMineArea()) {
-                    targetMine.calculateTotalBlocks();
-                }
-                targetMine.synchronizeStats();
-                player.sendMessage("§aStatistiques synchronisées pour la mine de " + target.getName() + ".");
-                player.sendMessage("§fBlocs: " + targetMine.getStats().getBlocksMined() + "/" + 
-                                  targetMine.getStats().getTotalBlocks() + " (" + 
-                                  targetMine.getStats().getPercentageMined() + "%)");
-            }
-        }
-        else {
-            int count = 0;
-            for (Mine currentMine : mineManager.getAllMines()) {
-                if (currentMine.hasMineArea()) {
-                    currentMine.calculateTotalBlocks();
-                    currentMine.synchronizeStats();
-                    count++;
-                }
-            }
-            player.sendMessage("§aStatistiques synchronisées pour " + count + " mines.");
-            plugin.getStatsManager().saveStats();
-            player.sendMessage("§aStatistiques sauvegardées.");
-        }
-        return true;
-    }
-    private boolean handleAddCommand(Player player, String[] args) {
-        if (args.length < 2) {
-            player.sendMessage(ColorUtil.translateColors("&cUsage: /mine add <player>"));
-            return true;
-        }
-        Player addTarget = player.getServer().getPlayer(args[1]);
-        if (addTarget == null) {
-            player.sendMessage(ColorUtil.translateColors("&cPlayer not found."));
-            return true;
-        }
-        if (!mineManager.hasMine(player)) {
-            player.sendMessage(ColorUtil.translateColors("&cYou do not own a mine."));
-            return true;
-        }
-        mineManager.getMineProtectionManager().addMemberToMineRegion(player.getUniqueId(), addTarget.getUniqueId());
-        player.sendMessage(ColorUtil.translateColors("&a" + addTarget.getName() + " has been added to your mine!"));
-        return true;
-    }
-    private boolean handleRemoveCommand(Player player, String[] args) {
-        if (args.length < 2) {
-            player.sendMessage(ColorUtil.translateColors("&cUsage: /mine remove <player>"));
-            return true;
-        }
-        Player removeTarget = player.getServer().getPlayer(args[1]);
-        if (removeTarget == null) {
-            player.sendMessage(ColorUtil.translateColors("&cPlayer not found."));
-            return true;
-        }
-        if (!mineManager.hasMine(player)) {
-            player.sendMessage(ColorUtil.translateColors("&cYou do not own a mine."));
-            return true;
-        }
-        mineManager.getMineProtectionManager().removeMemberFromMineRegion(player.getUniqueId(), removeTarget.getUniqueId());
-        player.sendMessage(ColorUtil.translateColors("&a" + removeTarget.getName() + " has been removed from your mine!"));
-        return true;
-    }
-    private boolean handleDebugCommand(Player player, String[] args) {
-        if (args.length < 2 || (!args[1].equalsIgnoreCase("on") && !args[1].equalsIgnoreCase("off"))) {
-            player.sendMessage("§eUsage: /mine debug on|off");
-            return true;
-        }
-        boolean enable = args[1].equalsIgnoreCase("on");
-        fr.ju.privateMines.PrivateMines.setDebugMode(enable);
-        player.sendMessage(enable ? "§aDebug mode enabled." : "§cDebug mode disabled.");
-        return true;
-    }
-    private void handleUnknownCommand(Player player) {
-        player.sendMessage(configManager.getMessage("mine-usage-unknown"));
-    }
-    private void showPlayerStats(Player viewer, UUID ownerUUID) {
-        fr.ju.privateMines.guis.MineStatsGUI.openGUI(viewer);
-    }
-    private void showTopStats(Player viewer) {
-        if (plugin.getStatsManager() != null) {
-            fr.ju.privateMines.commands.utils.MineCommandUtils.showTopStats(plugin, mineManager, viewer);
-        } else {
-            viewer.sendMessage(configManager.getMessage("mine-stats-not-enabled"));
-        }
-    }
     private void sendHelp(Player player) {
         fr.ju.privateMines.commands.utils.MineCommandUtils.sendHelp(plugin, mineManager, configManager, player);
     }
@@ -390,5 +221,8 @@ public class MineCommand implements CommandExecutor {
             e.printStackTrace();
             return false;
         }
+    }
+    private void handleUnknownCommand(Player player) {
+        player.sendMessage(configManager.getMessage("mine-usage-unknown"));
     }
 } 

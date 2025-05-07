@@ -167,75 +167,107 @@ public class PrivateMines extends JavaPlugin {
     public boolean reloadPlugin() {
         errorHandler.logInfo("Starting to reload PrivateMines plugin...");
         try {
-            errorHandler.logInfo("Saving data in progress...");
-            if (statsManager != null) {
-                statsManager.saveStats();
-            }
-            if (mineManager != null) {
-                mineManager.saveAllMineData();
-            }
-            cacheManager.clear();
-            // Unregister all listeners
-            org.bukkit.event.HandlerList.unregisterAll(this);
-            errorHandler.logInfo("All listeners unregistered.");
-            // Cancel all plugin tasks
-            getServer().getScheduler().cancelTasks(this);
-            errorHandler.logInfo("All plugin tasks cancelled.");
-            errorHandler.logInfo("Reloading configurations...");
-            configManager.reloadConfig();
-            configManager.reloadData();
-            ConfigValidator configValidator = new ConfigValidator(this, configManager.getConfig());
-            if (!configValidator.validateConfig()) {
-                configValidator.logErrors();
-                errorHandler.logError("Invalid configuration after reload!", null);
+            savePluginData();
+            unregisterListenersAndTasks();
+            if (!reloadConfiguration()) {
                 return false;
             }
-            errorHandler.logInfo("Resetting managers...");
-            this.mineWorldManager = null;
-            this.mineManager = null;
-            this.statsManager = null;
-            this.hologramManager = null;
-            this.guiManager = null;
-            System.gc(); // Forcer le GC pour libérer les anciennes instances
-            this.mineWorldManager = new MineWorldManager(this);
-            this.mineManager = new MineManager(this);
-            this.statsManager = new StatsManager(this);
-            this.guiManager = new GUIManager(this);
-            if (getServer().getPluginManager().getPlugin("DecentHolograms") != null) {
-                this.hologramManager = new HologramManager(this);
-                errorHandler.logInfo("DecentHolograms reloaded. Hologram support enabled!");
-                getServer().getScheduler().runTaskLater(this, () -> hologramManager.updateAllHolograms(), 20L);
-            } else {
-                this.hologramManager = null;
-                errorHandler.logWarning("DecentHolograms not found. Hologram support disabled.");
-            }
-            errorHandler.logInfo("Reloading mine tiers...");
-            mineManager.loadMineTiers();
-            errorHandler.logInfo("Reloading commands...");
-            getCommand("jumine").setExecutor(new MineCommand(this));
-            getCommand("jumine").setTabCompleter(new MineTabCompleter(this));
-            errorHandler.logInfo("Registering new listeners...");
-            getServer().getPluginManager().registerEvents(new MineListener(this), this);
-            getServer().getPluginManager().registerEvents(new MineStatsListener(this), this);
-            getServer().getPluginManager().registerEvents(new GUIListener(this), this);
-            if (dependencyManager.isDependencyPresent("PlaceholderAPI")) {
-                errorHandler.logInfo("Reloading placeholders...");
-                new PrivateMinesPlaceholders(this).register();
-            }
-            if (dependencyManager.isDependencyPresent("WorldGuard")) {
-                errorHandler.logInfo("Restoring WorldGuard protections...");
-                for (fr.ju.privateMines.models.Mine mine : mineManager.getAllMines()) {
-                    mineManager.getMineProtectionManager().updateMineProtection(mine);
-                }
-            } else {
-                errorHandler.logWarning("WorldGuard is not present, protections will not be restored!");
-            }
+            resetAndRecreateManagers();
+            reloadPlaceholdersAndProtections();
             errorHandler.logInfo("Reload completed successfully!");
             return true;
         } catch (Exception e) {
             errorHandler.logError("Error during reload", e);
             errorHandler.logError("The plugin may not function correctly. Please restart the server.", null);
             return false;
+        }
+    }
+    private void savePluginData() {
+        errorHandler.logInfo("Saving data in progress...");
+        if (statsManager != null) {
+            statsManager.saveStats();
+        }
+        if (mineManager != null) {
+            mineManager.saveAllMineData();
+        }
+        cacheManager.clear();
+    }
+    private void unregisterListenersAndTasks() {
+        // Unregister all listeners
+        org.bukkit.event.HandlerList.unregisterAll(this);
+        errorHandler.logInfo("All listeners unregistered.");
+        // Cancel all plugin tasks
+        getServer().getScheduler().cancelTasks(this);
+        errorHandler.logInfo("All plugin tasks cancelled.");
+    }
+    private boolean reloadConfiguration() {
+        errorHandler.logInfo("Reloading configurations...");
+        configManager.reloadConfig();
+        configManager.reloadData();
+        ConfigValidator configValidator = new ConfigValidator(this, configManager.getConfig());
+        if (!configValidator.validateConfig()) {
+            configValidator.logErrors();
+            errorHandler.logError("Invalid configuration after reload!", null);
+            return false;
+        }
+        return true;
+    }
+    private void resetAndRecreateManagers() {
+        errorHandler.logInfo("Resetting managers...");
+        this.mineWorldManager = null;
+        this.mineManager = null;
+        this.statsManager = null;
+        this.hologramManager = null;
+        this.guiManager = null;
+        System.gc(); // Forcer le GC pour libérer les anciennes instances
+        
+        this.mineWorldManager = new MineWorldManager(this);
+        this.mineManager = new MineManager(this);
+        this.statsManager = new StatsManager(this);
+        this.guiManager = new GUIManager(this);
+        
+        initializeHologramsAfterReload();
+        
+        errorHandler.logInfo("Reloading mine tiers...");
+        mineManager.loadMineTiers();
+        
+        reregisterCommands();
+        reregisterListeners();
+    }
+    private void initializeHologramsAfterReload() {
+        if (getServer().getPluginManager().getPlugin("DecentHolograms") != null) {
+            this.hologramManager = new HologramManager(this);
+            errorHandler.logInfo("DecentHolograms reloaded. Hologram support enabled!");
+            getServer().getScheduler().runTaskLater(this, () -> hologramManager.updateAllHolograms(), 20L);
+        } else {
+            this.hologramManager = null;
+            errorHandler.logWarning("DecentHolograms not found. Hologram support disabled.");
+        }
+    }
+    private void reregisterCommands() {
+        errorHandler.logInfo("Reloading commands...");
+        getCommand("jumine").setExecutor(new MineCommand(this));
+        getCommand("jumine").setTabCompleter(new MineTabCompleter(this));
+    }
+    private void reregisterListeners() {
+        errorHandler.logInfo("Registering new listeners...");
+        getServer().getPluginManager().registerEvents(new MineListener(this), this);
+        getServer().getPluginManager().registerEvents(new MineStatsListener(this), this);
+        getServer().getPluginManager().registerEvents(new GUIListener(this), this);
+    }
+    private void reloadPlaceholdersAndProtections() {
+        if (dependencyManager.isDependencyPresent("PlaceholderAPI")) {
+            errorHandler.logInfo("Reloading placeholders...");
+            new PrivateMinesPlaceholders(this).register();
+        }
+        
+        if (dependencyManager.isDependencyPresent("WorldGuard")) {
+            errorHandler.logInfo("Restoring WorldGuard protections...");
+            for (fr.ju.privateMines.models.Mine mine : mineManager.getAllMines()) {
+                mineManager.getMineProtectionManager().updateMineProtection(mine);
+            }
+        } else {
+            errorHandler.logWarning("WorldGuard is not present, protections will not be restored!");
         }
     }
     public static boolean isDebugMode() {

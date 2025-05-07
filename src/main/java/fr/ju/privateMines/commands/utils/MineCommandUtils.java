@@ -135,35 +135,42 @@ public class MineCommandUtils {
         if (durationStr == null || durationStr.isEmpty()) {
             throw new IllegalArgumentException("Duration string cannot be empty");
         }
+        
+        // Si la durée est juste un nombre entier, retournez-le tel quel
         if (durationStr.matches("\\d+")) {
             return Long.parseLong(durationStr);
         }
-        long totalSeconds = 0;
+        
+        return parseDurationWithUnits(durationStr);
+    }
+
+    private static long parseDurationWithUnits(String durationStr) {
         java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("(\\d+)([dhms])");
         java.util.regex.Matcher matcher = pattern.matcher(durationStr.toLowerCase());
+        
+        long totalSeconds = 0;
         boolean found = false;
+        
         while (matcher.find()) {
             found = true;
             int amount = Integer.parseInt(matcher.group(1));
-            String unit = matcher.group(2);
-            switch (unit) {
-                case "d":
-                    totalSeconds += amount * 86400;
-                    break;
-                case "h":
-                    totalSeconds += amount * 3600;
-                    break;
-                case "m":
-                    totalSeconds += amount * 60;
-                    break;
-                case "s":
-                    totalSeconds += amount;
-                    break;
-            }
+            totalSeconds += convertToSeconds(amount, matcher.group(2));
         }
+        
         if (!found) {
             throw new IllegalArgumentException("Invalid duration format");
         }
+        
         return totalSeconds;
+    }
+
+    private static long convertToSeconds(int amount, String unit) {
+        switch (unit) {
+            case "d": return amount * 86400;
+            case "h": return amount * 3600;
+            case "m": return amount * 60;
+            case "s": return amount;
+            default: return 0; // Ne devrait jamais arriver car le pattern est limité à d, h, m, s
+        }
     }
 } 

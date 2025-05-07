@@ -122,8 +122,7 @@ public class MineExpandGUI {
      * Ajoute les items représentant les paliers d'expansion
      */
     private static void addMilestoneItems(Inventory inventory, Mine mine) {
-        GUIManager guiManager = PrivateMines.getInstance().getGUIManager();
-        
+        // GUIManager guiManager = PrivateMines.getInstance().getGUIManager();
         int slotIndex = 19;
         for (int milestone : SIZE_MILESTONES) {
             if (slotIndex > 25) break;

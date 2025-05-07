@@ -76,14 +76,12 @@ public class MineVisitorsGUI {
      * Représente les informations de pagination pour l'interface
      */
     private static class PaginationInfo {
-        final int totalItems;
         final int totalPages;
         final int currentPage;
         final int startIndex;
         final int endIndex;
         
         PaginationInfo(int totalItems, int totalPages, int currentPage, int startIndex, int endIndex) {
-            this.totalItems = totalItems;
             this.totalPages = totalPages;
             this.currentPage = currentPage;
             this.startIndex = startIndex;

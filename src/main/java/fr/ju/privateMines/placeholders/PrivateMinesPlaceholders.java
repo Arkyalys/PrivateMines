@@ -11,6 +11,14 @@ import fr.ju.privateMines.models.MineStats;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 public class PrivateMinesPlaceholders extends PlaceholderExpansion {
     private final PrivateMines plugin;
+    private static final String[] NULL_MINE_PLACEHOLDERS = {
+        "tier", "size", "tax", "is_open", "blocks_mined", "total_blocks",
+        "percentage_mined", "visits", "last_reset", "owner", "location",
+        "teleport_x", "teleport_y", "teleport_z", "teleport_world",
+        "status_color", "progress_bar", "next_reset", "time_since_last_reset",
+        "block_ratio", "is_full", "visitor_last", "visitor_count_unique",
+        "reset_count"
+    };
     public PrivateMinesPlaceholders(PrivateMines plugin) {
         this.plugin = plugin;
         plugin.getLogger().info("Placeholders PrivateMines enregistrés avec l'identifiant 'privatemine'");
@@ -52,62 +60,87 @@ public class PrivateMinesPlaceholders extends PlaceholderExpansion {
         return null;
     }
     private String handleNullMine(String identifier) {
-        switch (identifier) {
-            case "tier":
-            case "size":
-            case "tax":
-            case "is_open":
-            case "blocks_mined":
-            case "total_blocks":
-            case "percentage_mined":
-            case "visits":
-            case "last_reset":
-            case "owner":
-            case "location":
-            case "teleport_x":
-            case "teleport_y":
-            case "teleport_z":
-            case "teleport_world":
-            case "status_color":
-            case "progress_bar":
-            case "next_reset":
-            case "time_since_last_reset":
-            case "block_ratio":
-            case "is_full":
-            case "visitor_last":
-            case "visitor_count_unique":
-            case "reset_count":
+        for (String placeholder : NULL_MINE_PLACEHOLDERS) {
+            if (identifier.equals(placeholder)) {
                 return "N/A";
-            default:
-                return null;
+            }
         }
+        return null;
     }
     private String handleMinePlaceholders(Mine mine, String identifier) {
+        // Gestion des informations basiques de la mine
+        String basicInfo = handleBasicMineInfo(mine, identifier);
+        if (basicInfo != null) return basicInfo;
+        
+        // Gestion des informations de statistiques
+        String statsInfo = handleMineStatsInfo(mine, identifier);
+        if (statsInfo != null) return statsInfo;
+        
+        // Gestion des informations de localisation
+        String locationInfo = handleMineLocationInfo(mine, identifier);
+        if (locationInfo != null) return locationInfo;
+        
+        // Gestion des informations de statut et d'affichage
+        String displayInfo = handleMineDisplayInfo(mine, identifier);
+        if (displayInfo != null) return displayInfo;
+        
+        return null;
+    }
+    private String handleBasicMineInfo(Mine mine, String identifier) {
         switch (identifier) {
             case "tier": return String.valueOf(mine.getTier());
             case "size": return String.valueOf(mine.getSize());
             case "tax": return String.valueOf(mine.getTax());
             case "is_open": return mine.isOpen() ? "Ouverte" : "Fermée";
-            case "blocks_mined": return String.valueOf(mine.getStats().getBlocksMined());
-            case "total_blocks": return String.valueOf(mine.getStats().getTotalBlocks());
-            case "percentage_mined": return String.valueOf(mine.getStats().getPercentageMined());
-            case "visits": return String.valueOf(mine.getStats().getVisits());
-            case "last_reset": return formatDate(mine.getStats().getLastReset());
-            case "owner": return Bukkit.getOfflinePlayer(mine.getOwner()).getName() != null ? Bukkit.getOfflinePlayer(mine.getOwner()).getName() : mine.getOwner().toString();
-            case "location": return mine.getLocation().getWorld().getName() + ", " + mine.getLocation().getBlockX() + ", " + mine.getLocation().getBlockY() + ", " + mine.getLocation().getBlockZ();
-            case "teleport_x": return mine.getTeleportLocation() != null ? String.valueOf(mine.getTeleportLocation().getBlockX()) : "N/A";
-            case "teleport_y": return mine.getTeleportLocation() != null ? String.valueOf(mine.getTeleportLocation().getBlockY()) : "N/A";
-            case "teleport_z": return mine.getTeleportLocation() != null ? String.valueOf(mine.getTeleportLocation().getBlockZ()) : "N/A";
-            case "teleport_world": return mine.getTeleportLocation() != null && mine.getTeleportLocation().getWorld() != null ? mine.getTeleportLocation().getWorld().getName() : "N/A";
+            case "owner": return Bukkit.getOfflinePlayer(mine.getOwner()).getName() != null ? 
+                          Bukkit.getOfflinePlayer(mine.getOwner()).getName() : mine.getOwner().toString();
+            default: return null;
+        }
+    }
+    private String handleMineStatsInfo(Mine mine, String identifier) {
+        MineStats stats = mine.getStats();
+        switch (identifier) {
+            case "blocks_mined": return String.valueOf(stats.getBlocksMined());
+            case "total_blocks": return String.valueOf(stats.getTotalBlocks());
+            case "percentage_mined": return String.valueOf(stats.getPercentageMined());
+            case "visits": return String.valueOf(stats.getVisits());
+            case "last_reset": return formatDate(stats.getLastReset());
+            case "block_ratio": return stats.getBlocksMined() + "/" + stats.getTotalBlocks();
+            case "reset_count": return getResetCount(mine);
+            case "visitor_last": return getLastVisitor(mine);
+            case "visitor_count_unique": return String.valueOf(stats.getVisitorStats().size());
+            default: return null;
+        }
+    }
+    private String handleMineLocationInfo(Mine mine, String identifier) {
+        switch (identifier) {
+            case "location": 
+                return mine.getLocation().getWorld().getName() + ", " + 
+                       mine.getLocation().getBlockX() + ", " + 
+                       mine.getLocation().getBlockY() + ", " + 
+                       mine.getLocation().getBlockZ();
+            case "teleport_x": 
+                return mine.getTeleportLocation() != null ? 
+                       String.valueOf(mine.getTeleportLocation().getBlockX()) : "N/A";
+            case "teleport_y": 
+                return mine.getTeleportLocation() != null ? 
+                       String.valueOf(mine.getTeleportLocation().getBlockY()) : "N/A";
+            case "teleport_z": 
+                return mine.getTeleportLocation() != null ? 
+                       String.valueOf(mine.getTeleportLocation().getBlockZ()) : "N/A";
+            case "teleport_world": 
+                return mine.getTeleportLocation() != null && mine.getTeleportLocation().getWorld() != null ? 
+                       mine.getTeleportLocation().getWorld().getName() : "N/A";
+            default: return null;
+        }
+    }
+    private String handleMineDisplayInfo(Mine mine, String identifier) {
+        switch (identifier) {
             case "status_color": return mine.isOpen() ? "§aOuverte" : "§cFermée";
             case "progress_bar": return buildProgressBar(mine);
             case "next_reset": return getNextReset(mine);
             case "time_since_last_reset": return getTimeSinceLastReset(mine);
-            case "block_ratio": return mine.getStats().getBlocksMined() + "/" + mine.getStats().getTotalBlocks();
             case "is_full": return isMineFull(mine);
-            case "visitor_last": return getLastVisitor(mine);
-            case "visitor_count_unique": return String.valueOf(mine.getStats().getVisitorStats().size());
-            case "reset_count": return getResetCount(mine);
             default: return null;
         }
     }
