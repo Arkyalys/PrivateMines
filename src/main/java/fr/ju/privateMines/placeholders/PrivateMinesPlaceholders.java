@@ -99,13 +99,14 @@ public class PrivateMinesPlaceholders extends PlaceholderExpansion {
     }
     private String handleMineStatsInfo(Mine mine, String identifier) {
         MineStats stats = mine.getStats();
+        
         switch (identifier) {
             case "blocks_mined": return String.valueOf(stats.getBlocksMined());
             case "total_blocks": return String.valueOf(stats.getTotalBlocks());
             case "percentage_mined": return String.valueOf(stats.getPercentageMined());
             case "visits": return String.valueOf(stats.getVisits());
             case "last_reset": return formatDate(stats.getLastReset());
-            case "block_ratio": return stats.getBlocksMined() + "/" + stats.getTotalBlocks();
+            case "block_ratio": return getBlockRatio(stats);
             case "reset_count": return getResetCount(mine);
             case "visitor_last": return getLastVisitor(mine);
             case "visitor_count_unique": return String.valueOf(stats.getVisitorStats().size());
@@ -114,23 +115,11 @@ public class PrivateMinesPlaceholders extends PlaceholderExpansion {
     }
     private String handleMineLocationInfo(Mine mine, String identifier) {
         switch (identifier) {
-            case "location": 
-                return mine.getLocation().getWorld().getName() + ", " + 
-                       mine.getLocation().getBlockX() + ", " + 
-                       mine.getLocation().getBlockY() + ", " + 
-                       mine.getLocation().getBlockZ();
-            case "teleport_x": 
-                return mine.getTeleportLocation() != null ? 
-                       String.valueOf(mine.getTeleportLocation().getBlockX()) : "N/A";
-            case "teleport_y": 
-                return mine.getTeleportLocation() != null ? 
-                       String.valueOf(mine.getTeleportLocation().getBlockY()) : "N/A";
-            case "teleport_z": 
-                return mine.getTeleportLocation() != null ? 
-                       String.valueOf(mine.getTeleportLocation().getBlockZ()) : "N/A";
-            case "teleport_world": 
-                return mine.getTeleportLocation() != null && mine.getTeleportLocation().getWorld() != null ? 
-                       mine.getTeleportLocation().getWorld().getName() : "N/A";
+            case "location": return getFormattedMineLocation(mine);
+            case "teleport_x": return getTeleportCoordinate(mine, CoordinateType.X);
+            case "teleport_y": return getTeleportCoordinate(mine, CoordinateType.Y);
+            case "teleport_z": return getTeleportCoordinate(mine, CoordinateType.Z);
+            case "teleport_world": return getTeleportWorld(mine);
             default: return null;
         }
     }
@@ -196,30 +185,149 @@ public class PrivateMinesPlaceholders extends PlaceholderExpansion {
     }
     private String handleTopPlaceholders(String identifier) {
         try {
-            String[] parts = identifier.split("_");
-            if (parts.length == 3) {
-                int position = Integer.parseInt(parts[1]) - 1;
-                String value = parts[2];
-                java.util.List<Mine> topMines = plugin.getStatsManager().getTopMines();
-                if (position >= 0 && position < topMines.size()) {
-                    Mine topMine = topMines.get(position);
-                    OfflinePlayer owner = Bukkit.getOfflinePlayer(topMine.getOwner());
-                    MineStats stats = topMine.getStats();
-                    switch (value) {
-                        case "name": return owner.getName() != null ? owner.getName() : "Inconnu";
-                        case "blocks": return String.valueOf(stats.getBlocksMined());
-                        case "visits": return String.valueOf(stats.getVisits());
-                        case "tier": return String.valueOf(topMine.getTier());
-                    }
-                }
+            PlaceholderComponents components = parseTopPlaceholderIdentifier(identifier);
+            if (components == null) {
+                return null;
             }
+            
+            int position = components.position;
+            String valueType = components.valueType;
+            
+            Mine topMine = getTopMineAtPosition(position);
+            if (topMine == null) {
+                return "N/A";
+            }
+            
+            return getTopMineValue(topMine, valueType);
         } catch (NumberFormatException e) {
             return "N/A";
         }
-        return null;
     }
     private String formatDate(long timestamp) {
         SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy HH:mm");
         return format.format(new Date(timestamp));
+    }
+    /**
+     * Type énuméré pour les coordonnées
+     */
+    private enum CoordinateType {
+        X, Y, Z
+    }
+    
+    /**
+     * Retourne la position formatée de la mine
+     */
+    private String getFormattedMineLocation(Mine mine) {
+        return mine.getLocation().getWorld().getName() + ", " + 
+               mine.getLocation().getBlockX() + ", " + 
+               mine.getLocation().getBlockY() + ", " + 
+               mine.getLocation().getBlockZ();
+    }
+    
+    /**
+     * Récupère une coordonnée spécifique du point de téléportation
+     */
+    private String getTeleportCoordinate(Mine mine, CoordinateType type) {
+        if (!hasTeleportLocation(mine)) {
+            return "N/A";
+        }
+        
+        switch (type) {
+            case X: return String.valueOf(mine.getTeleportLocation().getBlockX());
+            case Y: return String.valueOf(mine.getTeleportLocation().getBlockY());
+            case Z: return String.valueOf(mine.getTeleportLocation().getBlockZ());
+            default: return "N/A";
+        }
+    }
+    
+    /**
+     * Récupère le monde du point de téléportation
+     */
+    private String getTeleportWorld(Mine mine) {
+        if (!hasTeleportLocationWithWorld(mine)) {
+            return "N/A";
+        }
+        return mine.getTeleportLocation().getWorld().getName();
+    }
+    
+    /**
+     * Vérifie si la mine a un point de téléportation valide
+     */
+    private boolean hasTeleportLocation(Mine mine) {
+        return mine.getTeleportLocation() != null;
+    }
+    
+    /**
+     * Vérifie si la mine a un point de téléportation avec un monde valide
+     */
+    private boolean hasTeleportLocationWithWorld(Mine mine) {
+        return hasTeleportLocation(mine) && mine.getTeleportLocation().getWorld() != null;
+    }
+    
+    /**
+     * Retourne le ratio de blocs minés sous forme de chaîne
+     */
+    private String getBlockRatio(MineStats stats) {
+        return stats.getBlocksMined() + "/" + stats.getTotalBlocks();
+    }
+    
+    /**
+     * Structure pour stocker les composants d'un placeholder de type "top_X_value"
+     */
+    private static class PlaceholderComponents {
+        final int position;
+        final String valueType;
+        
+        PlaceholderComponents(int position, String valueType) {
+            this.position = position;
+            this.valueType = valueType;
+        }
+    }
+    
+    /**
+     * Parse l'identifiant du placeholder pour extraire la position et le type de valeur
+     * @return PlaceholderComponents ou null si le format est invalide
+     */
+    private PlaceholderComponents parseTopPlaceholderIdentifier(String identifier) {
+        String[] parts = identifier.split("_");
+        if (parts.length != 3) {
+            return null;
+        }
+        
+        try {
+            int position = Integer.parseInt(parts[1]) - 1;
+            String valueType = parts[2];
+            return new PlaceholderComponents(position, valueType);
+        } catch (NumberFormatException e) {
+            throw e; // Rethrow pour être géré dans la méthode appelante
+        }
+    }
+    
+    /**
+     * Récupère la mine à une position donnée dans le classement
+     * @return La mine à la position spécifiée ou null si hors limites
+     */
+    private Mine getTopMineAtPosition(int position) {
+        java.util.List<Mine> topMines = plugin.getStatsManager().getTopMines();
+        if (position < 0 || position >= topMines.size()) {
+            return null;
+        }
+        return topMines.get(position);
+    }
+    
+    /**
+     * Récupère la valeur spécifique demandée pour une mine du top
+     */
+    private String getTopMineValue(Mine topMine, String valueType) {
+        OfflinePlayer owner = Bukkit.getOfflinePlayer(topMine.getOwner());
+        MineStats stats = topMine.getStats();
+        
+        switch (valueType) {
+            case "name": return owner.getName() != null ? owner.getName() : "Inconnu";
+            case "blocks": return String.valueOf(stats.getBlocksMined());
+            case "visits": return String.valueOf(stats.getVisits());
+            case "tier": return String.valueOf(topMine.getTier());
+            default: return "N/A";
+        }
     }
 } 

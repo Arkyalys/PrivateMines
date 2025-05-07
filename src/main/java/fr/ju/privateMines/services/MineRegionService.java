@@ -86,14 +86,38 @@ public class MineRegionService {
         }
         return boundsToUse;
     }
+    /**
+     * Vérifie si les limites du schéma sont valides.
+     */
     private boolean isValidSchematicBounds(BlockVector3[] boundsToUse) {
-        if (boundsToUse != null && boundsToUse.length >= 2 && boundsToUse[0] != null && boundsToUse[1] != null) {
-            BlockVector3 minS = boundsToUse[0];
-            BlockVector3 maxS = boundsToUse[1];
-            return !(minS.getBlockX() == 0 && minS.getBlockY() == 0 && minS.getBlockZ() == 0 &&
-                     maxS.getBlockX() == 0 && maxS.getBlockY() == 0 && maxS.getBlockZ() == 0);
+        if (!hasValidBoundsStructure(boundsToUse)) {
+            return false;
         }
-        return false;
+        
+        return !isOriginBounds(boundsToUse[0], boundsToUse[1]);
+    }
+    /**
+     * Vérifie si le tableau de limites a une structure valide (non null, longueur suffisante, éléments non null).
+     */
+    private boolean hasValidBoundsStructure(BlockVector3[] bounds) {
+        return bounds != null && 
+               bounds.length >= 2 && 
+               bounds[0] != null && 
+               bounds[1] != null;
+    }
+    /**
+     * Vérifie si les deux points sont à l'origine (0,0,0), ce qui indiquerait des limites non valides.
+     */
+    private boolean isOriginBounds(BlockVector3 min, BlockVector3 max) {
+        return isOriginPoint(min) && isOriginPoint(max);
+    }
+    /**
+     * Vérifie si un point est à l'origine (0,0,0).
+     */
+    private boolean isOriginPoint(BlockVector3 point) {
+        return point.getBlockX() == 0 && 
+               point.getBlockY() == 0 && 
+               point.getBlockZ() == 0;
     }
     private ProtectedRegion createFullMineRegion(String fullMineId, BlockVector3[] boundsToUse) {
         BlockVector3 minS = boundsToUse[0];

@@ -191,36 +191,110 @@ public class HologramManager {
     }
     private List<String> generatePlayerInfoHologramLines(Mine mine) {
         List<String> allLines = new java.util.ArrayList<>();
-        allLines.add("&6&l✦ &f&lInformations Joueur &6&l✦");
-        allLines.add("");
+        
+        // En-tête
+        addHeaderLines(allLines);
+        
+        // Informations du propriétaire
+        addOwnerInfo(allLines, mine);
+        
+        // Statistiques de la mine
+        addMineStats(allLines, mine);
+        
+        // Statut d'ouverture
+        addMineStatus(allLines, mine);
+        
+        // Informations sur le dernier reset
+        addLastResetInfo(allLines, mine);
+        
+        return allLines;
+    }
+    
+    /**
+     * Ajoute l'en-tête du hologramme d'informations joueur
+     */
+    private void addHeaderLines(List<String> lines) {
+        lines.add("&6&l✦ &f&lInformations Joueur &6&l✦");
+        lines.add("");
+    }
+    
+    /**
+     * Ajoute les informations du propriétaire de la mine
+     */
+    private void addOwnerInfo(List<String> lines, Mine mine) {
         String ownerName = plugin.getServer().getOfflinePlayer(mine.getOwner()).getName();
         if (ownerName == null) {
             ownerName = "Inconnu";
         }
-        allLines.add("&e&lPropriétaire: &f" + ownerName);
+        lines.add("&e&lPropriétaire: &f" + ownerName);
+    }
+    
+    /**
+     * Ajoute les statistiques principales de la mine
+     */
+    private void addMineStats(List<String> lines, Mine mine) {
         MineStats stats = mine.getStats();
-        allLines.add("#ICON: DIAMOND &7Niveau: &e" + mine.getTier());
-        allLines.add("#ICON: COMPASS &7Visites: &e" + stats.getVisits());
-        allLines.add("#ICON: GOLD_NUGGET &7Taxe: &e" + mine.getTax() + "%");
+        lines.add("#ICON: DIAMOND &7Niveau: &e" + mine.getTier());
+        lines.add("#ICON: COMPASS &7Visites: &e" + stats.getVisits());
+        lines.add("#ICON: GOLD_NUGGET &7Taxe: &e" + mine.getTax() + "%");
+    }
+    
+    /**
+     * Ajoute l'information sur le statut d'ouverture de la mine
+     */
+    private void addMineStatus(List<String> lines, Mine mine) {
         String statusIcon = mine.isOpen() ? "LIME_CONCRETE" : "RED_CONCRETE";
-        allLines.add("#ICON: " + statusIcon + " &7Statut: " + (mine.isOpen() ? "&aOuverte" : "&cFermée"));
+        lines.add("#ICON: " + statusIcon + " &7Statut: " + (mine.isOpen() ? "&aOuverte" : "&cFermée"));
+    }
+    
+    /**
+     * Ajoute l'information sur le dernier reset de la mine
+     */
+    private void addLastResetInfo(List<String> lines, Mine mine) {
+        MineStats stats = mine.getStats();
         long lastResetMillis = stats.getLastReset();
+        String timeAgo = formatTimeSinceReset(lastResetMillis);
+        lines.add("#ICON: CLOCK &7Dernier reset: &e" + timeAgo);
+    }
+    
+    /**
+     * Formate le temps écoulé depuis le dernier reset en chaîne lisible
+     */
+    private String formatTimeSinceReset(long lastResetMillis) {
         long currentMillis = System.currentTimeMillis();
         long diffMillis = currentMillis - lastResetMillis;
         long diffMinutes = diffMillis / (60 * 1000);
-        String timeAgo;
+        
         if (diffMinutes < 60) {
-            timeAgo = diffMinutes + " minute" + (diffMinutes > 1 ? "s" : "");
+            return formatTimeInMinutes(diffMinutes);
         } else {
             long diffHours = diffMinutes / 60;
             if (diffHours < 24) {
-                timeAgo = diffHours + " heure" + (diffHours > 1 ? "s" : "");
+                return formatTimeInHours(diffHours);
             } else {
-                long diffDays = diffHours / 24;
-                timeAgo = diffDays + " jour" + (diffDays > 1 ? "s" : "");
+                return formatTimeInDays(diffHours / 24);
             }
         }
-        allLines.add("#ICON: CLOCK &7Dernier reset: &e" + timeAgo);
-        return allLines;
+    }
+    
+    /**
+     * Formate un temps en minutes avec pluriel approprié
+     */
+    private String formatTimeInMinutes(long minutes) {
+        return minutes + " minute" + (minutes > 1 ? "s" : "");
+    }
+    
+    /**
+     * Formate un temps en heures avec pluriel approprié
+     */
+    private String formatTimeInHours(long hours) {
+        return hours + " heure" + (hours > 1 ? "s" : "");
+    }
+    
+    /**
+     * Formate un temps en jours avec pluriel approprié
+     */
+    private String formatTimeInDays(long days) {
+        return days + " jour" + (days > 1 ? "s" : "");
     }
 }

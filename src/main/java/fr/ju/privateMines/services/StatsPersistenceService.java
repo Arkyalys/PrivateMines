@@ -23,42 +23,85 @@ public class StatsPersistenceService {
         File statsFile = getStatsFile();
         Map<UUID, MineStats> mineStats = getMineStats();
         FileConfiguration statsConfig = getStatsConfig();
+        
+        if (!ensureStatsFileExists(statsFile)) {
+            return;
+        }
+        
+        statsConfig = YamlConfiguration.loadConfiguration(statsFile);
+        setStatsConfig(statsConfig);
+        
+        ConfigurationSection minesSection = statsConfig.getConfigurationSection("mines");
+        if (minesSection != null) {
+            loadMinesFromConfig(minesSection, mineStats);
+        }
+        
+        plugin.getLogger().info("Statistiques chargées pour " + mineStats.size() + " mines");
+    }
+    
+    /**
+     * S'assure que le fichier de statistiques existe, le crée si nécessaire.
+     * @return true si le fichier existe ou a été créé avec succès, false en cas d'erreur
+     */
+    private boolean ensureStatsFileExists(File statsFile) {
         if (!statsFile.exists()) {
             try {
                 statsFile.createNewFile();
+                return true;
             } catch (IOException e) {
                 plugin.getLogger().severe("Impossible de créer le fichier stats.yml : " + e.getMessage());
-                return;
+                return false;
             }
         }
-        statsConfig = YamlConfiguration.loadConfiguration(statsFile);
-        setStatsConfig(statsConfig);
-        ConfigurationSection minesSection = statsConfig.getConfigurationSection("mines");
-        if (minesSection != null) {
-            for (String key : minesSection.getKeys(false)) {
-                try {
-                    UUID owner = UUID.fromString(key);
-                    MineStats stats = new MineStats(owner);
-                    ConfigurationSection mineSection = minesSection.getConfigurationSection(key);
-                    if (mineSection != null) {
-                        stats.setTotalBlocks(mineSection.getInt("total-blocks", 0));
-                        if (mineSection.contains("blocks-mined")) {
-                            int blocksMined = mineSection.getInt("blocks-mined", 0);
-                            stats.setBlocksMined(blocksMined);
-                            plugin.getLogger().info("[DEBUG] Loaded " + blocksMined + " mined blocks for UUID " + key);
-                        }
-                        if (mineSection.contains("last-reset")) {
-                            long lastReset = mineSection.getLong("last-reset", System.currentTimeMillis());
-                            stats.setLastReset(lastReset);
-                        }
-                    }
+        return true;
+    }
+    
+    /**
+     * Charge les statistiques de toutes les mines à partir de la section de configuration.
+     */
+    private void loadMinesFromConfig(ConfigurationSection minesSection, Map<UUID, MineStats> mineStats) {
+        for (String key : minesSection.getKeys(false)) {
+            try {
+                UUID owner = UUID.fromString(key);
+                ConfigurationSection mineSection = minesSection.getConfigurationSection(key);
+                
+                if (mineSection != null) {
+                    MineStats stats = loadMineStats(owner, mineSection);
                     mineStats.put(owner, stats);
-                } catch (IllegalArgumentException e) {
-                    plugin.getLogger().warning("UUID invalide dans stats.yml : " + key);
                 }
+            } catch (IllegalArgumentException e) {
+                plugin.getLogger().warning("UUID invalide dans stats.yml : " + key);
             }
         }
-        plugin.getLogger().info("Statistiques chargées pour " + mineStats.size() + " mines");
+    }
+    
+    /**
+     * Charge les statistiques d'une mine spécifique.
+     */
+    private MineStats loadMineStats(UUID owner, ConfigurationSection mineSection) {
+        MineStats stats = new MineStats(owner);
+        
+        stats.setTotalBlocks(mineSection.getInt("total-blocks", 0));
+        
+        if (mineSection.contains("blocks-mined")) {
+            int blocksMined = mineSection.getInt("blocks-mined", 0);
+            stats.setBlocksMined(blocksMined);
+            logDebugInfo(owner, blocksMined);
+        }
+        
+        if (mineSection.contains("last-reset")) {
+            long lastReset = mineSection.getLong("last-reset", System.currentTimeMillis());
+            stats.setLastReset(lastReset);
+        }
+        
+        return stats;
+    }
+    
+    /**
+     * Journalise les informations de débogage sur les blocs minés.
+     */
+    private void logDebugInfo(UUID owner, int blocksMined) {
+        plugin.getLogger().info("[DEBUG] Loaded " + blocksMined + " mined blocks for UUID " + owner);
     }
     public void startSaveTask() {
         int saveInterval = getSaveInterval();
