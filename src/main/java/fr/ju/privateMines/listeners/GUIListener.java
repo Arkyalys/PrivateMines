@@ -177,58 +177,82 @@ public class GUIListener implements Listener {
     private void handleMainGUIClick(Player player, ItemStack clickedItem, int slot) {
         boolean hasMine = plugin.getMineManager().hasMine(player);
         if (hasMine) {
-            switch (slot) {
-                case 4: 
-                    MineStatsGUI.openGUI(player);
-                    break;
-                case 20: 
-                    player.closeInventory();
-                    plugin.getMineManager().teleportToMine(player, player);
-                    player.sendMessage(ColorUtil.translateColors("&aTéléportation à votre mine..."));
-                    break;
-                case 21: 
-                    player.closeInventory();
-                    plugin.getMineManager().resetMine(player);
-                    break;
-                case 22: 
-                    toggleMineAccess(player);
-                    MineMainGUI.openGUI(player);
-                    break;
-                case 23: 
-                    MineSettingsGUI.openGUI(player);
-                    break;
-                case 24: 
-                    MineVisitorsGUI.openGUI(player, 0);
-                    break;
-                case 30: 
-                    MineExpandGUI.openGUI(player);
-                    break;
-                case 31: 
-                    boolean upgradeResult = plugin.getMineManager().upgradeMine(player);
-                    if (upgradeResult) {
-                        player.closeInventory();
-                    } else {
-                        player.closeInventory();
-                        MineMainGUI.openGUI(player); 
-                    }
-                    break;
-                case 32: 
-                    player.closeInventory();
-                    player.sendMessage(ColorUtil.translateColors("&c⚠ Pour confirmer la suppression de votre mine, tapez &e/jumine delete&c."));
-                    break;
-            }
+            handleOwnerMainGUIClick(player, slot);
         } else {
-            switch (slot) {
-                case 22: 
-                    player.closeInventory();
-                    plugin.getMineManager().createMine(player);
-                    break;
-                case 31: 
-                    if (player.hasPermission("privateMines.admin.create")) {
-                        // MineTypeGUI.openGUI(player, false);
-                    }
-                    break;
-            }
+            handleNonOwnerMainGUIClick(player, slot);
+        }
+    }
+    
+    private void handleOwnerMainGUIClick(Player player, int slot) {
+        switch (slot) {
+            case 4: // Stats
+                MineStatsGUI.openGUI(player);
+                break;
+            case 20: // Teleport
+                teleportToOwnMine(player);
+                break;
+            case 21: // Reset
+                resetOwnMine(player);
+                break;
+            case 22: // Toggle access
+                toggleMineAccess(player);
+                MineMainGUI.openGUI(player);
+                break;
+            case 23: // Settings
+                MineSettingsGUI.openGUI(player);
+                break;
+            case 24: // Visitors
+                MineVisitorsGUI.openGUI(player, 0);
+                break;
+            case 30: // Expand
+                MineExpandGUI.openGUI(player);
+                break;
+            case 31: // Upgrade
+                upgradeMine(player);
+                break;
+            case 32: // Delete
+                showDeleteConfirmation(player);
+                break;
+        }
+    }
+    
+    private void teleportToOwnMine(Player player) {
+        player.closeInventory();
+        plugin.getMineManager().teleportToMine(player, player);
+        player.sendMessage(ColorUtil.translateColors("&aTéléportation à votre mine..."));
+    }
+    
+    private void resetOwnMine(Player player) {
+        player.closeInventory();
+        plugin.getMineManager().resetMine(player);
+    }
+    
+    private void upgradeMine(Player player) {
+        boolean upgradeResult = plugin.getMineManager().upgradeMine(player);
+        player.closeInventory();
+        if (upgradeResult) {
+            // Le message de succès est géré par la méthode upgradeMine
+        } else {
+            MineMainGUI.openGUI(player);
+        }
+    }
+    
+    private void showDeleteConfirmation(Player player) {
+        player.closeInventory();
+        player.sendMessage(ColorUtil.translateColors("&c⚠ Pour confirmer la suppression de votre mine, tapez &e/jumine delete&c."));
+    }
+    
+    private void handleNonOwnerMainGUIClick(Player player, int slot) {
+        switch (slot) {
+            case 22: // Create mine
+                player.closeInventory();
+                plugin.getMineManager().createMine(player);
+                break;
+            case 31: // Admin create (with type selection)
+                if (player.hasPermission("privateMines.admin.create")) {
+                    // MineTypeGUI.openGUI(player, false);
+                }
+                break;
         }
     }
     private void handleStatsGUIClick(Player player, ItemStack clickedItem, int slot) {

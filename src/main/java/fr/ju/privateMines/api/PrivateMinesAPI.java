@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.BiConsumer;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -75,10 +76,43 @@ public class PrivateMinesAPI {
     public Location getTeleportLocation(Player player) { Mine mine = getMine(player); return mine != null ? mine.getTeleportLocation() : null; }
     public boolean setTeleportLocation(Player player, Location location) { Mine mine = getMine(player); if (mine == null) return false; mine.setTeleportLocation(location); return true; }
     public boolean teleportPlayerToMine(Player player, Mine targetMine) { if (targetMine == null) return false; Location loc = targetMine.getTeleportLocation(); return loc != null && player.teleport(loc); }
-    public Mine getMineAtLocation(Location location) { return plugin.getMineManager().getAllMines().stream().filter(m -> m.hasMineArea() && location.getWorld() != null && location.getWorld().equals(m.getLocation().getWorld()) && location.getBlockX() >= m.getMinX() && location.getBlockX() <= m.getMaxX() && location.getBlockY() >= m.getMinY() && location.getBlockY() <= m.getMaxY() && location.getBlockZ() >= m.getMinZ() && location.getBlockZ() <= m.getMaxZ()).findFirst().orElse(null); }
+    public Mine getMineAtLocation(Location location) { 
+        return plugin.getMineManager().getAllMines().stream()
+            .filter(mine -> isLocationInMineArea(location, mine))
+            .findFirst()
+            .orElse(null); 
+    }
+    public boolean isLocationInMineArea(Location location, Mine mine) { 
+        if (!isValidMineAndLocation(mine, location)) {
+            return false;
+        }
+        
+        if (!areSameWorld(location, mine)) {
+            return false;
+        }
+        
+        return isWithinMineBounds(location, mine);
+    }
+    
+    private boolean isValidMineAndLocation(Mine mine, Location location) {
+        return mine.hasMineArea() && location.getWorld() != null;
+    }
+    
+    private boolean areSameWorld(Location location, Mine mine) {
+        return location.getWorld().equals(mine.getLocation().getWorld());
+    }
+    
+    private boolean isWithinMineBounds(Location location, Mine mine) {
+        int x = location.getBlockX();
+        int y = location.getBlockY(); 
+        int z = location.getBlockZ();
+        
+        return x >= mine.getMinX() && x <= mine.getMaxX() 
+            && y >= mine.getMinY() && y <= mine.getMaxY() 
+            && z >= mine.getMinZ() && z <= mine.getMaxZ();
+    }
     public boolean isBlockFromPlayerMine(Location location, UUID uuid) { Mine mine = getMineAtLocation(location); return mine != null && mine.getOwner().equals(uuid); }
     public boolean isBlockFromPlayerMine(Location location, Player player) { return isBlockFromPlayerMine(location, player.getUniqueId()); }
-    public boolean isLocationInMineArea(Location location, Mine mine) { if (!mine.hasMineArea() || location.getWorld() == null) return false; if (location.getWorld().equals(mine.getLocation().getWorld())) { int x = location.getBlockX(); int y = location.getBlockY(); int z = location.getBlockZ(); return x >= mine.getMinX() && x <= mine.getMaxX() && y >= mine.getMinY() && y <= mine.getMaxY() && z >= mine.getMinZ() && z <= mine.getMaxZ(); } return false; }
     public boolean canAccessMine(Player player, Mine mine) { return mine != null && mine.canPlayerAccess(player.getUniqueId()); }
 
     // Nouvelles méthodes pour l'enchantement Nuke
@@ -88,24 +122,18 @@ public class PrivateMinesAPI {
      * @return Une map contenant les blocs (Material) et leur position (Location)
      */
     public Map<Location, Material> getMineBlocks(Mine mine) {
-        if (mine == null || !mine.hasMineArea() || mine.getLocation().getWorld() == null) {
+        if (!isMineValid(mine)) {
             return new HashMap<>();
         }
         
         Map<Location, Material> blocks = new HashMap<>();
         World world = mine.getLocation().getWorld();
         
-        for (int x = mine.getMinX(); x <= mine.getMaxX(); x++) {
-            for (int y = mine.getMinY(); y <= mine.getMaxY(); y++) {
-                for (int z = mine.getMinZ(); z <= mine.getMaxZ(); z++) {
-                    Block block = world.getBlockAt(x, y, z);
-                    Material material = block.getType();
-                    if (!material.isAir() && !material.equals(Material.BEDROCK)) {
-                        blocks.put(block.getLocation(), material);
-                    }
-                }
+        iterateMineBlocks(mine, world, (block, material) -> {
+            if (isBreakableBlock(material)) {
+                blocks.put(block.getLocation(), material);
             }
-        }
+        });
         
         return blocks;
     }
@@ -173,26 +201,56 @@ public class PrivateMinesAPI {
      * @return Le nombre de blocs cassables
      */
     public int getBreakableBlockCount(Mine mine) {
-        if (mine == null || !mine.hasMineArea() || mine.getLocation().getWorld() == null) {
+        if (!isMineValid(mine)) {
             return 0;
         }
         
-        int count = 0;
+        MutableInt count = new MutableInt(0);
         World world = mine.getLocation().getWorld();
         
+        iterateMineBlocks(mine, world, (block, material) -> {
+            if (isBreakableBlock(material)) {
+                count.increment();
+            }
+        });
+        
+        return count.getValue();
+    }
+
+    private boolean isMineValid(Mine mine) {
+        return mine != null && mine.hasMineArea() && mine.getLocation().getWorld() != null;
+    }
+    
+    private boolean isBreakableBlock(Material material) {
+        return !material.isAir() && !material.equals(Material.BEDROCK);
+    }
+    
+    private void iterateMineBlocks(Mine mine, World world, BiConsumer<Block, Material> action) {
         for (int x = mine.getMinX(); x <= mine.getMaxX(); x++) {
             for (int y = mine.getMinY(); y <= mine.getMaxY(); y++) {
                 for (int z = mine.getMinZ(); z <= mine.getMaxZ(); z++) {
                     Block block = world.getBlockAt(x, y, z);
-                    Material material = block.getType();
-                    if (!material.isAir() && !material.equals(Material.BEDROCK)) {
-                        count++;
-                    }
+                    action.accept(block, block.getType());
                 }
             }
         }
+    }
+    
+    // Simple mutable integer helper class
+    private static class MutableInt {
+        private int value;
         
-        return count;
+        public MutableInt(int value) {
+            this.value = value;
+        }
+        
+        public void increment() {
+            value++;
+        }
+        
+        public int getValue() {
+            return value;
+        }
     }
 
     // Accès et permissions
