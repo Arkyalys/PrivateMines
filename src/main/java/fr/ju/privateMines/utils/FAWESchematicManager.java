@@ -1,6 +1,7 @@
 package fr.ju.privateMines.utils;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -169,7 +170,8 @@ public class FAWESchematicManager {
      * Effectue l'opération de collage de la schématique
      * @return les limites [min, max] de la schématique collée
      */
-    private BlockVector3[] performPasteOperation(com.sk89q.worldedit.world.World weWorld, Location location, Clipboard clipboard) throws Exception {
+    private BlockVector3[] performPasteOperation(com.sk89q.worldedit.world.World weWorld, Location location, Clipboard clipboard) 
+            throws com.sk89q.worldedit.WorldEditException, IOException {
         try (EditSession editSession = WorldEdit.getInstance().newEditSession(weWorld)) {
             BlockVector3 to = BlockVector3.at(location.getX(), location.getY(), location.getZ());
             ClipboardHolder holder = new ClipboardHolder(clipboard);
@@ -193,7 +195,15 @@ public class FAWESchematicManager {
      * Gère les exceptions qui surviennent lors de l'opération de collage
      */
     private void handlePasteException(Exception e, Consumer<BlockVector3[]> callback) {
-        plugin.getLogger().severe("Erreur lors du collage asynchrone du schematic: " + e.getMessage());
+        if (e instanceof com.sk89q.worldedit.WorldEditException) {
+            plugin.getLogger().severe("Erreur WorldEdit lors du collage du schematic: " + e.getMessage());
+        } else if (e instanceof IOException) {
+            plugin.getLogger().severe("Erreur d'entrée/sortie lors du collage du schematic: " + e.getMessage());
+        } else if (e instanceof IllegalArgumentException) {
+            plugin.getLogger().severe("Argument invalide lors du collage du schematic: " + e.getMessage());
+        } else {
+            plugin.getLogger().severe("Erreur inconnue lors du collage du schematic: " + e.getMessage());
+        }
         e.printStackTrace();
         executeCallback(callback, null);
     }
@@ -267,8 +277,10 @@ public class FAWESchematicManager {
                 performDeleteOperation(world, min, max);
                 logDeleteSuccess(min, max);
                 executeDeleteCallback(callback, true);
+            } catch (com.sk89q.worldedit.WorldEditException e) {
+                handleDeleteException(e, callback, "Erreur WorldEdit");
             } catch (Exception e) {
-                handleDeleteException(e, callback);
+                handleDeleteException(e, callback, "Erreur inconnue");
             }
         });
     }
@@ -276,7 +288,8 @@ public class FAWESchematicManager {
     /**
      * Effectue l'opération de suppression
      */
-    private void performDeleteOperation(World world, BlockVector3 min, BlockVector3 max) throws Exception {
+    private void performDeleteOperation(World world, BlockVector3 min, BlockVector3 max) 
+            throws com.sk89q.worldedit.WorldEditException {
         try (EditSession editSession = WorldEdit.getInstance().newEditSession(BukkitAdapter.adapt(world))) {
             CuboidRegion region = new CuboidRegion(min, max);
             
@@ -301,16 +314,22 @@ public class FAWESchematicManager {
     /**
      * Gère les exceptions qui surviennent lors de l'opération de suppression
      */
-    private void handleDeleteException(Exception e, Consumer<Boolean> callback) {
-        plugin.getLogger().severe("Erreur lors de la suppression asynchrone de la structure: " + e.getMessage());
+    private void handleDeleteException(Exception e, Consumer<Boolean> callback, String errorType) {
+        plugin.getLogger().severe(errorType + " lors de la suppression asynchrone de la structure: " + e.getMessage());
         e.printStackTrace();
         executeDeleteCallback(callback, false);
     }
     public void configureOptimizations() {
         try {
+            // Ici, on pourrait ajouter des configurations spécifiques pour FAWE
             plugin.getLogger().info("Optimisations WorldEdit configurées avec succès");
+        } catch (IllegalArgumentException e) {
+            plugin.getLogger().warning("Erreur de configuration avec paramètres invalides: " + e.getMessage());
+        } catch (IllegalStateException e) {
+            plugin.getLogger().warning("État invalide lors de la configuration: " + e.getMessage());
         } catch (Exception e) {
-            plugin.getLogger().warning("Erreur lors de la configuration des optimisations: " + e.getMessage());
+            plugin.getLogger().warning("Erreur inattendue lors de la configuration des optimisations: " + e.getMessage());
+            plugin.getErrorHandler().logError("Erreur lors de la configuration des optimisations WorldEdit", e);
         }
     }
     public BlockVector3 getSchematicDimensions(String schematicName) {

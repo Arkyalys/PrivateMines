@@ -111,18 +111,26 @@ public class MineGenerationService {
         player.sendActionBar(net.kyori.adventure.text.Component.text(actionBar));
     }
     public boolean generateMine(Mine mine) {
-        final boolean[] result = new boolean[1];
-        final boolean[] completed = new boolean[1];
-        generateMineAsync(mine, success -> {
-            result[0] = success;
-            completed[0] = true;
+        java.util.concurrent.CompletableFuture<Boolean> future = new java.util.concurrent.CompletableFuture<>();
+        
+        // Utiliser le scheduler de Bukkit pour exécuter la génération de façon asynchrone
+        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
+            generateMineAsync(mine, success -> {
+                future.complete(success);
+            });
         });
+        
+        // Attendre le résultat avec timeout de 30 secondes, mais de façon contrôlée
         try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
+            return future.get(30, java.util.concurrent.TimeUnit.SECONDS);
+        } catch (java.util.concurrent.TimeoutException e) {
+            plugin.getLogger().warning("Timeout lors de la génération de la mine pour " + mine.getOwner());
+            return false;
+        } catch (Exception e) {
+            plugin.getLogger().severe("Erreur lors de la génération de la mine: " + e.getMessage());
+            e.printStackTrace();
+            return false;
         }
-        return completed[0] && result[0];
     }
     public void createDefaultMineArea(Mine mine) {
     }

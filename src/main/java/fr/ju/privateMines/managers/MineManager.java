@@ -12,8 +12,10 @@ import org.bukkit.entity.Player;
 
 import fr.ju.privateMines.PrivateMines;
 import fr.ju.privateMines.models.Mine;
+import fr.ju.privateMines.services.IStatsService;
 import fr.ju.privateMines.services.MineMemoryService;
 import fr.ju.privateMines.services.MinePersistenceService;
+import fr.ju.privateMines.services.StatsServiceAdapter;
 import fr.ju.privateMines.utils.ColorUtil;
 import fr.ju.privateMines.utils.ConfigManager;
 import fr.ju.privateMines.utils.MineAreaDetector;
@@ -34,11 +36,20 @@ public class MineManager {
     private final MinePersistenceService minePersistenceService;
     private final MineTeleportService mineTeleportService;
     public final MineMemoryService mineMemoryService;
+    private final IStatsService statsService;
     public MineManager(PrivateMines plugin) {
         this.plugin = plugin;
         this.configManager = plugin.getConfigManager();
         this.protectionManager = new MineProtectionManager(plugin);
         this.mineTiers = new HashMap<>();
+        
+        // Création de l'adaptateur pour le service de statistiques
+        if (plugin.getStatsManager() != null) {
+            this.statsService = new StatsServiceAdapter(plugin.getStatsManager());
+        } else {
+            this.statsService = null;
+        }
+        
         MineAreaDetector areaDetector = new MineAreaDetector(plugin);
         SchematicManager schematicManager = new SchematicManager(plugin);
         this.mineGenerationService = new MineGenerationService(plugin, protectionManager, areaDetector, schematicManager);
@@ -228,7 +239,11 @@ public class MineManager {
             player.sendMessage(getMessage("Messages.already-own-mine"));
             return false;
         }
+        
+        // Création de la mine avec injection du service de statistiques
         Mine mine = new Mine(player.getUniqueId(), location);
+        mine.setStatsService(statsService);
+        
         Map<Material, Double> defaultBlocks = new HashMap<>();
         defaultBlocks.put(Material.STONE, 1.0);
         mine.setBlocks(defaultBlocks);
@@ -313,6 +328,9 @@ public class MineManager {
         plugin.getLogger().info("[DEBUG] Performing post-load initialization of all mines...");
         int count = 0;
         for (Mine mine : mineMemoryService.getAllMines()) {
+            // Injecter le service de statistiques à chaque mine
+            mine.setStatsService(statsService);
+            
             if (mine.hasMineArea()) {
                 mine.calculateTotalBlocks();
                 mine.synchronizeStats();
@@ -406,5 +424,11 @@ public class MineManager {
             Component.text(ColorUtil.translateColors(configManager.getMessage("Messages.titles.mine-created.subtitle"))),
             Title.Times.times(Duration.ofMillis(500), Duration.ofMillis(3500), Duration.ofMillis(1000))
         );
+    }
+    /**
+     * Récupère le service de statistiques
+     */
+    public IStatsService getStatsService() {
+        return statsService;
     }
 } 

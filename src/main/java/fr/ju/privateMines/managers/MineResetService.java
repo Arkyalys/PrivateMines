@@ -13,36 +13,65 @@ import fr.ju.privateMines.utils.ColorUtil;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
 public class MineResetService {
+    private final PrivateMines plugin;
+    
     public MineResetService(PrivateMines plugin) {
+        this.plugin = plugin;
     }
+    
     public void resetMine(UUID uuid, MineManager mineManager, PrivateMines plugin, Map<Integer, Map<Material, Double>> mineTiers) {
         PrivateMines.debugLog("[Reset Debug] Début de resetMine pour UUID: " + uuid);
+        
+        // Effectuer les vérifications de base en sync
         if (!mineManager.hasMine(uuid)) {
             plugin.getLogger().warning("[Reset Debug] resetMine annulé: le joueur n'a pas de mine.");
             return;
         }
+        
         Mine mine = mineManager.getMine(uuid).orElse(null);
         if (mine == null) {
             plugin.getLogger().severe("[Reset Debug] resetMine annulé: impossible de récupérer l'objet Mine pour UUID: " + uuid);
             return;
         }
+        
         World world = mine.getLocation().getWorld();
         if (world == null) {
             plugin.getLogger().severe("[Reset Debug] resetMine annulé: le monde de la mine est null pour UUID: " + uuid);
             return;
         }
-        Map<Material, Double> mineBlocks = resolveMineBlocks(mine, mineTiers, plugin);
-        if (mineBlocks == null || mineBlocks.isEmpty()) {
-            handleCriticalBlockError(plugin, uuid, mine, mineTiers);
-            return;
-        }
-        if (mine.hasMineArea()) {
-            handleMineAreaReset(mine, mineBlocks, world, plugin);
-        } else {
-            plugin.getLogger().warning("[Reset Debug] La mine n'a pas de zone définie (hasMineArea=false). La régénération des blocs est sautée.");
-        }
-        updateStatsAndHolograms(plugin, mineManager, uuid, mine);
-        PrivateMines.debugLog("[Reset Debug] Fin de resetMine pour UUID: " + uuid);
+        
+        // Effectuer le reset de manière asynchrone
+        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
+            Map<Material, Double> mineBlocks = resolveMineBlocks(mine, mineTiers, plugin);
+            if (mineBlocks == null || mineBlocks.isEmpty()) {
+                // Revenir en synchrone pour informer le joueur
+                plugin.getServer().getScheduler().runTask(plugin, () -> {
+                    handleCriticalBlockError(plugin, uuid, mine, mineTiers);
+                });
+                return;
+            }
+            
+            if (mine.hasMineArea()) {
+                // Exécuter l'opération WorldEdit sur le thread principal (WorldEdit n'est pas thread-safe)
+                plugin.getServer().getScheduler().runTask(plugin, () -> {
+                    handleMineAreaReset(mine, mineBlocks, world, plugin);
+                    
+                    // Après que tout est fait, mettre à jour les statistiques
+                    plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
+                        updateStatsAndHolograms(plugin, mineManager, uuid, mine);
+                        PrivateMines.debugLog("[Reset Debug] Fin de resetMine pour UUID: " + uuid);
+                    });
+                });
+            } else {
+                plugin.getLogger().warning("[Reset Debug] La mine n'a pas de zone définie (hasMineArea=false). La régénération des blocs est sautée.");
+                
+                // Mettre à jour les statistiques même sans zone
+                plugin.getServer().getScheduler().runTask(plugin, () -> {
+                    updateStatsAndHolograms(plugin, mineManager, uuid, mine);
+                    PrivateMines.debugLog("[Reset Debug] Fin de resetMine pour UUID: " + uuid);
+                });
+            }
+        });
     }
 
     private Map<Material, Double> resolveMineBlocks(Mine mine, Map<Integer, Map<Material, Double>> mineTiers, PrivateMines plugin) {
@@ -123,20 +152,38 @@ public class MineResetService {
             player.sendMessage(plugin.getConfigManager().getMessage("Messages.no-mine"));
             return;
         }
+        
         player.sendMessage(plugin.getConfigManager().getMessage("Messages.mine-reset"));
-        resetMine(player.getUniqueId(), mineManager, plugin, mineTiers);
-        if (plugin.getHologramManager() != null) {
-            Mine mine = mineManager.getMine(player).orElse(null);
-            if (mine != null) {
-                plugin.getHologramManager().createOrUpdateHologram(mine);
-            }
-        }
-        Title title = Title.title(
-            Component.text(ColorUtil.translateColors(plugin.getConfigManager().getMessage("Messages.titles.mine-reset.title"))),
-            Component.text(ColorUtil.translateColors(plugin.getConfigManager().getMessage("Messages.titles.mine-reset.subtitle"))),
-            Title.Times.times(Duration.ofMillis(500), Duration.ofMillis(3500), Duration.ofMillis(1000))
+        
+        // Afficher un titre de chargement pendant le reset
+        Title loadingTitle = Title.title(
+            Component.text(ColorUtil.translateColors("&e⚒ &lReset en cours...")),
+            Component.text(ColorUtil.translateColors("&7Veuillez patienter")),
+            Title.Times.times(Duration.ofMillis(500), Duration.ofMillis(30000), Duration.ofMillis(1000))
         );
-        player.showTitle(title);
-        player.playSound(player.getLocation(), org.bukkit.Sound.BLOCK_NOTE_BLOCK_CHIME, 1.0f, 1.2f);
+        player.showTitle(loadingTitle);
+        
+        // Lancer le reset de manière asynchrone
+        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
+            resetMine(player.getUniqueId(), mineManager, plugin, mineTiers);
+            
+            // Une fois terminé, afficher le message final (de façon synchrone)
+            plugin.getServer().getScheduler().runTask(plugin, () -> {
+                if (plugin.getHologramManager() != null) {
+                    Mine mine = mineManager.getMine(player).orElse(null);
+                    if (mine != null) {
+                        plugin.getHologramManager().createOrUpdateHologram(mine);
+                    }
+                }
+                
+                Title title = Title.title(
+                    Component.text(ColorUtil.translateColors(plugin.getConfigManager().getMessage("Messages.titles.mine-reset.title"))),
+                    Component.text(ColorUtil.translateColors(plugin.getConfigManager().getMessage("Messages.titles.mine-reset.subtitle"))),
+                    Title.Times.times(Duration.ofMillis(500), Duration.ofMillis(3500), Duration.ofMillis(1000))
+                );
+                player.showTitle(title);
+                player.playSound(player.getLocation(), org.bukkit.Sound.BLOCK_NOTE_BLOCK_CHIME, 1.0f, 1.2f);
+            });
+        });
     }
 } 

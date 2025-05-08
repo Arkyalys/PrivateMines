@@ -45,6 +45,8 @@ get-logs.ps1
 get_codacy_issues_privatemines.ps1
 server_logs/
 codacy_issues_privatemines_*.csv
+rapport_*.txt
+restart_server.bat
 
 # Plugin source
 edprivatemines-1.9-HOTFIX6/ 

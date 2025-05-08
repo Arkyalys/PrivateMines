@@ -16,7 +16,10 @@ import fr.ju.privateMines.PrivateMines;
 import fr.ju.privateMines.models.Mine;
 import fr.ju.privateMines.models.MineAccess;
 
-public class PrivateMinesAPI {
+/**
+ * Implémentation concrète de l'API publique des mines privées.
+ */
+public class PrivateMinesAPI implements IPrivateMinesAPI {
     private static PrivateMinesAPI instance;
     private final PrivateMines plugin;
     private PrivateMinesAPI(PrivateMines plugin) {
@@ -34,17 +37,34 @@ public class PrivateMinesAPI {
     public PrivateMines getPlugin() { return plugin; }
 
     // Mines
+    @Override
     public boolean hasMine(Player player) { return plugin.getMineManager().hasMine(player); }
+    @Override
     public boolean hasMine(UUID uuid) { return plugin.getMineManager().hasMine(uuid); }
+    @Override
     public Mine getMine(Player player) { return plugin.getMineManager().getMine(player).orElse(null); }
+    @Override
     public Mine getMine(UUID uuid) { return plugin.getMineManager().getMine(uuid).orElse(null); }
+    @Override
     public Collection<Mine> getAllMines() { return plugin.getMineManager().getAllMines(); }
+    @Override
     public Map<UUID, Mine> getPlayerMines() { return plugin.getMineManager().mineMemoryService.getPlayerMines(); }
+    @Override
     public List<Mine> getPublicMines() { return plugin.getMineManager().getAllMines().stream().filter(Mine::isOpen).toList(); }
+    
+    @Override
     public boolean hasMineAt(Location location) { return getMineAtLocation(location) != null; }
+    
+    @Override
     public Mine createMine(Player player) { plugin.getMineManager().createMine(player); return getMine(player); }
+    
+    @Override
     public boolean deleteMine(Player player) { return plugin.getMineManager().deleteMine(player); }
+    
+    @Override
     public boolean deleteMine(UUID uuid) { Player p = plugin.getServer().getPlayer(uuid); return p != null && plugin.getMineManager().deleteMine(p); }
+    
+    @Override
     public boolean resetMine(Player player) { 
         plugin.getMineManager().resetMine(player); 
         Mine mine = getMine(player);
@@ -54,6 +74,8 @@ public class PrivateMinesAPI {
         }
         return true; 
     }
+    
+    @Override
     public boolean resetMine(UUID uuid) { 
         plugin.getMineManager().resetMine(uuid); 
         Player player = plugin.getServer().getPlayer(uuid);
@@ -66,22 +88,46 @@ public class PrivateMinesAPI {
         }
         return true; 
     }
+    
+    @Override
     public boolean expandMine(Player player) { return plugin.getMineManager().expandMine(player); }
+    
+    @Override
     public boolean expandMine(Player player, int expandSize) { return plugin.getMineManager().expandMine(player, expandSize); }
+    
+    @Override
     public boolean upgradeMine(Player player) { return plugin.getMineManager().upgradeMine(player); }
+    
+    @Override
     public boolean setMineOpen(Player player, boolean isOpen) { Mine mine = getMine(player); if (mine == null) return false; mine.setOpen(isOpen); return true; }
+    
+    @Override
     public boolean setMineTax(Player player, int tax) { return plugin.getMineManager().setMineTax(player, tax); }
+    
+    @Override
     public int getMineTax(Player player) { Mine mine = getMine(player); return mine != null ? mine.getTax() : -1; }
+    
+    @Override
     public int getMineTax(UUID uuid) { Mine mine = getMine(uuid); return mine != null ? mine.getTax() : -1; }
+    
+    @Override
     public Location getTeleportLocation(Player player) { Mine mine = getMine(player); return mine != null ? mine.getTeleportLocation() : null; }
+    
+    @Override
     public boolean setTeleportLocation(Player player, Location location) { Mine mine = getMine(player); if (mine == null) return false; mine.setTeleportLocation(location); return true; }
+    
+    @Override
     public boolean teleportPlayerToMine(Player player, Mine targetMine) { if (targetMine == null) return false; Location loc = targetMine.getTeleportLocation(); return loc != null && player.teleport(loc); }
+    
+    @Override
     public Mine getMineAtLocation(Location location) { 
         return plugin.getMineManager().getAllMines().stream()
             .filter(mine -> isLocationInMineArea(location, mine))
             .findFirst()
             .orElse(null); 
     }
+    
+    @Override
     public boolean isLocationInMineArea(Location location, Mine mine) { 
         if (!isValidMineAndLocation(mine, location)) {
             return false;
@@ -111,8 +157,14 @@ public class PrivateMinesAPI {
             && y >= mine.getMinY() && y <= mine.getMaxY() 
             && z >= mine.getMinZ() && z <= mine.getMaxZ();
     }
+    
+    @Override
     public boolean isBlockFromPlayerMine(Location location, UUID uuid) { Mine mine = getMineAtLocation(location); return mine != null && mine.getOwner().equals(uuid); }
+    
+    @Override
     public boolean isBlockFromPlayerMine(Location location, Player player) { return isBlockFromPlayerMine(location, player.getUniqueId()); }
+    
+    @Override
     public boolean canAccessMine(Player player, Mine mine) { return mine != null && mine.canPlayerAccess(player.getUniqueId()); }
 
     // Nouvelles méthodes pour l'enchantement Nuke
@@ -121,6 +173,7 @@ public class PrivateMinesAPI {
      * @param mine La mine pour laquelle récupérer les blocs
      * @return Une map contenant les blocs (Material) et leur position (Location)
      */
+    @Override
     public Map<Location, Material> getMineBlocks(Mine mine) {
         if (!isMineValid(mine)) {
             return new HashMap<>();
@@ -143,6 +196,7 @@ public class PrivateMinesAPI {
      * @param mine La mine pour laquelle calculer le remplissage
      * @return Le pourcentage de remplissage (0-100)
      */
+    @Override
     public float getMineFillRatio(Mine mine) {
         if (mine == null || !mine.hasMineArea()) {
             return 0;
@@ -162,6 +216,7 @@ public class PrivateMinesAPI {
      * @param mine La mine pour laquelle calculer le nombre total de blocs
      * @return Le nombre total de blocs
      */
+    @Override
     public int getTotalBlockCount(Mine mine) {
         if (mine == null || !mine.hasMineArea()) {
             return 0;
@@ -177,6 +232,7 @@ public class PrivateMinesAPI {
      * @param mine La mine pour laquelle récupérer le type de bloc
      * @return Le type principal de bloc de la mine
      */
+    @Override
     public Material getMineBlockType(Mine mine) {
         if (mine == null || mine.getBlocks() == null || mine.getBlocks().isEmpty()) {
             return Material.STONE;
@@ -200,6 +256,7 @@ public class PrivateMinesAPI {
      * @param mine La mine pour laquelle compter les blocs cassables
      * @return Le nombre de blocs cassables
      */
+    @Override
     public int getBreakableBlockCount(Mine mine) {
         if (!isMineValid(mine)) {
             return 0;
@@ -254,33 +311,68 @@ public class PrivateMinesAPI {
     }
 
     // Accès et permissions
+    @Override
     public MineAccess getMineAccess(Player player) { Mine mine = getMine(player); return mine != null ? mine.getMineAccess() : null; }
+    
+    @Override
     public List<Mine> getTopMines() { return plugin.getStatsManager().getTopMines(); }
+    
+    @Override
     public void saveStats() { plugin.getStatsManager().saveStats(); }
+    
+    @Override
     public void syncMineStats(Mine mine) { plugin.getStatsManager().syncMineStats(mine); }
 
     // Hologrammes
+    @Override
     public void createOrUpdateHologram(Mine mine) { if (plugin.getHologramManager() != null) plugin.getHologramManager().createOrUpdateHologram(mine); }
+    
+    @Override
     public void removeHologram(UUID ownerId) { if (plugin.getHologramManager() != null) plugin.getHologramManager().removeHologram(ownerId); }
+    
+    @Override
     public void updateAllHolograms() { if (plugin.getHologramManager() != null) plugin.getHologramManager().updateAllHolograms(); }
 
     // Monde des mines
+    @Override
     public World getMineWorld() { return plugin.getMineWorldManager().getMineWorld(); }
+    
+    @Override
     public String getMineWorldName() { return plugin.getMineWorldManager().getMineWorldName(); }
+    
+    @Override
     public Location getNextMineLocation() { return plugin.getMineWorldManager().getNextMineLocation(); }
+    
+    @Override
     public void unloadMineWorld() { plugin.getMineWorldManager().unloadWorld(); }
 
     // GUIs
+    @Override
     public void openMainGUI(Player player) { fr.ju.privateMines.guis.MineMainGUI.openGUI(player); }
+    
+    @Override
     public void openStatsGUI(Player player) { fr.ju.privateMines.guis.MineStatsGUI.openGUI(player); }
+    
+    @Override
     public void openVisitorsGUI(Player player, int page) { fr.ju.privateMines.guis.MineVisitorsGUI.openGUI(player, page); }
+    
+    @Override
     public void openSettingsGUI(Player player) { fr.ju.privateMines.guis.MineSettingsGUI.openGUI(player); }
+    
+    @Override
     public void openExpandGUI(Player player) { fr.ju.privateMines.guis.MineExpandGUI.openGUI(player); }
+    
+    @Override
     public void openCompositionGUI(Player player) { fr.ju.privateMines.guis.MineCompositionGUI.openGUI(player); }
 
     // Protection WorldGuard
+    @Override
     public void protectMine(Mine mine, com.sk89q.worldedit.math.BlockVector3[] bounds) { plugin.getMineManager().getMineProtectionManager().protectMine(mine, bounds); }
+    
+    @Override
     public void unprotectMine(Mine mine) { plugin.getMineManager().getMineProtectionManager().unprotectMine(mine); }
+    
+    @Override
     public void updateMineProtection(Mine mine) { plugin.getMineManager().getMineProtectionManager().updateMineProtection(mine); }
 
     // Types et tiers
@@ -288,14 +380,26 @@ public class PrivateMinesAPI {
      * Récupère la liste complète des paliers (tiers) de mines disponibles
      * @return Une map associant les numéros de palier avec leurs configurations de blocs
      */
+    @Override
     public Map<Integer, Map<Material, Double>> getMineTiers() { return plugin.getMineManager().getMineTiers(); }
+    
+    @Override
     public void reloadMineTiers() { plugin.getMineManager().loadMineTiers(); }
 
     // Sauvegarde/chargement
+    @Override
     public void saveMineData(Player player) { plugin.getMineManager().saveMineData(player); }
+    
+    @Override
     public void saveMine(Mine mine) { plugin.getMineManager().saveMine(mine); }
+    
+    @Override
     public void loadMineData() { plugin.getMineManager().loadMineData(); }
+    
+    @Override
     public void saveAllMineData() { plugin.getMineManager().saveAllMineData(); }
+    
+    @Override
     public void reloadPlugin() { plugin.reloadPlugin(); }
 
     /**
@@ -304,6 +408,7 @@ public class PrivateMinesAPI {
      * @param tier Le nouveau palier
      * @return true si la modification a réussi
      */
+    @Override
     public boolean setMineTier(Player player, int tier) {
         Mine mine = getMine(player);
         if (mine == null) return false;
@@ -312,12 +417,14 @@ public class PrivateMinesAPI {
         resetMine(player);
         return true;
     }
+    
     /**
      * Définit le palier (tier) de la mine d'un joueur (par UUID) et applique le reset.
      * @param uuid L'UUID du joueur
      * @param tier Le nouveau palier
      * @return true si la modification a réussi
      */
+    @Override
     public boolean setMineTier(UUID uuid, int tier) {
         Mine mine = getMine(uuid);
         if (mine == null) return false;

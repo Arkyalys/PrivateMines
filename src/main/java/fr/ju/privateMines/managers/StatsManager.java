@@ -1,10 +1,10 @@
 package fr.ju.privateMines.managers;
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.bukkit.configuration.file.FileConfiguration;
 
@@ -32,7 +32,7 @@ public class StatsManager {
     public StatsManager(PrivateMines plugin) {
         this.plugin = plugin;
         this.statsFile = new File(plugin.getDataFolder(), "stats.yml");
-        this.mineStats = new HashMap<>();
+        this.mineStats = new ConcurrentHashMap<>();
         this.enabled = plugin.getConfigManager().getConfig().getBoolean("Statistics.enabled", true);
         this.saveInterval = plugin.getConfigManager().getConfig().getInt("Statistics.save-interval", 10);
         this.maxTrackedVisitors = plugin.getConfigManager().getConfig().getInt("Statistics.max-tracked-visitors", 50);

@@ -431,8 +431,15 @@ public class GUIListener implements Listener {
                     }
                 }
             }
+        } catch (NullPointerException e) {
+            plugin.getLogger().warning("La mine n'a pas de monde ou de région: " + (mine.getOwner() != null ? mine.getOwner().toString() : "inconnue"));
+        } catch (IllegalArgumentException e) {
+            plugin.getLogger().warning("Erreur d'argument lors de la récupération des contributeurs: " + e.getMessage());
         } catch (Exception e) {
-            // Gérer les exceptions potentielles lors de l'accès à WorldGuard
+            plugin.getLogger().warning("Erreur lors de la récupération des contributeurs: " + e.getMessage());
+            if (plugin.getErrorHandler() != null) {
+                plugin.getErrorHandler().logError("Erreur lors de l'accès à WorldGuard pour les contributeurs", e);
+            }
         }
         
         return contributors;

@@ -7,6 +7,8 @@ import java.util.UUID;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
+
+import fr.ju.privateMines.services.IStatsService;
 public class Mine {
     private UUID owner;
     private Location location;
@@ -22,6 +24,8 @@ public class Mine {
     private double schematicMaxX, schematicMaxY, schematicMaxZ;
     private MineAccess mineAccess;
     private final Set<UUID> contributors = new HashSet<>();
+    private IStatsService statsService;
+    
     public Mine(UUID owner, Location location) {
         if (owner == null) {
             throw new IllegalArgumentException("Owner cannot be null");
@@ -41,6 +45,22 @@ public class Mine {
         this.tier = 1;
         this.mineAccess = new MineAccess(owner);
     }
+    
+    /**
+     * Constructeur avec service de statistiques.
+     */
+    public Mine(UUID owner, Location location, IStatsService statsService) {
+        this(owner, location);
+        this.statsService = statsService;
+    }
+    
+    /**
+     * Définit le service de statistiques.
+     */
+    public void setStatsService(IStatsService statsService) {
+        this.statsService = statsService;
+    }
+    
     public UUID getOwner() {
         return owner;
     }
@@ -166,10 +186,10 @@ public class Mine {
         return stats;
     }
     public boolean incrementBlocksMined(int autoResetThreshold) {
-        if (fr.ju.privateMines.PrivateMines.getInstance() != null && 
-            fr.ju.privateMines.PrivateMines.getInstance().getStatsManager() != null) {
-            return fr.ju.privateMines.PrivateMines.getInstance().getStatsManager().incrementBlocksMined(this);
+        if (statsService != null) {
+            return statsService.incrementBlocksMined(this);
         }
+        // Fallback si aucun service n'est disponible
         stats.incrementBlocksMined();
         return stats.shouldAutoReset(autoResetThreshold);
     }
@@ -177,10 +197,8 @@ public class Mine {
         if (!hasMineArea()) return;
         int total = (maxX - minX + 1) * (maxY - minY + 1) * (maxZ - minZ + 1);
         stats.setTotalBlocks(total);
-        if (fr.ju.privateMines.PrivateMines.getInstance() != null && 
-            fr.ju.privateMines.PrivateMines.getInstance().getStatsManager() != null) {
-            fr.ju.privateMines.models.MineStats statsManagerStats = 
-                fr.ju.privateMines.PrivateMines.getInstance().getStatsManager().getStats(owner);
+        if (statsService != null) {
+            MineStats statsManagerStats = statsService.getStats(owner);
             if (statsManagerStats != null) {
                 statsManagerStats.setTotalBlocks(total);
             }
@@ -193,9 +211,8 @@ public class Mine {
         this.tier = tier;
     }
     public void synchronizeStats() {
-        if (fr.ju.privateMines.PrivateMines.getInstance() != null && 
-            fr.ju.privateMines.PrivateMines.getInstance().getStatsManager() != null) {
-            fr.ju.privateMines.PrivateMines.getInstance().getStatsManager().syncMineStats(this);
+        if (statsService != null) {
+            statsService.syncMineStats(this);
         }
     }
     public MineAccess getMineAccess() {

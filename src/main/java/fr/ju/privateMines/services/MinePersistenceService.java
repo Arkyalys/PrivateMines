@@ -15,11 +15,17 @@ import fr.ju.privateMines.managers.MineManager;
 import fr.ju.privateMines.managers.MineProtectionManager;
 import fr.ju.privateMines.models.Mine;
 import fr.ju.privateMines.utils.ConfigManager;
+import fr.ju.privateMines.utils.DataValidator;
+
 public class MinePersistenceService {
     private final PrivateMines plugin;
+    private final DataValidator dataValidator;
+    
     public MinePersistenceService(PrivateMines plugin) {
         this.plugin = plugin;
+        this.dataValidator = new DataValidator(plugin);
     }
+    
     public void saveMineData(Player player, MineManager mineManager) {
         PrivateMines.debugLog("[DEBUG-MINE] Sauvegarde des données pour " + player.getName() + " (UUID: " + player.getUniqueId() + ")");
         if (!mineManager.hasMine(player)) {
@@ -139,6 +145,13 @@ public class MinePersistenceService {
     }
     public void loadMineData(MineManager mineManager, ConfigManager configManager, PrivateMines plugin, MineProtectionManager protectionManager, Map<Integer, Map<Material, Double>> mineTiers) {
         PrivateMines.debugLog("Chargement des données des mines...");
+        
+        // Valider et réparer le fichier data.yml si nécessaire
+        if (!dataValidator.validateAndRepairDataFile()) {
+            plugin.getLogger().severe("Impossible de charger les données des mines en raison d'un problème avec le fichier data.yml");
+            return;
+        }
+        
         configManager.reloadData();
         mineManager.mineMemoryService.clearPlayerMines();
         
@@ -150,16 +163,42 @@ public class MinePersistenceService {
         
         int count = 0;
         int errorCount = 0;
+        int correctedCount = 0;
         PrivateMines.debugLog("UUIDs trouvés dans le fichier de données: " + String.join(", ", minesSection.getKeys(false)));
         
         for (String key : minesSection.getKeys(false)) {
             try {
                 PrivateMines.debugLog("Tentative de chargement de la mine pour UUID: " + key);
+                
+                // Vérifier d'abord la section de configuration
+                if (!dataValidator.validateMineSection(minesSection.getConfigurationSection(key), key)) {
+                    PrivateMines.debugLog("Section de mine invalide pour UUID: " + key + ", ignorée");
+                    errorCount++;
+                    continue;
+                }
+                
                 Optional<Mine> mineOptional = loadMineFromSection(key, minesSection, plugin, mineTiers);
                 
                 if (mineOptional.isPresent()) {
                     Mine mine = mineOptional.get();
                     UUID ownerUUID = mine.getOwner();
+                    
+                    // Valider et corriger la mine si nécessaire
+                    boolean wasValidated = dataValidator.validateMine(mine);
+                    if (!wasValidated) {
+                        // Tenter de corriger avec des valeurs par défaut
+                        dataValidator.applyDefaultValues(mine);
+                        boolean fixSuccessful = dataValidator.validateMine(mine);
+                        
+                        if (fixSuccessful) {
+                            correctedCount++;
+                            plugin.getLogger().info("Mine corrigée pour UUID: " + ownerUUID);
+                        } else {
+                            plugin.getLogger().warning("Impossible de corriger la mine pour UUID: " + ownerUUID + ", ignorée");
+                            errorCount++;
+                            continue;
+                        }
+                    }
                     
                     // Finalisation du chargement
                     mineManager.addMineToMap(ownerUUID, mine);
@@ -184,7 +223,7 @@ public class MinePersistenceService {
             }
         }
         
-        PrivateMines.debugLog(count + " mines ont été chargées avec succès. " + errorCount + " mines ont échoué au chargement.");
+        PrivateMines.debugLog(count + " mines ont été chargées avec succès. " + errorCount + " mines ont échoué au chargement. " + correctedCount + " mines ont été corrigées automatiquement.");
         logLoadedMineUUIDs(mineManager);
     }
     private Optional<Mine> loadMineFromSection(String key, ConfigurationSection minesSection, PrivateMines plugin, Map<Integer, Map<Material, Double>> mineTiers) {
@@ -194,43 +233,49 @@ public class MinePersistenceService {
             return Optional.empty();
         }
         
-        // Validation de l'UUID du propriétaire
-        UUID ownerUUID = validateOwnerUUID(key);
-        if (ownerUUID == null) {
+        try {
+            // Validation de l'UUID du propriétaire
+            UUID ownerUUID = validateOwnerUUID(key);
+            if (ownerUUID == null) {
+                return Optional.empty();
+            }
+            
+            // Chargement et validation du monde
+            World world = loadAndValidateWorld(key, mineSection, plugin);
+            if (world == null) {
+                return Optional.empty();
+            }
+            
+            // Chargement de la position
+            Location location = loadMineLocation(key, mineSection, world);
+            
+            // Création de la mine
+            Mine mine = new Mine(ownerUUID, location);
+            
+            // Configuration des propriétés de base
+            loadMineProperties(mine, mineSection);
+            
+            // Chargement de la position de téléportation
+            loadTeleportLocation(mine, mineSection, world, plugin);
+            
+            // Chargement de la zone de mine
+            loadMineArea(mine, mineSection, key);
+            
+            // Chargement des limites du schéma
+            loadSchematicBounds(mine, mineSection, key);
+            
+            // Chargement des blocs
+            loadMineBlocks(mine, mineSection, mineTiers);
+            
+            // Chargement des données d'accès
+            loadAccessData(mine, mineSection);
+            
+            return Optional.of(mine);
+        } catch (Exception e) {
+            plugin.getLogger().warning("Exception lors du chargement de la mine " + key + ": " + e.getMessage());
+            e.printStackTrace();
             return Optional.empty();
         }
-        
-        // Chargement et validation du monde
-        World world = loadAndValidateWorld(key, mineSection, plugin);
-        if (world == null) {
-            return Optional.empty();
-        }
-        
-        // Chargement de la position
-        Location location = loadMineLocation(key, mineSection, world);
-        
-        // Création de la mine
-        Mine mine = new Mine(ownerUUID, location);
-        
-        // Configuration des propriétés de base
-        loadMineProperties(mine, mineSection);
-        
-        // Chargement de la position de téléportation
-        loadTeleportLocation(mine, mineSection, world, plugin);
-        
-        // Chargement de la zone de mine
-        loadMineArea(mine, mineSection, key);
-        
-        // Chargement des limites du schéma
-        loadSchematicBounds(mine, mineSection, key);
-        
-        // Chargement des blocs
-        loadMineBlocks(mine, mineSection, mineTiers);
-        
-        // Chargement des données d'accès
-        loadAccessData(mine, mineSection);
-        
-        return Optional.of(mine);
     }
     private UUID validateOwnerUUID(String key) {
         try {
@@ -352,8 +397,14 @@ public class MinePersistenceService {
         PrivateMines.debugLog(uuids.toString());
     }
     public void saveAllMineData(MineManager mineManager, ConfigManager configManager, PrivateMines plugin) {
-        PrivateMines.debugLog("Sauvegarde des données de toutes les mines (" + mineManager.mineMemoryService.getPlayerMines().size() + " mines)...");
+        PrivateMines.debugLog("Sauvegarde de toutes les mines...");
+        
+        // Créer une sauvegarde avant toute modification
+        dataValidator.createBackup(new java.io.File(plugin.getDataFolder(), "data.yml"));
+        
+        // Effacement de la section existante
         clearOldMinesSection(plugin);
+        
         int savedCount = 0;
         for (Map.Entry<UUID, Mine> entry : mineManager.mineMemoryService.getPlayerMines().entrySet()) {
             if (saveSingleMine(entry, plugin)) {

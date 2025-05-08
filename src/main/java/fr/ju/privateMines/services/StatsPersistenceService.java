@@ -115,32 +115,58 @@ public class StatsPersistenceService {
     }
     public void saveStats() {
         if (!isEnabled()) return;
+        
+        // S'assurer que la sauvegarde se fait toujours de manière asynchrone
+        if (plugin.getServer().isPrimaryThread()) {
+            plugin.getServer().getScheduler().runTaskAsynchronously(plugin, this::performSave);
+        } else {
+            performSave();
+        }
+    }
+    
+    /**
+     * Effectue la sauvegarde des statistiques dans un contexte asynchrone.
+     * Cette méthode ne doit pas être appelée directement depuis le thread principal.
+     */
+    private void performSave() {
         Map<UUID, MineStats> mineStats = getMineStats();
         FileConfiguration statsConfig = getStatsConfig();
         File statsFile = getStatsFile();
+        
+        // Créer une configuration entièrement nouvelle pour éviter des problèmes de concurrence
+        FileConfiguration newConfig = new YamlConfiguration();
+        
         for (Map.Entry<UUID, MineStats> entry : mineStats.entrySet()) {
             UUID owner = entry.getKey();
             MineStats stats = entry.getValue();
             String path = "mines." + owner.toString();
-            statsConfig.set(path + ".total-blocks", stats.getTotalBlocks());
-            statsConfig.set(path + ".blocks-mined", stats.getBlocksMined());
-            statsConfig.set(path + ".percentage-mined", stats.getPercentageMined());
-            statsConfig.set(path + ".last-reset", stats.getLastReset());
+            newConfig.set(path + ".total-blocks", stats.getTotalBlocks());
+            newConfig.set(path + ".blocks-mined", stats.getBlocksMined());
+            newConfig.set(path + ".percentage-mined", stats.getPercentageMined());
+            newConfig.set(path + ".last-reset", stats.getLastReset());
         }
+        
         try {
-            statsConfig.save(statsFile);
+            newConfig.save(statsFile);
+            setStatsConfig(newConfig);
+            
+            // Notifications
             boolean notifyConsole = plugin.getConfigManager().getConfig().getBoolean("Statistics.notifications.console", false);
             boolean notifyInGame = plugin.getConfigManager().getConfig().getBoolean("Statistics.notifications.in-game", false);
+            
             if (notifyConsole) {
                 plugin.getLogger().info("Statistiques sauvegardées avec succès !");
             }
+            
             if (notifyInGame) {
-                plugin.getServer().getOnlinePlayers().forEach(player -> {
-                    if (player.hasPermission("privateMines.admin")) {
-                        player.sendMessage(fr.ju.privateMines.utils.ColorUtil.deserialize(
-                            plugin.getConfigManager().getMessage("Messages.stats-saved")
-                        ));
-                    }
+                plugin.getServer().getScheduler().runTask(plugin, () -> {
+                    plugin.getServer().getOnlinePlayers().forEach(player -> {
+                        if (player.hasPermission("privateMines.admin")) {
+                            player.sendMessage(fr.ju.privateMines.utils.ColorUtil.deserialize(
+                                plugin.getConfigManager().getMessage("Messages.stats-saved")
+                            ));
+                        }
+                    });
                 });
             }
         } catch (IOException e) {

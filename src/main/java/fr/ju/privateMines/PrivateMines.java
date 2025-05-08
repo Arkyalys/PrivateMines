@@ -1,6 +1,7 @@
 package fr.ju.privateMines;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import fr.ju.privateMines.api.IPrivateMinesAPI;
 import fr.ju.privateMines.api.PrivateMinesAPI;
 import fr.ju.privateMines.commands.MineCommand;
 import fr.ju.privateMines.commands.MineTabCompleter;
@@ -25,12 +26,12 @@ public class PrivateMines extends JavaPlugin {
     private MineWorldManager mineWorldManager;
     private StatsManager statsManager;
     private HologramManager hologramManager;
-    private PrivateMinesAPI api;
+    private IPrivateMinesAPI api;
     private DependencyManager dependencyManager;
     private ErrorHandler errorHandler;
     private CacheManager cacheManager;
     private GUIManager guiManager;
-    private static boolean debugMode = true;
+    private static boolean debugMode = false;
     @Override
     public void onEnable() {
         instance = this;
@@ -149,7 +150,7 @@ public class PrivateMines extends JavaPlugin {
     public HologramManager getHologramManager() {
         return hologramManager;
     }
-    public PrivateMinesAPI getAPI() {
+    public IPrivateMinesAPI getAPI() {
         return api;
     }
     public DependencyManager getDependencyManager() {
@@ -219,7 +220,6 @@ public class PrivateMines extends JavaPlugin {
         this.statsManager = null;
         this.hologramManager = null;
         this.guiManager = null;
-        System.gc(); // Forcer le GC pour libérer les anciennes instances
         
         this.mineWorldManager = new MineWorldManager(this);
         this.mineManager = new MineManager(this);
