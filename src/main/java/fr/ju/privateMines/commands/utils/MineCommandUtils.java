@@ -33,7 +33,7 @@ public class MineCommandUtils {
         viewer.sendMessage(configManager.getMessage("stats-visits", rep));
         viewer.sendMessage(configManager.getMessage("stats-last-reset", rep));
     }
-    public static void showTopStats(PrivateMines plugin, MineManager mineManager, Player viewer) {
+    public static void showTopStats(PrivateMines plugin, MineManager mineManager, ConfigManager configManager, Player viewer) {
         Map<UUID, Mine> mines = mineManager.mineMemoryService.getPlayerMines();
         if (mines.isEmpty()) {
             viewer.sendMessage(configManager.getMessageOrDefault("stats-no-mines", "&cAucune mine n'a été créée."));
