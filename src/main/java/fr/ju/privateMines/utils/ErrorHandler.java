@@ -12,13 +12,16 @@ public class ErrorHandler {
     private final SimpleDateFormat dateFormat;
     public ErrorHandler(JavaPlugin plugin) {
         this.plugin = plugin;
+        if (!plugin.getDataFolder().exists()) {
+            plugin.getDataFolder().mkdirs();
+        }
         this.errorLogFile = new File(plugin.getDataFolder(), "errors.log");
         this.dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         if (!errorLogFile.exists()) {
             try {
                 errorLogFile.createNewFile();
             } catch (IOException e) {
-                plugin.getLogger().severe("Impossible de créer le fichier de log d'erreurs: " + e.getMessage());
+                plugin.getLogger().severe("Impossible de créer le fichier de log d'erreurs (" + errorLogFile.getAbsolutePath() + "): " + e.getMessage());
             }
         }
     }
