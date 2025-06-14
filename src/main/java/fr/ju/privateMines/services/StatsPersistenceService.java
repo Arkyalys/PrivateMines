@@ -114,9 +114,20 @@ public class StatsPersistenceService {
         }.runTaskTimerAsynchronously(plugin, ticks, ticks);
     }
     public void saveStats() {
-        if (!isEnabled()) return;
-        
-        // S'assurer que la sauvegarde se fait toujours de manière asynchrone
+        if (!isEnabled()) {
+            return;
+        }
+
+        // If the plugin is already disabled (for example during onDisable), we
+        // cannot schedule new asynchronous tasks. In that case, perform the save
+        // synchronously in the current thread.
+        if (!plugin.isEnabled()) {
+            performSave();
+            return;
+        }
+
+        // Otherwise ensure the save is executed asynchronously if we are on the
+        // main server thread.
         if (plugin.getServer().isPrimaryThread()) {
             plugin.getServer().getScheduler().runTaskAsynchronously(plugin, this::performSave);
         } else {
