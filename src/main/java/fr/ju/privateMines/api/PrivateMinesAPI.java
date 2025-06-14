@@ -99,7 +99,13 @@ public class PrivateMinesAPI implements IPrivateMinesAPI {
     public boolean upgradeMine(Player player) { return plugin.getMineManager().upgradeMine(player); }
     
     @Override
-    public boolean setMineOpen(Player player, boolean isOpen) { Mine mine = getMine(player); if (mine == null) return false; mine.setOpen(isOpen); return true; }
+    public boolean setMineOpen(Player player, boolean isOpen) {
+        Mine mine = getMine(player);
+        if (mine == null) return false;
+        mine.setOpen(isOpen);
+        plugin.getMetricsService().updateOpenMines((int) plugin.getMineManager().getAllMines().stream().filter(Mine::isOpen).count());
+        return true;
+    }
     
     @Override
     public boolean setMineTax(Player player, int tax) { return plugin.getMineManager().setMineTax(player, tax); }

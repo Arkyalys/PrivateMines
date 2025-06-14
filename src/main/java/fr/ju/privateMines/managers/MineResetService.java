@@ -145,6 +145,7 @@ public class MineResetService {
                 plugin.getHologramManager().createOrUpdateHologram(mineHolo);
             }
         }
+        plugin.getMetricsService().incrementMineResets();
     }
 
     public void resetMine(Player player, MineManager mineManager, PrivateMines plugin, Map<Integer, Map<Material, Double>> mineTiers) {

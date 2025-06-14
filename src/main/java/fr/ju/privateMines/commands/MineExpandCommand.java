@@ -6,6 +6,7 @@ import org.bukkit.entity.Player;
 import fr.ju.privateMines.managers.MineManager;
 import fr.ju.privateMines.utils.ConfigManager;
 import fr.ju.privateMines.utils.Permissions;
+import fr.ju.privateMines.PrivateMines;
 public class MineExpandCommand implements SubCommand {
     private final MineManager mineManager;
     private final ConfigManager configManager;
@@ -31,6 +32,7 @@ public class MineExpandCommand implements SubCommand {
             return true;
         }
         mine.expand();
+        PrivateMines.getInstance().getMetricsService().incrementMineExpansions();
         if (mine.hasMineArea()) {
             expandMineArea(mine);
         }
