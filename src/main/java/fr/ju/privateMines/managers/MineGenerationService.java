@@ -128,7 +128,7 @@ public class MineGenerationService {
             return false;
         } catch (Exception e) {
             plugin.getLogger().severe("Erreur lors de la génération de la mine: " + e.getMessage());
-            e.printStackTrace();
+            plugin.getErrorHandler().logError("Erreur lors de la génération de la mine", e);
             return false;
         }
     }

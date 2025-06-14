@@ -143,7 +143,7 @@ public class MineCommand implements CommandExecutor {
         } catch (Exception e) {
             sender.sendMessage(configManager.getMessage("mine-gui-install-error").replace("%error%", e.getMessage()));
             plugin.getLogger().severe("Error installing GUI system: " + e.getMessage());
-            e.printStackTrace();
+            plugin.getErrorHandler().logError("Erreur lors de l'installation du systeme de GUI", e);
         }
         return true;
     }
@@ -213,7 +213,7 @@ public class MineCommand implements CommandExecutor {
             sender.sendMessage(configManager.getMessage("mine-reset-restart"));
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
+            plugin.getErrorHandler().logError("Erreur lors du reset complet", e);
             return false;
         }
     }

@@ -44,7 +44,7 @@ public class MinePersistenceService {
             PrivateMines.debugLog("[DEBUG-MINE] Fichier data.yml sauvegardé avec succès");
         } catch (Exception e) {
             PrivateMines.debugLog("[DEBUG-MINE] Erreur lors de la sauvegarde du fichier data.yml: " + e.getMessage());
-            e.printStackTrace();
+            plugin.getErrorHandler().logError("Erreur lors de la sauvegarde du fichier data.yml", e);
         }
     }
     public void saveMine(Mine mine, MineManager mineManager) {
@@ -218,7 +218,7 @@ public class MinePersistenceService {
                 }
             } catch (Exception e) {
                 PrivateMines.debugLog("Erreur lors du chargement de la mine " + key + ": " + e.getMessage());
-                e.printStackTrace();
+                plugin.getErrorHandler().logError("Erreur lors du chargement de la mine " + key, e);
                 errorCount++;
             }
         }
@@ -273,7 +273,7 @@ public class MinePersistenceService {
             return Optional.of(mine);
         } catch (Exception e) {
             plugin.getLogger().warning("Exception lors du chargement de la mine " + key + ": " + e.getMessage());
-            e.printStackTrace();
+            plugin.getErrorHandler().logError("Exception lors du chargement de la mine " + key, e);
             return Optional.empty();
         }
     }

@@ -127,7 +127,7 @@ public class MineResetService {
             PrivateMines.debugLog("[Reset Debug] Mine réinitialisée avec FAWE. " + blocksChanged + " blocs modifiés.");
         } catch (Exception e) {
             plugin.getLogger().severe("[Reset Debug] Erreur critique lors de la réinitialisation avec FAWE: " + e.getMessage());
-            e.printStackTrace();
+            plugin.getErrorHandler().logError("Erreur critique lors de la réinitialisation avec FAWE", e);
             plugin.getLogger().severe("FAWE est maintenant obligatoire, vérifiez votre installation.");
         }
     }

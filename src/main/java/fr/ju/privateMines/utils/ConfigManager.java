@@ -47,7 +47,7 @@ public class ConfigManager {
             try {
                 dataFile.createNewFile();
             } catch (IOException e) {
-                e.printStackTrace();
+                plugin.getErrorHandler().logError("Erreur lors de la création du fichier data.yml", e);
             }
         }
         data = YamlConfiguration.loadConfiguration(dataFile);
@@ -98,28 +98,28 @@ public class ConfigManager {
         try {
             config.save(configFile);
         } catch (IOException e) {
-            e.printStackTrace();
+            plugin.getErrorHandler().logError("Erreur lors de la sauvegarde du fichier config.yml", e);
         }
     }
     public void saveMessages() {
         try {
             messages.save(messagesFile);
         } catch (IOException e) {
-            e.printStackTrace();
+            plugin.getErrorHandler().logError("Erreur lors de la sauvegarde du fichier messages.yml", e);
         }
     }
     public void saveData() {
         try {
             data.save(dataFile);
         } catch (IOException e) {
-            e.printStackTrace();
+            plugin.getErrorHandler().logError("Erreur lors de la sauvegarde du fichier data.yml", e);
         }
     }
     public void saveTiers() {
         try {
             tiers.save(tiersFile);
         } catch (IOException e) {
-            e.printStackTrace();
+            plugin.getErrorHandler().logError("Erreur lors de la sauvegarde du fichier tiers.yml", e);
         }
     }
     public void reloadConfig() {
