@@ -49,7 +49,7 @@ public class MineStatsCommand implements SubCommand {
 
     private void showTopStats(Player viewer) {
         if (plugin.getStatsManager() != null) {
-            MineCommandUtils.showTopStats(plugin, mineManager, viewer);
+            MineCommandUtils.showTopStats(plugin, mineManager, configManager, viewer);
         } else {
             viewer.sendMessage(configManager.getMessage("mine-stats-not-enabled"));
         }

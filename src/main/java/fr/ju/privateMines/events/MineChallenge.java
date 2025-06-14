@@ -1,8 +1,11 @@
 package fr.ju.privateMines.events;
 import java.util.function.Consumer;
+
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+
+import fr.ju.privateMines.PrivateMines;
 public class MineChallenge {
     private String id;
     private String name;
