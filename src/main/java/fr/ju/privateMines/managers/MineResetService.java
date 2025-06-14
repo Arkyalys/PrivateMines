@@ -96,7 +96,7 @@ public class MineResetService {
         plugin.getLogger().severe("[Reset Debug] Échec critique: impossible de déterminer les blocs pour la régénération (tier: " + mine.getTier() + "). La régénération est annulée.");
         Player owner = plugin.getServer().getPlayer(uuid);
         if(owner != null && owner.isOnline()) {
-            owner.sendMessage(ColorUtil.translateColors("&cErreur critique lors de la réinitialisation : impossible de trouver les blocs à placer. Contactez un administrateur."));
+            owner.sendMessage(plugin.getConfigManager().getMessageOrDefault("reset.critical-error", "&cErreur critique lors de la réinitialisation : impossible de trouver les blocs à placer. Contactez un administrateur."));
         }
     }
 

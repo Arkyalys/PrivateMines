@@ -13,16 +13,16 @@ public class MineTaxService {
     }
     public boolean setMineTax(Player player, int tax) {
         if (!mineManager.hasMine(player)) {
-            player.sendMessage(ColorUtil.deserialize("&cVous n'avez pas de mine à modifier."));
+            player.sendMessage(plugin.getConfigManager().getMessageOrDefault("tax.no-mine", "&cVous n'avez pas de mine à modifier."));
             return false;
         }
         if (tax < 0 || tax > 100) {
-            player.sendMessage(ColorUtil.deserialize("&cLa taxe doit être comprise entre 0 et 100%."));
+            player.sendMessage(plugin.getConfigManager().getMessageOrDefault("tax.invalid", "&cLa taxe doit être comprise entre 0 et 100%."));
             return false;
         }
         Mine mine = mineManager.getMine(player).orElse(null);
         if (mine == null) {
-            player.sendMessage(ColorUtil.deserialize("&cErreur lors de la récupération de votre mine."));
+            player.sendMessage(plugin.getConfigManager().getMessageOrDefault("gui.mine-error", "&cErreur lors de la récupération de votre mine."));
             return false;
         }
         mine.setTax(tax);
@@ -30,7 +30,7 @@ public class MineTaxService {
         if (plugin.getHologramManager() != null) {
             plugin.getHologramManager().createOrUpdateHologram(mine);
         }
-        player.sendMessage(ColorUtil.deserialize("&aLa taxe de votre mine a été définie à &e" + tax + "%&a."));
+        player.sendMessage(plugin.getConfigManager().getMessageOrDefault("tax.set", "&aLa taxe de votre mine a été définie à &e" + tax + "%&a.").replace("%tax%", String.valueOf(tax)));
         return true;
     }
 } 

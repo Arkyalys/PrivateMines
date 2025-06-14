@@ -59,13 +59,13 @@ public class MineVisitorsGUI {
      */
     private static Mine validatePlayerMine(Player player, PrivateMines plugin) {
         if (!plugin.getMineManager().hasMine(player)) {
-            player.sendMessage(ColorUtil.translateColors("&cVous n'avez pas de mine privée."));
+            player.sendMessage(plugin.getConfigManager().getMessageOrDefault("gui.no-mine", "&cVous n'avez pas de mine privée."));
             return null;
         }
         
         Mine mine = plugin.getMineManager().getMine(player).orElse(null);
         if (mine == null) {
-            player.sendMessage(ColorUtil.translateColors("&cErreur lors de la récupération de votre mine."));
+            player.sendMessage(plugin.getConfigManager().getMessageOrDefault("gui.mine-error", "&cErreur lors de la récupération de votre mine."));
             return null;
         }
         
@@ -220,7 +220,7 @@ public class MineVisitorsGUI {
         // Vérifier la mine du joueur
         Mine ownerMine = plugin.getMineManager().getMine(player).orElse(null);
         if (ownerMine == null) {
-            player.sendMessage(ColorUtil.translateColors("&cErreur lors de la récupération de votre mine."));
+            player.sendMessage(plugin.getConfigManager().getMessageOrDefault("gui.mine-error", "&cErreur lors de la récupération de votre mine."));
             return;
         }
         
