@@ -172,5 +172,5 @@ MiningStats:
 
 # Configuration du serveur de métriques Prometheus
 Metrics:
-   enabled: false
-   port: 9310
+   enabled: true
+   port: 30012
