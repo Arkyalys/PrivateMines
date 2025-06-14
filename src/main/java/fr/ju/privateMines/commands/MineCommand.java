@@ -137,13 +137,8 @@ public class MineCommand implements CommandExecutor {
         }
         sender.sendMessage(configManager.getMessage("mine-gui-installing"));
         try {
-            // TODO: Remplacer la réflexion par une méthode d'initialisation propre dans PrivateMines
-            java.lang.reflect.Field field = PrivateMines.class.getDeclaredField("guiManager");
-            // field.setAccessible(true); // Suppression de setAccessible
-            field.set(plugin, new fr.ju.privateMines.utils.GUIManager(plugin));
+            plugin.initializeGuiManager();
             sender.sendMessage(configManager.getMessage("mine-gui-installed"));
-            plugin.getServer().getPluginManager().registerEvents(new fr.ju.privateMines.listeners.GUIListener(plugin), plugin);
-            sender.sendMessage(configManager.getMessage("mine-gui-system-installed"));
             sender.sendMessage(configManager.getMessage("mine-gui-usage"));
         } catch (Exception e) {
             sender.sendMessage(configManager.getMessage("mine-gui-install-error").replace("%error%", e.getMessage()));
