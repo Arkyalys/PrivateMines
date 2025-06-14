@@ -8,6 +8,7 @@ import fr.ju.privateMines.managers.MineManager;
 import fr.ju.privateMines.models.Mine;
 import fr.ju.privateMines.utils.ConfigManager;
 import fr.ju.privateMines.utils.Permissions;
+import fr.ju.privateMines.PrivateMines;
 public class MineTeleportCommand implements SubCommand {
     private final MineManager mineManager;
     private final ConfigManager configManager;
@@ -30,6 +31,7 @@ public class MineTeleportCommand implements SubCommand {
             }
             player.teleport(tpLocation);
             player.sendMessage(configManager.getMessage("mine-teleport"));
+            PrivateMines.getInstance().getMetricsService().incrementTeleports();
             mineManager.saveMineData(player);
         } else {
             player.sendMessage(configManager.getMessage("mine-no-mine"));

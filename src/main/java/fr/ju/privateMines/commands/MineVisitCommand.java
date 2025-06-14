@@ -12,6 +12,7 @@ import fr.ju.privateMines.managers.MineManager;
 import fr.ju.privateMines.models.Mine;
 import fr.ju.privateMines.utils.ConfigManager;
 import fr.ju.privateMines.utils.Permissions;
+import fr.ju.privateMines.PrivateMines;
 
 public class MineVisitCommand implements SubCommand {
     private final MineManager mineManager;
@@ -54,6 +55,9 @@ public class MineVisitCommand implements SubCommand {
             return true;
         }
         player.teleport(targetLocation);
+        targetMine.getStats().addVisit(player.getUniqueId());
+        PrivateMines.getInstance().getMetricsService().incrementVisits();
+        PrivateMines.getInstance().getMetricsService().incrementTeleports();
         Map<String, String> replacements = new HashMap<>();
         replacements.put("%player%", targetPlayer.getName());
         player.sendMessage(configManager.getMessage("mine-visit-success", replacements));

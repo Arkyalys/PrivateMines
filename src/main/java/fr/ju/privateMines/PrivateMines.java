@@ -46,6 +46,7 @@ public class PrivateMines extends JavaPlugin {
             initializeManagers();
             metricsService = new MetricsService(this);
             metricsService.updateActiveMines(mineManager.getAllMines().size());
+            metricsService.updateOpenMines((int) mineManager.getAllMines().stream().filter(fr.ju.privateMines.models.Mine::isOpen).count());
             initializeHolograms();
             initializeAPI();
             registerCommandsAndListeners();
@@ -250,6 +251,7 @@ public class PrivateMines extends JavaPlugin {
         this.guiManager = new GUIManager(this);
         this.metricsService = new MetricsService(this);
         metricsService.updateActiveMines(mineManager.getAllMines().size());
+        metricsService.updateOpenMines((int) mineManager.getAllMines().stream().filter(fr.ju.privateMines.models.Mine::isOpen).count());
         
         initializeHologramsAfterReload();
         
