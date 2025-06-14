@@ -8,6 +8,7 @@ import org.bukkit.OfflinePlayer;
 import fr.ju.privateMines.PrivateMines;
 import fr.ju.privateMines.models.Mine;
 import fr.ju.privateMines.models.MineStats;
+import fr.ju.privateMines.utils.ProgressBarUtil;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 public class PrivateMinesPlaceholders extends PlaceholderExpansion {
     private final PrivateMines plugin;
@@ -202,15 +203,7 @@ public class PrivateMinesPlaceholders extends PlaceholderExpansion {
         }
     }
     private String buildProgressBar(Mine mine) {
-        int percent = mine.getStats().getPercentageMined();
-        int barLength = 20;
-        int filled = (int) (barLength * (percent / 100.0));
-        StringBuilder bar = new StringBuilder("§8[");
-        for (int j = 0; j < barLength; j++) {
-            bar.append(j < filled ? "§a■" : "§7■");
-        }
-        bar.append("§8]");
-        return bar.toString();
+        return ProgressBarUtil.createProgressBar(mine.getStats().getPercentageMined());
     }
     private String getNextReset(Mine mine) {
         int threshold = plugin.getConfigManager().getConfig().getInt("Gameplay.auto-reset.threshold", 65);

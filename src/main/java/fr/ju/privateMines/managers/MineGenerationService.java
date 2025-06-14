@@ -157,23 +157,4 @@ public class MineGenerationService {
         plugin.getLogger().warning("[Reset Debug] getRandomBlock: n'a pas pu sélectionner de bloc malgré un total > 0 (" + total + ") et la map: " + blocks.toString() + ". Retourne STONE.");
         return Material.STONE;
     }
-    public String createProgressBar(int percentage) {
-        String completedColor = plugin.getConfigManager().getConfig().getString("Config.Gameplay.progress-bars.completed-color", "&a");
-        String remainingColor = plugin.getConfigManager().getConfig().getString("Config.Gameplay.progress-bars.remaining-color", "&7");
-        String borderColor = plugin.getConfigManager().getConfig().getString("Config.Gameplay.progress-bars.border-color", "&8");
-        String character = plugin.getConfigManager().getConfig().getString("Config.Gameplay.progress-bars.character", "■");
-        int barLength = plugin.getConfigManager().getConfig().getInt("Config.Gameplay.progress-bars.length", 20);
-        StringBuilder bar = new StringBuilder(borderColor + "[");
-        int completedLength = (int) Math.round(percentage / (100.0 / barLength));
-        bar.append(completedColor);
-        for (int i = 0; i < completedLength; i++) {
-            bar.append(character);
-        }
-        bar.append(remainingColor);
-        for (int i = 0; i < barLength - completedLength; i++) {
-            bar.append(character);
-        }
-        bar.append(borderColor + "]");
-        return bar.toString();
-    }
 } 

@@ -13,6 +13,7 @@ import fr.ju.privateMines.models.MineStats;
 import fr.ju.privateMines.services.HologramCreationService;
 import fr.ju.privateMines.services.HologramDeleteService;
 import fr.ju.privateMines.services.HologramUpdateService;
+import fr.ju.privateMines.utils.ProgressBarUtil;
 public class HologramManager {
     private final PrivateMines plugin;
     public final Map<UUID, Map<String, String>> mineHolograms; 
@@ -89,7 +90,7 @@ public class HologramManager {
         }
         int resetThreshold = plugin.getConfigManager().getConfig().getInt("Gameplay.auto-reset.threshold", 65);
         int percentageMined = stats.getPercentageMined();
-        String progressBar = createProgressBar(percentageMined);
+        String progressBar = ProgressBarUtil.createProgressBar(percentageMined);
         List<String> allLines = new java.util.ArrayList<>();
         allLines.add("&6&l✦ &f&lMine Privée &6&l✦");
         allLines.add("");
@@ -134,24 +135,6 @@ public class HologramManager {
             }
         }
         return allLines;
-    }
-    private String createProgressBar(int percentage) {
-        String completedColor = plugin.getConfigManager().getConfig().getString("Gameplay.progress-bars.completed-color", "&a");
-        String remainingColor = plugin.getConfigManager().getConfig().getString("Gameplay.progress-bars.remaining-color", "&7");
-        String borderColor = plugin.getConfigManager().getConfig().getString("Gameplay.progress-bars.border-color", "&8");
-        String character = plugin.getConfigManager().getConfig().getString("Gameplay.progress-bars.character", "■");
-        int length = plugin.getConfigManager().getConfig().getInt("Gameplay.progress-bars.length", 20);
-        int completed = (int) Math.round((percentage / 100.0) * length);
-        StringBuilder progressBar = new StringBuilder(borderColor + "[");
-        for (int i = 0; i < length; i++) {
-            if (i < completed) {
-                progressBar.append(completedColor).append(character);
-            } else {
-                progressBar.append(remainingColor).append(character);
-            }
-        }
-        progressBar.append(borderColor).append("]");
-        return progressBar.toString();
     }
     private Map<org.bukkit.Material, Double> getMineResources(Mine mine) {
         return mine.getBlocks();

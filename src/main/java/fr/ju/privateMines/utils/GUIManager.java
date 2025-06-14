@@ -72,19 +72,6 @@ public class GUIManager {
         return builder.toString().trim();
     }
     public static String createProgressBar(int percentage) {
-        int barLength = 20;
-        int filledBars = (int) Math.round(percentage / 100.0 * barLength);
-        StringBuilder barBuilder = new StringBuilder("&a");
-        for (int i = 0; i < filledBars; i++) {
-            barBuilder.append("█");
-        }
-        if (filledBars < barLength) {
-            barBuilder.append("&7");
-            for (int i = filledBars; i < barLength; i++) {
-                barBuilder.append("█");
-            }
-        }
-        barBuilder.append(" &f").append(percentage).append("%");
-        return ColorUtil.translateColors(barBuilder.toString());
+        return ColorUtil.translateColors(ProgressBarUtil.createProgressBar(percentage));
     }
-} 
+}
