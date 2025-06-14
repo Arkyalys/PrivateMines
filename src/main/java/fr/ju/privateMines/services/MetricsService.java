@@ -15,7 +15,15 @@ public class MetricsService {
     private final PrivateMines plugin;
     private HTTPServer server;
     private final Gauge activeMines;
+    private final Gauge openMines;
     private final Counter blocksMined;
+    private final Counter minesCreated;
+    private final Counter minesDeleted;
+    private final Counter mineResets;
+    private final Counter mineExpansions;
+    private final Counter mineUpgrades;
+    private final Counter mineVisits;
+    private final Counter mineTeleports;
 
     public MetricsService(PrivateMines plugin) {
         this.plugin = plugin;
@@ -23,9 +31,50 @@ public class MetricsService {
                 .name("privatemines_active_mines")
                 .help("Nombre de mines actives")
                 .register();
+
+        this.openMines = Gauge.build()
+                .name("privatemines_open_mines")
+                .help("Nombre de mines ouvertes aux visiteurs")
+                .register();
+
         this.blocksMined = Counter.build()
                 .name("privatemines_blocks_mined_total")
                 .help("Nombre total de blocs minés")
+                .register();
+
+        this.minesCreated = Counter.build()
+                .name("privatemines_mines_created_total")
+                .help("Nombre total de mines créées")
+                .register();
+
+        this.minesDeleted = Counter.build()
+                .name("privatemines_mines_deleted_total")
+                .help("Nombre total de mines supprimées")
+                .register();
+
+        this.mineResets = Counter.build()
+                .name("privatemines_mine_resets_total")
+                .help("Nombre total de resets de mines")
+                .register();
+
+        this.mineExpansions = Counter.build()
+                .name("privatemines_mine_expansions_total")
+                .help("Nombre total d'agrandissements de mines")
+                .register();
+
+        this.mineUpgrades = Counter.build()
+                .name("privatemines_mine_upgrades_total")
+                .help("Nombre total d'améliorations de mines")
+                .register();
+
+        this.mineVisits = Counter.build()
+                .name("privatemines_mine_visits_total")
+                .help("Nombre total de visites de mines")
+                .register();
+
+        this.mineTeleports = Counter.build()
+                .name("privatemines_mine_teleports_total")
+                .help("Nombre total de téléportations vers une mine")
                 .register();
         DefaultExports.initialize();
         boolean enabled = plugin.getConfigManager().getConfig()
@@ -46,8 +95,40 @@ public class MetricsService {
         activeMines.set(count);
     }
 
+    public void updateOpenMines(int count) {
+        openMines.set(count);
+    }
+
     public void incrementBlocksMined() {
         blocksMined.inc();
+    }
+
+    public void incrementMinesCreated() {
+        minesCreated.inc();
+    }
+
+    public void incrementMinesDeleted() {
+        minesDeleted.inc();
+    }
+
+    public void incrementMineResets() {
+        mineResets.inc();
+    }
+
+    public void incrementMineExpansions() {
+        mineExpansions.inc();
+    }
+
+    public void incrementMineUpgrades() {
+        mineUpgrades.inc();
+    }
+
+    public void incrementVisits() {
+        mineVisits.inc();
+    }
+
+    public void incrementTeleports() {
+        mineTeleports.inc();
     }
 
     public void stop() {
