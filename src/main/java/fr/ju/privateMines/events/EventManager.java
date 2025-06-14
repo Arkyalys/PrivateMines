@@ -128,8 +128,8 @@ public class EventManager {
         checkTask = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
             for (MineEvent event : events) {
                 if (event.isActive()) {
-                    plugin.getServer().getOnlinePlayers().forEach(player -> 
-                        player.sendMessage(ColorUtil.deserialize("&6[PrivateMines] &aL'événement &e" + event.getName() + " &aest actif !"))
+                    plugin.getServer().getOnlinePlayers().forEach(player ->
+                        player.sendMessage(plugin.getConfigManager().getMessageOrDefault("event.active", "&6[PrivateMines] &aL'événement &e%event% &aest actif !").replace("%event%", event.getName()))
                     );
                 }
             }

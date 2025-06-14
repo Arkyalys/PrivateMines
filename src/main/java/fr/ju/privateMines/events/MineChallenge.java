@@ -31,7 +31,7 @@ public class MineChallenge {
         if (customRewardAction != null) {
             customRewardAction.accept(player);
         }
-        player.sendMessage("§aYou have completed the challenge §6" + name + " §aand received your reward!");
+        player.sendMessage(PrivateMines.getInstance().getConfigManager().getMessageOrDefault("challenge.completed", "§aYou have completed the challenge §6%name% §aand received your reward!").replace("%name%", name));
     }
     public boolean matchesAction(ChallengeType actionType) {
         return this.type == actionType;

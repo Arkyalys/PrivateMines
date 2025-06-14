@@ -36,7 +36,7 @@ public class MineMainGUI {
     private static void handleHasMine(PrivateMines plugin, GUIManager guiManager, Player player, Inventory inventory) {
         Mine mine = plugin.getMineManager().getMine(player).orElse(null);
         if (mine == null) {
-            player.sendMessage(ColorUtil.translateColors("&cErreur lors de la récupération de votre mine."));
+            player.sendMessage(plugin.getConfigManager().getMessageOrDefault("gui.mine-error", "&cErreur lors de la récupération de votre mine."));
             return;
         }
         MineStats stats = mine.getStats();
@@ -52,10 +52,27 @@ public class MineMainGUI {
     }
 
     private static void handleNoMine(PrivateMines plugin, GUIManager guiManager, Player player, Inventory inventory) {
-        inventory.setItem(4, guiManager.createGuiItem(Material.PAPER, "&e⚠ &bPas de Mine", "&7Vous n'avez pas encore de mine privée", "&7Créez-en une pour commencer à miner!"));
-        inventory.setItem(22, guiManager.createGuiItem(Material.IRON_PICKAXE, "&e+ &bCréer une Mine Standard", "&7Créer une mine privée avec la configuration par défaut", "", "&eCliquez pour créer"));
+        inventory.setItem(4, guiManager.createGuiItem(
+                Material.PAPER,
+                plugin.getConfigManager().getMessageOrDefault("gui.no-mine-item.name", "&e⚠ &bPas de Mine"),
+                plugin.getConfigManager().getMessageOrDefault("gui.no-mine-item.lore1", "&7Vous n'avez pas encore de mine privée"),
+                plugin.getConfigManager().getMessageOrDefault("gui.no-mine-item.lore2", "&7Créez-en une pour commencer à miner!")
+        ));
+        inventory.setItem(22, guiManager.createGuiItem(
+                Material.IRON_PICKAXE,
+                plugin.getConfigManager().getMessageOrDefault("gui.create-standard.name", "&e+ &bCréer une Mine Standard"),
+                plugin.getConfigManager().getMessageOrDefault("gui.create-standard.lore1", "&7Créer une mine privée avec la configuration par défaut"),
+                "",
+                plugin.getConfigManager().getMessageOrDefault("gui.create-standard.lore2", "&eCliquez pour créer")
+        ));
         if (player.hasPermission("privateMines.admin.create")) {
-            inventory.setItem(31, guiManager.createGuiItem(Material.DIAMOND_PICKAXE, "&e+ &bCréer une Mine Personnalisée", "&7Choisir un type de mine personnalisé", "", "&eCliquez pour sélectionner un type"));
+            inventory.setItem(31, guiManager.createGuiItem(
+                    Material.DIAMOND_PICKAXE,
+                    plugin.getConfigManager().getMessageOrDefault("gui.create-custom.name", "&e+ &bCréer une Mine Personnalisée"),
+                    plugin.getConfigManager().getMessageOrDefault("gui.create-custom.lore1", "&7Choisir un type de mine personnalisé"),
+                    "",
+                    plugin.getConfigManager().getMessageOrDefault("gui.create-custom.lore2", "&eCliquez pour sélectionner un type")
+            ));
         }
     }
 

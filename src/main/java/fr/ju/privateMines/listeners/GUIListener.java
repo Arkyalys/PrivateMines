@@ -154,23 +154,23 @@ public class GUIListener implements Listener {
         event.setCancelled(true);
         String msg = PlainTextComponentSerializer.plainText().serialize(event.message()).trim();
         if (msg.equalsIgnoreCase("/cancel")) {
-            player.sendMessage(ColorUtil.translateColors("&cAjout de contributeur annulé."));
+            player.sendMessage(plugin.getConfigManager().getMessageOrDefault("gui.contributor-add-cancel", "&cAjout de contributeur annulé."));
             awaitingContributorChat.remove(player.getUniqueId());
             return;
         }
         Player target = plugin.getServer().getPlayerExact(msg);
         if (target == null) {
-            player.sendMessage(ColorUtil.translateColors("&cJoueur introuvable. Réessaie ou tape /cancel."));
+            player.sendMessage(plugin.getConfigManager().getMessageOrDefault("gui.player-not-found-cancel", "&cJoueur introuvable. Réessaie ou tape /cancel."));
             return;
         }
         Mine mine = plugin.getMineManager().getMine(player).orElse(null);
         if (mine == null) {
-            player.sendMessage(ColorUtil.translateColors("&cErreur mine."));
+            player.sendMessage(plugin.getConfigManager().getMessageOrDefault("gui.mine-error", "&cErreur mine."));
             awaitingContributorChat.remove(player.getUniqueId());
             return;
         }
         mine.addContributor(target.getUniqueId());
-        player.sendMessage(ColorUtil.translateColors("&aContributeur ajouté !"));
+        player.sendMessage(plugin.getConfigManager().getMessageOrDefault("gui.contributor-added", "&aContributeur ajouté !"));
         awaitingContributorChat.remove(player.getUniqueId());
         org.bukkit.Bukkit.getScheduler().runTask(plugin, () -> MineVisitorsGUI.openGUI(player, 0));
     }
@@ -226,7 +226,7 @@ public class GUIListener implements Listener {
     private void handleTeleportButton(Player player) {
         player.closeInventory();
         plugin.getMineManager().teleportToMine(player, player);
-        player.sendMessage(ColorUtil.translateColors("&aTéléportation à votre mine..."));
+        player.sendMessage(plugin.getConfigManager().getMessageOrDefault("gui.teleporting", "&aTéléportation à votre mine..."));
     }
     
     /**
@@ -283,7 +283,7 @@ public class GUIListener implements Listener {
      */
     private void handleDeleteButton(Player player) {
         player.closeInventory();
-        player.sendMessage(ColorUtil.translateColors("&c⚠ Pour confirmer la suppression de votre mine, tapez &e/jumine delete&c."));
+        player.sendMessage(plugin.getConfigManager().getMessageOrDefault("gui.delete-confirm", "&c⚠ Pour confirmer la suppression de votre mine, tapez &e/jumine delete&c."));
     }
     
     private void handleNonOwnerMainGUIClick(Player player, int slot) {
@@ -369,7 +369,7 @@ public class GUIListener implements Listener {
     
     private void handleAddContributorButton(Player player) {
         player.closeInventory();
-        player.sendMessage(ColorUtil.translateColors("&eÉcris le pseudo du joueur à ajouter comme contributeur dans le chat. Tape &c/cancel &epour annuler."));
+        player.sendMessage(plugin.getConfigManager().getMessageOrDefault("gui.contributor-add-prompt", "&eÉcris le pseudo du joueur à ajouter comme contributeur dans le chat. Tape &c/cancel &epour annuler."));
         awaitingContributorChat.put(player.getUniqueId(), true);
     }
     
@@ -461,7 +461,7 @@ public class GUIListener implements Listener {
         }
         if (slot == 15) {
             mine.removeContributor(targetId);
-            player.sendMessage(ColorUtil.translateColors("&aContributeur retiré avec succès."));
+            player.sendMessage(plugin.getConfigManager().getMessageOrDefault("gui.contributor-removed", "&aContributeur retiré avec succès."));
             MineVisitorsGUI.openGUI(player, 0);
             return;
         }
@@ -477,7 +477,7 @@ public class GUIListener implements Listener {
                 break;
             case 12: 
                 player.closeInventory();
-                player.sendMessage(ColorUtil.translateColors("&ePour modifier la taxe, utilisez la commande &b/jumine tax [pourcentage]"));
+                player.sendMessage(plugin.getConfigManager().getMessageOrDefault("gui.tax-instruction", "&ePour modifier la taxe, utilisez la commande &b/jumine tax [pourcentage]"));
                 break;
             case 31: 
                 MineMainGUI.openGUI(player);
@@ -492,19 +492,19 @@ public class GUIListener implements Listener {
         if (slot == 31) {
             if (!plugin.getMineManager().hasMine(player)) {
                 player.closeInventory();
-                player.sendMessage(ColorUtil.translateColors("&cVous n'avez pas de mine privée."));
+                player.sendMessage(plugin.getConfigManager().getMessageOrDefault("gui.no-mine", "&cVous n'avez pas de mine privée."));
                 return;
             }
             Mine mine = plugin.getMineManager().getMine(player).orElse(null);
             if (mine == null) return;
             int maxSize = plugin.getConfigManager().getConfig().getInt("Config.Mines.max-size", 100);
-            if (mine.getSize() >= maxSize) {
-                player.sendMessage(ColorUtil.translateColors("&cVotre mine a déjà atteint sa taille maximale."));
-                player.closeInventory();
-                return;
-            }
+                if (mine.getSize() >= maxSize) {
+                    player.sendMessage(plugin.getConfigManager().getMessageOrDefault("gui.max-size", "&cVotre mine a déjà atteint sa taille maximale."));
+                    player.closeInventory();
+                    return;
+                }
             player.closeInventory();
-            player.sendMessage(ColorUtil.translateColors("&ePour agrandir votre mine, utilisez la commande &b/jumine expand&e."));
+            player.sendMessage(plugin.getConfigManager().getMessageOrDefault("gui.expand-instruction", "&ePour agrandir votre mine, utilisez la commande &b/jumine expand&e."));
         }
     }
     private void handleCompositionGUIClick(Player player, ItemStack clickedItem, int slot) {
@@ -594,34 +594,34 @@ public class GUIListener implements Listener {
         // Extraire le nom du joueur
         String targetName = extractTargetName(result);
         if (targetName == null || targetName.trim().isEmpty() || targetName.equals("Entrer le pseudo")) {
-            player.sendMessage(ColorUtil.translateColors("&cPseudo invalide."));
+            player.sendMessage(plugin.getConfigManager().getMessageOrDefault("gui.invalid-name", "&cPseudo invalide."));
             return false;
         }
         
         // Trouver le joueur cible
         Player target = plugin.getServer().getPlayerExact(targetName.trim());
         if (target == null) {
-            player.sendMessage(ColorUtil.translateColors("&cJoueur introuvable."));
+            player.sendMessage(plugin.getConfigManager().getMessageOrDefault("gui.player-not-found", "&cJoueur introuvable."));
             return false;
         }
         
         // Trouver la mine du joueur
         Mine mine = plugin.getMineManager().getMine(player).orElse(null);
         if (mine == null) {
-            player.sendMessage(ColorUtil.translateColors("&cVous n'avez pas de mine."));
+            player.sendMessage(plugin.getConfigManager().getMessageOrDefault("gui.no-mine", "&cVous n'avez pas de mine."));
             return false;
         }
         
         // Accéder à la région WorldGuard
         com.sk89q.worldguard.protection.regions.ProtectedRegion region = getPlayerMineRegion(player, mine);
         if (region == null) {
-            player.sendMessage(ColorUtil.translateColors("&cErreur lors de l'accès à la région de votre mine."));
+            player.sendMessage(plugin.getConfigManager().getMessageOrDefault("gui.region-error", "&cErreur lors de l'accès à la région de votre mine."));
             return false;
         }
         
         // Ajouter le joueur à la région
         region.getMembers().addPlayer(target.getUniqueId());
-        player.sendMessage(ColorUtil.translateColors("&aContributeur ajouté !"));
+        player.sendMessage(plugin.getConfigManager().getMessageOrDefault("gui.contributor-added", "&aContributeur ajouté !"));
         awaitingContributorName.remove(player.getUniqueId());
         
         return true;

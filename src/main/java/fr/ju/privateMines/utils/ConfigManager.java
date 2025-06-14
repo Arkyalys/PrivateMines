@@ -73,6 +73,15 @@ public class ConfigManager {
         if (message == null) return "";
         return ColorUtil.translateColors(message);
     }
+    public String getMessageOrDefault(String path, String defaultValue) {
+        String message = messages.getString(path);
+        if (message == null) {
+            messages.set(path, defaultValue);
+            saveMessages();
+            message = defaultValue;
+        }
+        return ColorUtil.translateColors(message);
+    }
     public String getMessage(String path, Map<String, String> replacements) {
         String message = getMessage(path);
         if (replacements != null) {

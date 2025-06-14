@@ -23,29 +23,31 @@ public class MineCommandUtils {
         }
         MineStats stats = mine.getStats();
         if (stats == null) {
-            viewer.sendMessage(ColorUtil.translateColors("&cAucune statistique disponible pour cette mine."));
+            viewer.sendMessage(configManager.getMessageOrDefault("stats-none", "&cAucune statistique disponible pour cette mine."));
             return;
         }
         String ownerName = plugin.getServer().getOfflinePlayer(ownerUUID).getName();
-        viewer.sendMessage(ColorUtil.translateColors("&6&lStatistiques de la mine de " + (ownerName != null ? ownerName : ownerUUID.toString())));
-        viewer.sendMessage(ColorUtil.translateColors("&7Blocs minés: &f" + stats.getBlocksMined() + " &7/ &f" + stats.getTotalBlocks() + " &7(&f" + stats.getPercentageMined() + "%&7)"));
-        viewer.sendMessage(ColorUtil.translateColors("&7Visites: &f" + stats.getVisits()));
-        viewer.sendMessage(ColorUtil.translateColors("&7Dernier reset: &f" + formatTimestamp(stats.getLastReset())));
+        Map<String, String> rep = Map.of("%player%", ownerName != null ? ownerName : ownerUUID.toString(), "%mined%", String.valueOf(stats.getBlocksMined()), "%total%", String.valueOf(stats.getTotalBlocks()), "%percentage%", String.valueOf(stats.getPercentageMined()), "%visits%", String.valueOf(stats.getVisits()), "%time%", formatTimestamp(stats.getLastReset()));
+        viewer.sendMessage(configManager.getMessage("stats-header", Map.of("%player%", ownerName != null ? ownerName : ownerUUID.toString())));
+        viewer.sendMessage(configManager.getMessage("stats-blocks", rep));
+        viewer.sendMessage(configManager.getMessage("stats-visits", rep));
+        viewer.sendMessage(configManager.getMessage("stats-last-reset", rep));
     }
     public static void showTopStats(PrivateMines plugin, MineManager mineManager, Player viewer) {
         Map<UUID, Mine> mines = mineManager.mineMemoryService.getPlayerMines();
         if (mines.isEmpty()) {
-            viewer.sendMessage(ColorUtil.translateColors("&cAucune mine n'a été créée."));
+            viewer.sendMessage(configManager.getMessageOrDefault("stats-no-mines", "&cAucune mine n'a été créée."));
             return;
         }
         List<Mine> sortedMines = new ArrayList<>(mines.values());
         sortedMines.sort((m1, m2) -> Integer.compare(m2.getStats().getBlocksMined(), m1.getStats().getBlocksMined()));
-        viewer.sendMessage(ColorUtil.translateColors("&6&lTop 5 des mines les plus actives"));
+        viewer.sendMessage(configManager.getMessage("stats-top-header"));
         int count = 0;
         for (Mine mine : sortedMines) {
             if (count >= 5) break;
             String ownerName = plugin.getServer().getOfflinePlayer(mine.getOwner()).getName();
-            viewer.sendMessage(ColorUtil.translateColors("&7#" + (count + 1) + " &f" + (ownerName != null ? ownerName : mine.getOwner().toString()) + " &7- &f" + mine.getStats().getBlocksMined() + " &7blocs minés"));
+            Map<String, String> rep = Map.of("%position%", String.valueOf(count + 1), "%player%", ownerName != null ? ownerName : mine.getOwner().toString(), "%blocks%", String.valueOf(mine.getStats().getBlocksMined()));
+            viewer.sendMessage(configManager.getMessage("stats-top-entry", rep));
             count++;
         }
     }
@@ -55,30 +57,30 @@ public class MineCommandUtils {
         return format.format(date);
     }
     public static void sendHelp(PrivateMines plugin, MineManager mineManager, ConfigManager configManager, Player player) {
-        player.sendMessage(ColorUtil.translateColors("&6&lPrivateMines &7- &fAvailable commands:"));
+        player.sendMessage(configManager.getMessage("help-title"));
         boolean isAdmin = player.hasPermission("mine.admin");
         // Commandes de base pour tous
-        player.sendMessage(ColorUtil.translateColors("&7/mine create &f- Create your private mine"));
-        player.sendMessage(ColorUtil.translateColors("&7/mine delete &f- Delete your private mine"));
-        player.sendMessage(ColorUtil.translateColors("&7/mine reset &f- Reset your mine blocks"));
-        player.sendMessage(ColorUtil.translateColors("&7/mine tp &f- Teleport to your mine"));
-        player.sendMessage(ColorUtil.translateColors("&7/mine visit <player> &f- Visit another player's mine"));
-        player.sendMessage(ColorUtil.translateColors("&7/mine gui &f- Open the mine management menu"));
+        player.sendMessage(configManager.getMessage("help-create"));
+        player.sendMessage(configManager.getMessage("help-delete"));
+        player.sendMessage(configManager.getMessage("help-reset"));
+        player.sendMessage(configManager.getMessage("help-teleport"));
+        player.sendMessage(configManager.getMessage("help-visit"));
+        player.sendMessage(configManager.getMessage("help-gui"));
         // Commandes admin si admin
         if (isAdmin) {
-            player.sendMessage(ColorUtil.translateColors("&7/mine expand &f- Expand the size of your mine"));
-            player.sendMessage(ColorUtil.translateColors("&7/mine upgrade &f- Upgrade your mine to the next tier"));
-            player.sendMessage(ColorUtil.translateColors("&7/mine settype <type> &f- Change your mine type"));
-            player.sendMessage(ColorUtil.translateColors("&7/mine settier <tier> &f- Change your mine tier"));
-            player.sendMessage(ColorUtil.translateColors("&7/mine tax <percent> &f- Set the tax percentage of your mine"));
-            player.sendMessage(ColorUtil.translateColors("&7/mine ban <player> [duration] &f- Ban a player from your mine"));
-            player.sendMessage(ColorUtil.translateColors("&7/mine unban <player> &f- Unban a player from your mine"));
-            player.sendMessage(ColorUtil.translateColors("&7/mine kick <player> &f- Kick a player from your mine"));
-            player.sendMessage(ColorUtil.translateColors("&7/mine menu &f- Shortcut for /mine gui"));
-            player.sendMessage(ColorUtil.translateColors("&7/mine pregen <number> [type] &f- Pre-generate mines (Admin)"));
-            player.sendMessage(ColorUtil.translateColors("&7/mine reload &f- Reload the plugin configuration"));
-            player.sendMessage(ColorUtil.translateColors("&7/mine savestats &f- Manually save all statistics"));
-            player.sendMessage(ColorUtil.translateColors("&7/mine admin reset &f- Full reset of all mines (with confirmation)"));
+            player.sendMessage(configManager.getMessage("help-expand"));
+            player.sendMessage(configManager.getMessage("help-upgrade"));
+            player.sendMessage(configManager.getMessage("help-settype"));
+            player.sendMessage(configManager.getMessage("help-settier"));
+            player.sendMessage(configManager.getMessage("help-tax"));
+            player.sendMessage(configManager.getMessage("help-ban"));
+            player.sendMessage(configManager.getMessage("help-unban"));
+            player.sendMessage(configManager.getMessage("help-kick"));
+            player.sendMessage(configManager.getMessage("help-menu"));
+            player.sendMessage(configManager.getMessage("help-pregen"));
+            player.sendMessage(configManager.getMessage("help-reload"));
+            player.sendMessage(configManager.getMessage("help-savestats"));
+            player.sendMessage(configManager.getMessage("help-admin-reset"));
         }
     }
     public static String formatDuration(long seconds) {

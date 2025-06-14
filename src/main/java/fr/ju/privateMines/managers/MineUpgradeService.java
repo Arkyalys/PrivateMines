@@ -24,12 +24,12 @@ public class MineUpgradeService {
     }
     public boolean expandMine(Player player, int expandSize) {
         if (!mineManager.hasMine(player)) {
-            player.sendMessage(ColorUtil.deserialize("&cVous n'avez pas de mine à améliorer."));
+            player.sendMessage(plugin.getConfigManager().getMessageOrDefault("upgrade.no-mine", "&cVous n'avez pas de mine à améliorer."));
             return false;
         }
         Mine mine = mineManager.getMine(player).orElse(null);
         if (mine == null) {
-            player.sendMessage(ColorUtil.deserialize("&cErreur lors de la récupération de votre mine."));
+            player.sendMessage(plugin.getConfigManager().getMessageOrDefault("gui.mine-error", "&cErreur lors de la récupération de votre mine."));
             return false;
         }
         int currentTier = mine.getTier();
@@ -37,7 +37,7 @@ public class MineUpgradeService {
         
         // Vérifier si le tier suivant existe dans la configuration
         if (!mineManager.getMineTiers().containsKey(nextTier)) {
-            player.sendMessage(ColorUtil.deserialize("&cLe palier suivant n'est pas disponible."));
+            player.sendMessage(plugin.getConfigManager().getMessageOrDefault("upgrade.unavailable", "&cLe palier suivant n'est pas disponible."));
             return false;
         }
         
@@ -56,10 +56,10 @@ public class MineUpgradeService {
         }
         
         // Notifier le joueur
-        player.sendMessage(ColorUtil.deserialize("&aVotre mine a été améliorée au palier &e" + nextTier + "&a!"));
+        player.sendMessage(plugin.getConfigManager().getMessageOrDefault("upgrade.success", "&aVotre mine a été améliorée au palier &e%tier%&a!").replace("%tier%", String.valueOf(nextTier)));
         Title title = Title.title(
-            Component.text(ColorUtil.translateColors("&6&lMine améliorée")),
-            Component.text(ColorUtil.translateColors("&eNouveau palier: " + nextTier)),
+            Component.text(ColorUtil.translateColors(plugin.getConfigManager().getMessageOrDefault("titles.mine-upgraded.title", "&6&lMine améliorée"))),
+            Component.text(ColorUtil.translateColors(plugin.getConfigManager().getMessageOrDefault("titles.mine-upgraded.subtitle", "&eNouveau palier: %tier%").replace("%tier%", String.valueOf(nextTier)))),
             Title.Times.times(Duration.ofMillis(500), Duration.ofMillis(3500), Duration.ofMillis(1000))
         );
         player.showTitle(title);
