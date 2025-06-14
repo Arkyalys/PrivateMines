@@ -165,6 +165,14 @@ public class PrivateMines extends JavaPlugin {
     public GUIManager getGUIManager() {
         return guiManager;
     }
+
+    /**
+     * Initialize the GUI manager and register the associated listener.
+     */
+    public void initializeGuiManager() {
+        this.guiManager = new GUIManager(this);
+        getServer().getPluginManager().registerEvents(new GUIListener(this), this);
+    }
     public boolean reloadPlugin() {
         errorHandler.logInfo("Starting to reload PrivateMines plugin...");
         try {
