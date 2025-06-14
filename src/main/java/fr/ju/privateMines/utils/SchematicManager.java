@@ -16,7 +16,7 @@ public class SchematicManager {
         } catch (Throwable e) {
             plugin.getLogger().severe("Erreur critique lors de l'initialisation de FAWE: " + e.getMessage());
             plugin.getLogger().severe("FAWE est une dépendance obligatoire. Vérifiez votre installation.");
-            e.printStackTrace();
+            plugin.getErrorHandler().logError("Erreur critique lors de l'initialisation de FAWE", e);
             Bukkit.getPluginManager().disablePlugin(plugin);
         }
         File schematicsFolder = new File(plugin.getDataFolder(), "schematics");

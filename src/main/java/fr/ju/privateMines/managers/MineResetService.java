@@ -96,7 +96,7 @@ public class MineResetService {
         plugin.getLogger().severe("[Reset Debug] Échec critique: impossible de déterminer les blocs pour la régénération (tier: " + mine.getTier() + "). La régénération est annulée.");
         Player owner = plugin.getServer().getPlayer(uuid);
         if(owner != null && owner.isOnline()) {
-            owner.sendMessage(ColorUtil.translateColors("&cErreur critique lors de la réinitialisation : impossible de trouver les blocs à placer. Contactez un administrateur."));
+            owner.sendMessage(plugin.getConfigManager().getMessageOrDefault("reset.critical-error", "&cErreur critique lors de la réinitialisation : impossible de trouver les blocs à placer. Contactez un administrateur."));
         }
     }
 
@@ -127,7 +127,7 @@ public class MineResetService {
             PrivateMines.debugLog("[Reset Debug] Mine réinitialisée avec FAWE. " + blocksChanged + " blocs modifiés.");
         } catch (Exception e) {
             plugin.getLogger().severe("[Reset Debug] Erreur critique lors de la réinitialisation avec FAWE: " + e.getMessage());
-            e.printStackTrace();
+            plugin.getErrorHandler().logError("Erreur critique lors de la réinitialisation avec FAWE", e);
             plugin.getLogger().severe("FAWE est maintenant obligatoire, vérifiez votre installation.");
         }
     }

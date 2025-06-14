@@ -21,12 +21,12 @@ public class MineSettingsGUI {
         PrivateMines plugin = PrivateMines.getInstance();
         GUIManager guiManager = plugin.getGUIManager();
         if (!plugin.getMineManager().hasMine(player)) {
-            player.sendMessage(ColorUtil.translateColors("&cVous n'avez pas de mine privée."));
+            player.sendMessage(plugin.getConfigManager().getMessageOrDefault("gui.no-mine", "&cVous n'avez pas de mine privée."));
             return;
         }
         Mine mine = plugin.getMineManager().getMine(player).orElse(null);
         if (mine == null) {
-            player.sendMessage(ColorUtil.translateColors("&cErreur lors de la récupération de votre mine."));
+            player.sendMessage(plugin.getConfigManager().getMessageOrDefault("gui.mine-error", "&cErreur lors de la récupération de votre mine."));
             return;
         }
         Inventory inventory = Bukkit.createInventory(null, 36, Component.text(ColorUtil.translateColors(GUI_TITLE)));

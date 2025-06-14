@@ -289,7 +289,7 @@ public class MineManager {
             plugin.getLogger().warning("Échec de la génération de la mine pour " + player.getName());
             player.sendActionBar(net.kyori.adventure.text.Component.text("§cErreur lors de la création de la mine !"));
             player.sendMessage(getMessage("Messages.mine-creation-failed"));
-            player.sendMessage(ColorUtil.deserialize("&cAn error occurred while creating your mine. Contact an admin."));
+            player.sendMessage(plugin.getConfigManager().getMessageOrDefault("mine.creation-error", "&cAn error occurred while creating your mine. Contact an admin."));
         }
     }
     /**
@@ -370,7 +370,7 @@ public class MineManager {
         }
         Optional<Mine> mineOpt = getMine(owner);
         if (mineOpt.isEmpty()) {
-            owner.sendMessage(ColorUtil.deserialize("&cErreur lors de la récupération de votre mine."));
+            owner.sendMessage(plugin.getConfigManager().getMessageOrDefault("gui.mine-error", "&cErreur lors de la récupération de votre mine."));
             return false;
         }
         
@@ -378,7 +378,7 @@ public class MineManager {
         boolean success = mineTeleportService.teleportToMine(owner, visitor, mine);
         
         if (success) {
-            visitor.sendMessage(ColorUtil.deserialize("&aVous avez été téléporté à la mine de " + owner.getName() + "."));
+            visitor.sendMessage(plugin.getConfigManager().getMessageOrDefault("mine.visit-success", "&aVous avez été téléporté à la mine de %player%." ).replace("%player%", owner.getName()));
         }
         
         return success;

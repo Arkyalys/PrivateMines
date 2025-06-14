@@ -47,7 +47,7 @@ public class ConfigManager {
             try {
                 dataFile.createNewFile();
             } catch (IOException e) {
-                e.printStackTrace();
+                plugin.getErrorHandler().logError("Erreur lors de la création du fichier data.yml", e);
             }
         }
         data = YamlConfiguration.loadConfiguration(dataFile);
@@ -73,6 +73,15 @@ public class ConfigManager {
         if (message == null) return "";
         return ColorUtil.translateColors(message);
     }
+    public String getMessageOrDefault(String path, String defaultValue) {
+        String message = messages.getString(path);
+        if (message == null) {
+            messages.set(path, defaultValue);
+            saveMessages();
+            message = defaultValue;
+        }
+        return ColorUtil.translateColors(message);
+    }
     public String getMessage(String path, Map<String, String> replacements) {
         String message = getMessage(path);
         if (replacements != null) {
@@ -89,28 +98,28 @@ public class ConfigManager {
         try {
             config.save(configFile);
         } catch (IOException e) {
-            e.printStackTrace();
+            plugin.getErrorHandler().logError("Erreur lors de la sauvegarde du fichier config.yml", e);
         }
     }
     public void saveMessages() {
         try {
             messages.save(messagesFile);
         } catch (IOException e) {
-            e.printStackTrace();
+            plugin.getErrorHandler().logError("Erreur lors de la sauvegarde du fichier messages.yml", e);
         }
     }
     public void saveData() {
         try {
             data.save(dataFile);
         } catch (IOException e) {
-            e.printStackTrace();
+            plugin.getErrorHandler().logError("Erreur lors de la sauvegarde du fichier data.yml", e);
         }
     }
     public void saveTiers() {
         try {
             tiers.save(tiersFile);
         } catch (IOException e) {
-            e.printStackTrace();
+            plugin.getErrorHandler().logError("Erreur lors de la sauvegarde du fichier tiers.yml", e);
         }
     }
     public void reloadConfig() {
