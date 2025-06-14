@@ -24,6 +24,7 @@ public class StatsBlocksService {
             plugin.getLogger().info("[DEBUG] Auto-fixed totalBlocks to " + calculatedTotal + " for UUID " + ownerUUID);
         }
         stats.incrementBlocksMined();
+        plugin.getMetricsService().incrementBlocksMined();
         mine.getStats().setBlocksMined(stats.getBlocksMined());
         return stats.shouldAutoReset(
             plugin.getConfigManager().getConfig().getInt("Gameplay.auto-reset.threshold", 40)

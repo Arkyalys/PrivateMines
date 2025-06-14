@@ -168,4 +168,9 @@ MiningStats:
       final-speed: "&b• &fVitesse moyenne: &b{blocks_per_minute} &7blocs/minute"
       final-earnings: "&b• &fGains totaux: &b${earnings}"
       final-hourly-rate: "&b• &fTaux horaire: &b${hourly_rate} &7/heure"
-      final-time: "&7Durée totale de la session: &b{time}" 
+      final-time: "&7Durée totale de la session: &b{time}"
+
+# Configuration du serveur de métriques Prometheus
+Metrics:
+   enabled: true
+   port: 30012

@@ -12,6 +12,7 @@ import fr.ju.privateMines.managers.HologramManager;
 import fr.ju.privateMines.managers.MineManager;
 import fr.ju.privateMines.managers.MineWorldManager;
 import fr.ju.privateMines.managers.StatsManager;
+import fr.ju.privateMines.services.MetricsService;
 import fr.ju.privateMines.placeholders.PrivateMinesPlaceholders;
 import fr.ju.privateMines.utils.CacheManager;
 import fr.ju.privateMines.utils.ConfigManager;
@@ -31,6 +32,7 @@ public class PrivateMines extends JavaPlugin {
     private ErrorHandler errorHandler;
     private CacheManager cacheManager;
     private GUIManager guiManager;
+    private MetricsService metricsService;
     private static boolean debugMode = false;
     @Override
     public void onEnable() {
@@ -42,6 +44,9 @@ public class PrivateMines extends JavaPlugin {
             if (!checkAndHandleDependencies()) return;
             if (!loadAndValidateConfig()) return;
             initializeManagers();
+            metricsService = new MetricsService(this);
+            metricsService.updateActiveMines(mineManager.getAllMines().size());
+            metricsService.updateOpenMines((int) mineManager.getAllMines().stream().filter(fr.ju.privateMines.models.Mine::isOpen).count());
             initializeHolograms();
             initializeAPI();
             registerCommandsAndListeners();
@@ -127,6 +132,9 @@ public class PrivateMines extends JavaPlugin {
             if (mineManager != null) {
                 mineManager.saveAllMineData();
             }
+            if (metricsService != null) {
+                metricsService.stop();
+            }
             errorHandler.logInfo("PrivateMines plugin successfully deactivated!");
         } catch (Exception e) {
             errorHandler.logError("Error while deactivating the plugin", e);
@@ -164,6 +172,10 @@ public class PrivateMines extends JavaPlugin {
     }
     public GUIManager getGUIManager() {
         return guiManager;
+    }
+
+    public MetricsService getMetricsService() {
+        return metricsService;
     }
 
     /**
@@ -228,11 +240,18 @@ public class PrivateMines extends JavaPlugin {
         this.statsManager = null;
         this.hologramManager = null;
         this.guiManager = null;
+        if (metricsService != null) {
+            metricsService.stop();
+        }
+        this.metricsService = null;
         
         this.mineWorldManager = new MineWorldManager(this);
         this.mineManager = new MineManager(this);
         this.statsManager = new StatsManager(this);
         this.guiManager = new GUIManager(this);
+        this.metricsService = new MetricsService(this);
+        metricsService.updateActiveMines(mineManager.getAllMines().size());
+        metricsService.updateOpenMines((int) mineManager.getAllMines().stream().filter(fr.ju.privateMines.models.Mine::isOpen).count());
         
         initializeHologramsAfterReload();
         

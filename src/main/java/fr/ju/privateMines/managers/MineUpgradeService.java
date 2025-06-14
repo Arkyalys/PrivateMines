@@ -43,6 +43,7 @@ public class MineUpgradeService {
         
         // Mettre à jour le tier de la mine
         mine.setTier(nextTier);
+        plugin.getMetricsService().incrementMineUpgrades();
         
         // Réinitialiser la mine avec les nouveaux blocs du tier
         mineManager.resetMine(player);
