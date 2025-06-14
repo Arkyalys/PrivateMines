@@ -105,7 +105,7 @@ public class MineListener implements Listener {
             }
         } catch (Exception e) {
             plugin.getLogger().warning("Erreur lors du rechargement de la mine pour " + player.getName() + ": " + e.getMessage());
-            e.printStackTrace();
+            plugin.getErrorHandler().logError("Erreur lors du rechargement de la mine pour " + player.getName(), e);
         }
         return false;
     }

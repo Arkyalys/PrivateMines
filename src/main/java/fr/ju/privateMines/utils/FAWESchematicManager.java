@@ -204,7 +204,7 @@ public class FAWESchematicManager {
         } else {
             plugin.getLogger().severe("Erreur inconnue lors du collage du schematic: " + e.getMessage());
         }
-        e.printStackTrace();
+        plugin.getErrorHandler().logError("Erreur lors du collage du schematic", e);
         executeCallback(callback, null);
     }
     /**
@@ -316,7 +316,7 @@ public class FAWESchematicManager {
      */
     private void handleDeleteException(Exception e, Consumer<Boolean> callback, String errorType) {
         plugin.getLogger().severe(errorType + " lors de la suppression asynchrone de la structure: " + e.getMessage());
-        e.printStackTrace();
+        plugin.getErrorHandler().logError("Erreur lors de la suppression de la structure de la mine", e);
         executeDeleteCallback(callback, false);
     }
     public void configureOptimizations() {
