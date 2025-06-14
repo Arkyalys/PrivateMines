@@ -135,3 +135,58 @@ placeholders:
    mine-opened: "Open"
    mine-closed: "Closed"
    mine-max-size-reached: "Maximum size reached" 
+# Additional messages
+gui.no-mine: "&cVous n'avez pas de mine privée."
+gui.mine-error: "&cErreur lors de la récupération de votre mine."
+ gui.no-mine-item:
+   name: "&e⚠ &bPas de Mine"
+   lore1: "&7Vous n'avez pas encore de mine privée"
+   lore2: "&7Créez-en une pour commencer à miner!"
+ gui.create-standard:
+   name: "&e+ &bCréer une Mine Standard"
+   lore1: "&7Créer une mine privée avec la configuration par défaut"
+   lore2: "&eCliquez pour créer"
+ gui.create-custom:
+   name: "&e+ &bCréer une Mine Personnalisée"
+   lore1: "&7Choisir un type de mine personnalisé"
+   lore2: "&eCliquez pour sélectionner un type"
+ tax:
+   no-mine: "&cVous n'avez pas de mine à modifier."
+   invalid: "&cLa taxe doit être comprise entre 0 et 100%."
+   set: "&aLa taxe de votre mine a été définie à &e%tax%&a."
+ upgrade:
+   no-mine: "&cVous n'avez pas de mine à améliorer."
+   unavailable: "&cLe palier suivant n'est pas disponible."
+   success: "&aVotre mine a été améliorée au palier &e%tier%&a!"
+ reset:
+   critical-error: "&cErreur critique lors de la réinitialisation : impossible de trouver les blocs à placer. Contactez un administrateur."
+mine:
+   creation-error: "&cAn error occurred while creating your mine. Contact an admin."
+   visit-success: "&aVous avez été téléporté à la mine de %player%."
+ gui:
+   contributor-add-cancel: "&cAjout de contributeur annulé."
+   player-not-found-cancel: "&cJoueur introuvable. Réessaie ou tape /cancel."
+   contributor-added: "&aContributeur ajouté !"
+   teleporting: "&aTéléportation à votre mine..."
+   delete-confirm: "&c⚠ Pour confirmer la suppression de votre mine, tapez &e/jumine delete&c."
+   contributor-add-prompt: "&eÉcris le pseudo du joueur à ajouter comme contributeur dans le chat. Tape &c/cancel &epour annuler."
+   tax-instruction: "&ePour modifier la taxe, utilisez la commande &b/jumine tax [pourcentage]"
+   max-size: "&cVotre mine a déjà atteint sa taille maximale."
+   expand-instruction: "&ePour agrandir votre mine, utilisez la commande &b/jumine expand&e."
+   invalid-name: "&cPseudo invalide."
+   player-not-found: "&cJoueur introuvable."
+   region-error: "&cErreur lors de l'accès à la région de votre mine."
+ event:
+   active: "&6[PrivateMines] &aL'événement &e%event% &aest actif !"
+ challenge:
+   completed: "§aYou have completed the challenge §6%name% §aand received your reward!"
+ help-gui: "&7/jumine gui &f- Open the mine management menu"
+ help-settype: "&7/jumine settype <type> &f- Change your mine type"
+ help-settier: "&7/jumine settier <tier> &f- Change your mine tier"
+ help-ban: "&7/jumine ban <player> [duration] &f- Ban a player from your mine"
+ help-unban: "&7/jumine unban <player> &f- Unban a player from your mine"
+ help-kick: "&7/jumine kick <player> &f- Kick a player from your mine"
+ help-menu: "&7/mine menu &f- Shortcut for /mine gui"
+ help-pregen: "&7/mine pregen <number> [type] &f- Pre-generate mines (Admin)"
+ help-reload: "&7/mine reload &f- Reload the plugin configuration"
+ help-admin-reset: "&7/mine admin reset &f- Full reset of all mines (with confirmation)"
