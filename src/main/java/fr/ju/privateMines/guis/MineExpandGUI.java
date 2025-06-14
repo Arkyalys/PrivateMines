@@ -14,6 +14,7 @@ import fr.ju.privateMines.PrivateMines;
 import fr.ju.privateMines.models.Mine;
 import fr.ju.privateMines.utils.ColorUtil;
 import fr.ju.privateMines.utils.GUIManager;
+import fr.ju.privateMines.utils.ProgressBarUtil;
 import net.kyori.adventure.text.Component;
 
 public class MineExpandGUI {
@@ -101,7 +102,7 @@ public class MineExpandGUI {
         GUIManager guiManager = PrivateMines.getInstance().getGUIManager();
         
         int progressPercentage = (mine.getSize() * 100) / maxSize;
-        String progressBar = GUIManager.createProgressBar(progressPercentage);
+        String progressBar = ProgressBarUtil.createProgressBar(progressPercentage);
         
         List<String> progressLore = new ArrayList<>();
         progressLore.add(progressBar);

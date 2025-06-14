@@ -16,6 +16,7 @@ import fr.ju.privateMines.models.Mine;
 import fr.ju.privateMines.models.MineStats;
 import fr.ju.privateMines.utils.ColorUtil;
 import fr.ju.privateMines.utils.GUIManager;
+import fr.ju.privateMines.utils.ProgressBarUtil;
 import net.kyori.adventure.text.Component;
 
 public class MineStatsGUI {
@@ -78,7 +79,7 @@ public class MineStatsGUI {
         progressLore.add("&7Blocs minés: &b" + stats.getBlocksMined() + "&7/&b" + stats.getTotalBlocks());
         progressLore.add("&7Progression: &b" + stats.getPercentageMined() + "%");
         progressLore.add("");
-        progressLore.add(GUIManager.createProgressBar(stats.getPercentageMined()));
+        progressLore.add(ProgressBarUtil.createProgressBar(stats.getPercentageMined()));
         
         ItemStack progressItem = guiManager.createGuiItem(
             Material.DIAMOND_PICKAXE, 
