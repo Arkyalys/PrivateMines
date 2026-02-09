@@ -27,22 +27,6 @@ public class SchematicManager {
     public boolean isUsingFAWE() {
         return true; 
     }
-    public BlockVector3[] pasteSchematic(String schematicName, Location location) {
-        final BlockVector3[][] result = new BlockVector3[1][1];
-        faweManager.pasteSchematicAsync(schematicName, location, bounds -> {
-            result[0] = bounds;
-        });
-        long timeout = System.currentTimeMillis() + 10000; 
-        while (result[0] == null && System.currentTimeMillis() < timeout) {
-            try {
-                Thread.sleep(50);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                break;
-            }
-        }
-        return result[0];
-    }
     public void pasteSchematicAsync(String schematicName, Location location, java.util.function.Consumer<BlockVector3[]> callback) {
         faweManager.pasteSchematicAsync(schematicName, location, callback);
     }

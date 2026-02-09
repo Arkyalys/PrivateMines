@@ -150,11 +150,11 @@ public class MineResetService {
 
     public void resetMine(Player player, MineManager mineManager, PrivateMines plugin, Map<Integer, Map<Material, Double>> mineTiers) {
         if (!mineManager.hasMine(player)) {
-            player.sendMessage(plugin.getConfigManager().getMessage("Messages.no-mine"));
+            player.sendMessage(plugin.getConfigManager().getMessage("no-mine"));
             return;
         }
         
-        player.sendMessage(plugin.getConfigManager().getMessage("Messages.mine-reset"));
+        player.sendMessage(plugin.getConfigManager().getMessage("mine-reset"));
         
         // Afficher un titre de chargement pendant le reset
         Title loadingTitle = Title.title(
@@ -178,8 +178,8 @@ public class MineResetService {
                 }
                 
                 Title title = Title.title(
-                    Component.text(ColorUtil.translateColors(plugin.getConfigManager().getMessage("Messages.titles.mine-reset.title"))),
-                    Component.text(ColorUtil.translateColors(plugin.getConfigManager().getMessage("Messages.titles.mine-reset.subtitle"))),
+                    Component.text(ColorUtil.translateColors(plugin.getConfigManager().getMessage("titles.mine-reset.title"))),
+                    Component.text(ColorUtil.translateColors(plugin.getConfigManager().getMessage("titles.mine-reset.subtitle"))),
                     Title.Times.times(Duration.ofMillis(500), Duration.ofMillis(3500), Duration.ofMillis(1000))
                 );
                 player.showTitle(title);

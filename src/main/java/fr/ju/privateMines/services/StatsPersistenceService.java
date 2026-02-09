@@ -174,7 +174,7 @@ public class StatsPersistenceService {
                     plugin.getServer().getOnlinePlayers().forEach(player -> {
                         if (player.hasPermission("privateMines.admin")) {
                             player.sendMessage(fr.ju.privateMines.utils.ColorUtil.deserialize(
-                                plugin.getConfigManager().getMessage("Messages.stats-saved")
+                                plugin.getConfigManager().getMessage("stats-saved")
                             ));
                         }
                     });

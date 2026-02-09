@@ -1,5 +1,4 @@
 package fr.ju.privateMines.managers;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -24,8 +23,7 @@ public class MineTeleportService {
      * Retourne la meilleure position de téléportation pour une mine.
      */
     public Location getBetterTeleportLocation(Mine mine) {
-        debug("Calcul du point de téléportation pour la mine de " + 
-              getOwnerName(mine) + " (UUID: " + mine.getOwner() + ")");
+        debug("Calcul du point de téléportation pour la mine de UUID: " + mine.getOwner());
               
         // Vérifie s'il existe déjà un point de téléportation personnalisé
         if (hasCustomTeleportLocation(mine)) {
@@ -44,15 +42,6 @@ public class MineTeleportService {
         
         // Fallback: utilise la position de base de la mine
         return getBaseTeleportLocation(mine);
-    }
-    
-    /**
-     * Récupère le nom du propriétaire de la mine
-     */
-    private String getOwnerName(Mine mine) {
-        return mine.getOwner() != null 
-               ? Bukkit.getOfflinePlayer(mine.getOwner()).getName() 
-               : "inconnu";
     }
     
     /**

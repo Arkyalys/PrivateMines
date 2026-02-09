@@ -56,12 +56,7 @@ reload-failed: "&cError while reloading the plugin, check the console for more d
 spawn-world-not-found: "&cErreur: Le monde spawn n'a pas été trouvé. Impossible de téléporter."
 
 # Messages for area detection
-area-detection-help:
-   - "&eTo define the ore spawn area:"
-   - "&7- Place a &6powered rail &7at the top of the area"
-   - "&7- Place a &6powered rail &7at the bottom of the area"
-   - "&7- The rails must be placed at opposite corners of the area"
-   - "&7- Once the rails are placed, use &6/jumine create &7to create the mine"
+area-detection-help: "&eTo define the ore spawn area: &7Place a &6powered rail &7at opposite corners (top and bottom). Then use &6/jumine create &7to create the mine."
 
 # Messages for mine pregeneration
 pregen-progress: "&ePregeneration in progress... %progress% &e%current%/%total% &7(%percentage%%)"
@@ -70,12 +65,7 @@ pregen-no-locations: "&cNo more locations available after generating &e%count% &
 pregen-invalid-count: "&cLe nombre de mines à pré-générer doit être compris entre 1 et 50."
 
 # Messages for admin reset command
-admin-reset-warning:
-   - "&c&lATTENTION ! &cCette commande va supprimer TOUTES les mines,"
-   - "&cleurs régions WorldGuard associées (si applicable),"
-   - "&cle monde des mines dédié (%world%),"
-   - "&cet les fichiers de données du plugin (`data.yml`, `stats.yml`)."
-   - "&cCette action est IRRÉVERSIBLE."
+admin-reset-warning: "&c&lATTENTION ! &cCette commande va supprimer TOUTES les mines, leurs régions WorldGuard, le monde des mines (%world%), et les fichiers de données. &cCette action est IRRÉVERSIBLE."
 admin-reset-confirm: "&ePour confirmer, tapez &f/%command% admin reset confirm &edans les 30 secondes."
 admin-reset-in-progress: "&cRéinitialisation complète en cours... NE PAS REDÉMARRER LE SERVEUR."
 admin-reset-no-pending: "&cVous n'avez pas de réinitialisation en attente de confirmation ou elle a expiré."

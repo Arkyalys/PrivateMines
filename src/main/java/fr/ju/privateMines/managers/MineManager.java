@@ -236,7 +236,7 @@ public class MineManager {
         Location location = plugin.getMineWorldManager().getNextMineLocation();
         if (!isValidLocation(player, location)) return false;
         if (hasMine(player)) {
-            player.sendMessage(getMessage("Messages.already-own-mine"));
+            player.sendMessage(getMessage("already-own-mine"));
             return false;
         }
         
@@ -260,7 +260,7 @@ public class MineManager {
     }
     private boolean isValidLocation(Player player, Location location) {
         if (location == null) {
-            player.sendMessage(getMessage("Messages.no-available-location"));
+            player.sendMessage(getMessage("no-available-location"));
             return false;
         }
         return true;
@@ -283,15 +283,15 @@ public class MineManager {
             debug("[DEBUG] Called saveMineData for " + player.getName());
             player.sendActionBar(net.kyori.adventure.text.Component.text("§aMine créée avec succès !"));
             player.playSound(player.getLocation(), org.bukkit.Sound.BLOCK_BEACON_ACTIVATE, 1.0f, 1.2f);
-            player.sendMessage(getMessage("Messages.mine-created"));
-            player.sendMessage(getMessage("Messages.teleported-to-mine-after-creation"));
+            player.sendMessage(getMessage("mine-created"));
+            player.sendMessage(getMessage("teleported-to-mine-after-creation"));
             teleportPlayerToMine(player, mine);
             Title title = createMineCreatedTitle(player);
             player.showTitle(title);
         } else {
             plugin.getLogger().warning("Échec de la génération de la mine pour " + player.getName());
             player.sendActionBar(net.kyori.adventure.text.Component.text("§cErreur lors de la création de la mine !"));
-            player.sendMessage(getMessage("Messages.mine-creation-failed"));
+            player.sendMessage(getMessage("mine-creation-failed"));
             player.sendMessage(plugin.getConfigManager().getMessageOrDefault("mine.creation-error", "&cAn error occurred while creating your mine. Contact an admin."));
         }
     }
@@ -328,7 +328,7 @@ public class MineManager {
         mineResetService.resetMine(uuid, this, plugin, mineTiers);
     }
     public void initializeAllMines() {
-        plugin.getLogger().info("[DEBUG] Performing post-load initialization of all mines...");
+        PrivateMines.debugLog("Performing post-load initialization of all mines...");
         int count = 0;
         for (Mine mine : mineMemoryService.getAllMines()) {
             // Injecter le service de statistiques à chaque mine
@@ -340,7 +340,7 @@ public class MineManager {
                 count++;
             }
         }
-        plugin.getLogger().info("[DEBUG] Post-load initialization completed for " + count + " mines.");
+        PrivateMines.debugLog("Post-load initialization completed for " + count + " mines.");
     }
     public void resetMine(Player player) {
         mineResetService.resetMine(player, this, plugin, mineTiers);
@@ -368,7 +368,7 @@ public class MineManager {
      */
     public boolean teleportToMine(Player owner, Player visitor) {
         if (!hasMine(owner)) {
-            owner.sendMessage(getMessage("Messages.no-mine"));
+            owner.sendMessage(getMessage("no-mine"));
             return false;
         }
         Optional<Mine> mineOpt = getMine(owner);
@@ -427,8 +427,8 @@ public class MineManager {
     }
     private Title createMineCreatedTitle(Player player) {
         return Title.title(
-            Component.text(ColorUtil.translateColors(configManager.getMessage("Messages.titles.mine-created.title"))),
-            Component.text(ColorUtil.translateColors(configManager.getMessage("Messages.titles.mine-created.subtitle"))),
+            Component.text(ColorUtil.translateColors(configManager.getMessage("titles.mine-created.title"))),
+            Component.text(ColorUtil.translateColors(configManager.getMessage("titles.mine-created.subtitle"))),
             Title.Times.times(Duration.ofMillis(500), Duration.ofMillis(3500), Duration.ofMillis(1000))
         );
     }

@@ -163,16 +163,19 @@ public class GUIListener implements Listener {
             player.sendMessage(plugin.getConfigManager().getMessageOrDefault("gui.player-not-found-cancel", "&cJoueur introuvable. Réessaie ou tape /cancel."));
             return;
         }
-        Mine mine = plugin.getMineManager().getMine(player).orElse(null);
-        if (mine == null) {
-            player.sendMessage(plugin.getConfigManager().getMessageOrDefault("gui.mine-error", "&cErreur mine."));
-            awaitingContributorChat.remove(player.getUniqueId());
-            return;
-        }
-        mine.addContributor(target.getUniqueId());
-        player.sendMessage(plugin.getConfigManager().getMessageOrDefault("gui.contributor-added", "&aContributeur ajouté !"));
         awaitingContributorChat.remove(player.getUniqueId());
-        org.bukkit.Bukkit.getScheduler().runTask(plugin, () -> MineVisitorsGUI.openGUI(player, 0));
+        // Switch to main thread for Bukkit API and mine state modifications
+        final Player targetPlayer = target;
+        org.bukkit.Bukkit.getScheduler().runTask(plugin, () -> {
+            Mine mine = plugin.getMineManager().getMine(player).orElse(null);
+            if (mine == null) {
+                player.sendMessage(plugin.getConfigManager().getMessageOrDefault("gui.mine-error", "&cErreur mine."));
+                return;
+            }
+            mine.addContributor(targetPlayer.getUniqueId());
+            player.sendMessage(plugin.getConfigManager().getMessageOrDefault("gui.contributor-added", "&aContributeur ajouté !"));
+            MineVisitorsGUI.openGUI(player, 0);
+        });
     }
     private void handleMainGUIClick(Player player, ItemStack clickedItem, int slot) {
         boolean hasMine = plugin.getMineManager().hasMine(player);

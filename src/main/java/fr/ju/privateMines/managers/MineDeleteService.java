@@ -14,12 +14,12 @@ public class MineDeleteService {
     }
     public boolean deleteMine(Player player) {
         if (!mineManager.hasMine(player)) {
-            player.sendMessage(plugin.getConfigManager().getMessage("Messages.no-mine"));
+            player.sendMessage(plugin.getConfigManager().getMessage("no-mine"));
             return false;
         }
         Mine mine = mineManager.getMine(player).orElse(null);
         if (mine == null) {
-            player.sendMessage(plugin.getConfigManager().getMessage("Messages.no-mine"));
+            player.sendMessage(plugin.getConfigManager().getMessage("no-mine"));
             return false;
         }
         UUID ownerId = player.getUniqueId();
@@ -32,7 +32,7 @@ public class MineDeleteService {
         String path = "mines." + ownerId.toString();
         plugin.getConfigManager().getData().set(path, null);
         plugin.getConfigManager().saveData();
-        player.sendMessage(plugin.getConfigManager().getMessage("Messages.mine-deleted"));
+        player.sendMessage(plugin.getConfigManager().getMessage("mine-deleted"));
         return true;
     }
 } 

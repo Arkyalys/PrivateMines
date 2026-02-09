@@ -36,7 +36,6 @@ public class MineListener implements Listener {
         logMinesSection(minesSection, player);
         if (minesSection != null && minesSection.contains(player.getUniqueId().toString()) && tryLoadMineFromFile(player, minesSection)) return;
         handleAutoMineAssignment(player);
-        plugin.getLogger().info("============================================");
     }
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
@@ -46,52 +45,43 @@ public class MineListener implements Listener {
         }
     }
     private void logDebugHeader(Player player) {
-        plugin.getLogger().info("=========== LOGS DE DEBUG MINE ===========");
-        plugin.getLogger().info("Joueur connecté: " + player.getName() + " (UUID: " + player.getUniqueId() + ")");
-        plugin.getLogger().info("Mines en mémoire: " + mineManager.mineMemoryService.getPlayerMines().size());
-        plugin.getLogger().info("UUIDs des mines en mémoire: " + String.join(", ", mineManager.mineMemoryService.getPlayerMines().keySet().stream().map(UUID::toString).toArray(String[]::new)));
+        PrivateMines.debugLog("=========== LOGS DE DEBUG MINE ===========");
+        PrivateMines.debugLog("Joueur connecté: " + player.getName() + " (UUID: " + player.getUniqueId() + ")");
+        PrivateMines.debugLog("Mines en mémoire: " + mineManager.mineMemoryService.getPlayerMines().size());
     }
     private boolean handleMineInMemory(Player player) {
         boolean mineEnMemoire = mineManager.hasMine(player);
-        plugin.getLogger().info("Le joueur a-t-il une mine en mémoire? " + mineEnMemoire);
+        PrivateMines.debugLog("Le joueur a-t-il une mine en mémoire? " + mineEnMemoire);
         if (mineEnMemoire) {
             Mine mine = plugin.getMineManager().getMine(player).orElse(null);
             if (mine == null) return true;
-            plugin.getLogger().info("Détails de la mine: Taille=" + mine.getSize() + ", Tier=" + mine.getTier());
-            plugin.getLogger().info("Position: " + mine.getLocation().getWorld().getName() + " [" + mine.getLocation().getX() + "," + mine.getLocation().getY() + "," + mine.getLocation().getZ() + "]");
+            PrivateMines.debugLog("Détails de la mine: Taille=" + mine.getSize() + ", Tier=" + mine.getTier());
             return true;
         }
         return false;
     }
     private void logMinesSection(ConfigurationSection minesSection, Player player) {
-        plugin.getLogger().info("Section 'mines' dans data.yml existe? " + (minesSection != null));
+        PrivateMines.debugLog("Section 'mines' dans data.yml existe? " + (minesSection != null));
         if (minesSection != null) {
-            plugin.getLogger().info("Mines dans data.yml: " + String.join(", ", minesSection.getKeys(false)));
-            plugin.getLogger().info("data.yml contient-il l'UUID du joueur? " + minesSection.contains(player.getUniqueId().toString()));
+            PrivateMines.debugLog("data.yml contient-il l'UUID du joueur? " + minesSection.contains(player.getUniqueId().toString()));
         }
     }
     private boolean tryLoadMineFromFile(Player player, ConfigurationSection minesSection) {
         UUID playerUUID = player.getUniqueId();
-        plugin.getLogger().info("[DEBUG] Le joueur " + player.getName() + " a une mine dans le fichier de données mais pas en mémoire. Tentative de récupération...");
+        PrivateMines.debugLog("Le joueur " + player.getName() + " a une mine dans le fichier de données mais pas en mémoire. Tentative de récupération...");
         ConfigurationSection mineSection = minesSection.getConfigurationSection(playerUUID.toString());
-        plugin.getLogger().info("Récupération de la section de mine: " + (mineSection != null));
-        if (mineSection != null) {
-            plugin.getLogger().info("Clés dans la section de mine: " + String.join(", ", mineSection.getKeys(false)));
+        if (mineSection == null) {
+            PrivateMines.debugLog("Section de mine null pour " + player.getName());
+            return false;
         }
         try {
-            String worldName = mineSection != null ? mineSection.getString("world") : null;
-            plugin.getLogger().info("[DEBUG] Nom du monde récupéré: " + worldName);
+            String worldName = mineSection.getString("world");
+            PrivateMines.debugLog("Nom du monde récupéré: " + worldName);
             World world = resolveWorld(worldName);
             if (world != null) {
-                if (mineSection == null) {
-                    plugin.getLogger().warning("Impossible de charger la mine: section null");
-                    return true;
-                }
                 Mine mineLoaded = buildMineFromSection(playerUUID, mineSection, world);
                 mineManager.addMineToMap(playerUUID, mineLoaded);
-                plugin.getLogger().info("[DEBUG] Mine récupérée et ajoutée en mémoire pour " + player.getName());
-                plugin.getLogger().info("Vérification après ajout: hasMine=" + mineManager.hasMine(player));
-                plugin.getLogger().info("============================================");
+                PrivateMines.debugLog("Mine récupérée et ajoutée en mémoire pour " + player.getName());
                 boolean success = mineManager.assignPregenMineToPlayer(mineLoaded, player);
                 if (success) {
                     Mine mine = mineManager.getMine(player).orElse(null);
@@ -99,7 +89,6 @@ public class MineListener implements Listener {
                         player.teleport(mineManager.getBetterTeleportLocation(mine));
                     }
                     player.sendMessage(configManager.getMessage("mine-assigned"));
-                    plugin.getLogger().info("============================================");
                     return true;
                 }
             }
@@ -112,17 +101,17 @@ public class MineListener implements Listener {
     private World resolveWorld(String worldName) {
         World world = null;
         if (worldName == null || worldName.isEmpty()) {
-            plugin.getLogger().info("[DEBUG] Nom du monde absent ou vide, tentative d'utilisation du monde par défaut");
+            PrivateMines.debugLog("Nom du monde absent ou vide, tentative d'utilisation du monde par défaut");
             if (plugin.getMineWorldManager() != null) {
                 world = plugin.getMineWorldManager().getMineWorld();
-                plugin.getLogger().info("[DEBUG] Monde par défaut récupéré: " + (world != null ? world.getName() : "null"));
+                PrivateMines.debugLog("Monde par défaut récupéré: " + (world != null ? world.getName() : "null"));
             }
         } else {
             world = plugin.getServer().getWorld(worldName);
-            plugin.getLogger().info("[DEBUG] Monde trouvé via son nom: " + (world != null ? "oui" : "non"));
+            PrivateMines.debugLog("Monde trouvé via son nom: " + (world != null ? "oui" : "non"));
             if (world == null && plugin.getMineWorldManager() != null) {
                 world = plugin.getMineWorldManager().getMineWorld();
-                plugin.getLogger().info("[DEBUG] Utilisation du monde par défaut car le monde spécifié n'existe pas: " + (world != null ? world.getName() : "null"));
+                PrivateMines.debugLog("Utilisation du monde par défaut car le monde spécifié n'existe pas: " + (world != null ? world.getName() : "null"));
             }
         }
         return world;
@@ -131,15 +120,14 @@ public class MineListener implements Listener {
         double x = mineSection.getDouble("x");
         double y = mineSection.getDouble("y");
         double z = mineSection.getDouble("z");
-        plugin.getLogger().info("[DEBUG] Position: " + x + "," + y + "," + z);
+        PrivateMines.debugLog("Position: " + x + "," + y + "," + z);
         Location location = new Location(world, x, y, z);
         Mine mineLoaded = new Mine(playerUUID, location);
-        plugin.getLogger().info("Objet Mine créé avec succès");
         mineLoaded.setSize(mineSection.getInt("size", 1));
         mineLoaded.setTax(mineSection.getInt("tax", 0));
         mineLoaded.setOpen(mineSection.getBoolean("isOpen", true));
         mineLoaded.setTier(mineSection.getInt("tier", 1));
-        plugin.getLogger().info("Propriétés de base définies: Size=" + mineLoaded.getSize() + ", Tax=" + mineLoaded.getTax() + ", Open=" + mineLoaded.isOpen() + ", Tier=" + mineLoaded.getTier());
+        PrivateMines.debugLog("Propriétés: Size=" + mineLoaded.getSize() + ", Tax=" + mineLoaded.getTax() + ", Open=" + mineLoaded.isOpen() + ", Tier=" + mineLoaded.getTier());
         if (mineSection.contains("area")) {
             int minX = mineSection.getInt("area.minX");
             int minY = mineSection.getInt("area.minY");
@@ -148,9 +136,7 @@ public class MineListener implements Listener {
             int maxY = mineSection.getInt("area.maxY");
             int maxZ = mineSection.getInt("area.maxZ");
             mineLoaded.setMineArea(minX, minY, minZ, maxX, maxY, maxZ);
-            plugin.getLogger().info("[DEBUG] Zone de mine récupérée: " + minX + "," + minY + "," + minZ + " à " + maxX + "," + maxY + "," + maxZ);
-        } else {
-            plugin.getLogger().info("Pas de section 'area' trouvée dans les données");
+            PrivateMines.debugLog("Zone de mine: " + minX + "," + minY + "," + minZ + " à " + maxX + "," + maxY + "," + maxZ);
         }
         if (mineSection.contains("teleport")) {
             String tpWorldName = mineSection.getString("teleport.world", world.getName());
@@ -163,9 +149,7 @@ public class MineListener implements Listener {
             float tpPitch = (float) mineSection.getDouble("teleport.pitch", 0);
             Location teleportLocation = new Location(tpWorld, tpX, tpY, tpZ, tpYaw, tpPitch);
             mineLoaded.setTeleportLocation(teleportLocation);
-            plugin.getLogger().info("Point de téléportation défini: " + tpX + "," + tpY + "," + tpZ);
-        } else {
-            plugin.getLogger().info("Pas de section 'teleport' trouvée dans les données");
+            PrivateMines.debugLog("Point de téléportation: " + tpX + "," + tpY + "," + tpZ);
         }
         if (mineSection.contains("blocks")) {
             ConfigurationSection blocksSection = mineSection.getConfigurationSection("blocks");
@@ -183,40 +167,33 @@ public class MineListener implements Listener {
             }
             if (!blocks.isEmpty()) {
                 mineLoaded.setBlocks(blocks);
-                plugin.getLogger().info("Blocs définis: " + blocks.size() + " types de blocs");
-            } else {
-                plugin.getLogger().info("Aucun bloc valide trouvé dans la section 'blocks'");
+                PrivateMines.debugLog("Blocs définis: " + blocks.size() + " types");
             }
-        } else {
-            plugin.getLogger().info("Pas de section 'blocks' trouvée dans les données");
         }
         return mineLoaded;
     }
     private void handleAutoMineAssignment(Player player) {
         boolean giveMineOnJoin = configManager.getConfig().getBoolean("Config.Give-Mine-On-Join", true);
-        plugin.getLogger().info("Give-Mine-On-Join activé? " + giveMineOnJoin);
+        PrivateMines.debugLog("Give-Mine-On-Join activé? " + giveMineOnJoin);
         if (giveMineOnJoin) {
             boolean pregenEnabled = configManager.getConfig().getBoolean("Config.Pregen-Mine-Assignment.enabled", true);
             boolean preferExisting = configManager.getConfig().getBoolean("Config.Pregen-Mine-Assignment.prefer-existing-mines", true);
-            plugin.getLogger().info("Attribution auto mines pré-générées: activée=" + pregenEnabled + ", préférer existantes=" + preferExisting);
+            PrivateMines.debugLog("Attribution auto: activée=" + pregenEnabled + ", préférer existantes=" + preferExisting);
             if (pregenEnabled && preferExisting) {
                 Mine availableMine = mineManager.findAvailablePregenMine();
-                plugin.getLogger().info("Mine pré-générée disponible? " + (availableMine != null));
+                PrivateMines.debugLog("Mine pré-générée disponible? " + (availableMine != null));
                 if (availableMine != null) {
                     boolean success = mineManager.assignPregenMineToPlayer(availableMine, player);
-                    plugin.getLogger().info("Attribution réussie? " + success);
+                    PrivateMines.debugLog("Attribution réussie? " + success);
                     if (success) {
-                        if (availableMine != null) {
-                            player.teleport(mineManager.getBetterTeleportLocation(availableMine));
-                        }
+                        player.teleport(mineManager.getBetterTeleportLocation(availableMine));
                         player.sendMessage(configManager.getMessage("mine-assigned"));
-                        plugin.getLogger().info("============================================");
                         return;
                     }
                 }
             }
-            plugin.getLogger().info("Création d'une nouvelle mine pour " + player.getName());
+            PrivateMines.debugLog("Création d'une nouvelle mine pour " + player.getName());
             mineManager.createMine(player);
         }
     }
-} 
+}

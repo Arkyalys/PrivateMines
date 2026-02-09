@@ -19,7 +19,7 @@ public class MineCommandUtils {
     public static void showPlayerStats(PrivateMines plugin, MineManager mineManager, ConfigManager configManager, Player viewer, UUID ownerUUID) {
         Mine mine = mineManager.getMine(ownerUUID).orElse(null);
         if (mine == null) {
-            viewer.sendMessage(configManager.getMessage("Messages.no-mine"));
+            viewer.sendMessage(configManager.getMessage("no-mine"));
             return;
         }
         MineStats stats = mine.getStats();

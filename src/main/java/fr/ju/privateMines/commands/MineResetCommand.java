@@ -20,12 +20,12 @@ public class MineResetCommand implements SubCommand {
     @Override
     public boolean execute(Player player, String[] args, CommandSender sender, Command command, String label) {
         if (!player.hasPermission(Permissions.RESET)) {
-            player.sendMessage(configManager.getMessage("Messages.no-permission"));
+            player.sendMessage(configManager.getMessage("no-permission"));
             return true;
         }
         Mine mine = mineManager.getMine(player).orElse(null);
         if (mine == null) {
-            player.sendMessage(configManager.getMessage("Messages.no-mine"));
+            player.sendMessage(configManager.getMessage("no-mine"));
             return true;
         }
         if (mine.hasMineArea()) {
