@@ -49,7 +49,7 @@ public class MineRegionService {
             PrivateMines.debugLog("[DEBUG-CREATE] Région fullmine-" + mine.getOwner() + " créée : min=" + boundsToUse[0] + ", max=" + boundsToUse[1]);
         }
         if (!schematicValide && mine.hasSchematicBounds()) {
-            plugin.getLogger().warning("[DEBUG-CREATE] Impossible de créer la région fullmine-" + mine.getOwner() + " : bounds schematic invalides ou absents (vérifiez data.yml)");
+            PrivateMines.debugLog("[DEBUG-CREATE] Impossible de créer la région fullmine-" + mine.getOwner() + " : bounds schematic invalides ou absents (vérifiez data.yml)");
         }
     }
     private ProtectedRegion createProtectedRegion(String regionId, BlockVector3 min, BlockVector3 max, Mine mine) {
