@@ -3,70 +3,70 @@ version: 3.0-HOTFIX
 main: fr.ju.privateMines.PrivateMines
 api-version: 1.19
 author: Julien
-description: Private mines management plugin
+description: Plugin de gestion de mines privées
 depend: [WorldEdit, WorldGuard, FastAsyncWorldEdit]
 softdepend: [PlaceholderAPI]
 commands:
   jumine:
-    description: Main plugin command
+    description: Commande principale du plugin
     aliases: [pmine, mine]
     permission: privatemines.use
 
 permissions:
   privatemines.use:
-    description: Allows using the main /jumine command
+    description: Permet d'utiliser la commande principale /jumine
     default: true
   privatemines.create:
-    description: Allows creating a private mine
+    description: Permet de créer une mine privée
     default: true
   privatemines.delete:
-    description: Allows deleting your private mine
+    description: Permet de supprimer sa mine privée
     default: true
   privatemines.reset:
-    description: Allows resetting your private mine
+    description: Permet de réinitialiser sa mine privée
     default: true
   privatemines.expand:
-    description: Allows expanding your private mine
+    description: Permet d'agrandir sa mine privée
     default: true
   privatemines.settype:
-    description: Allows changing your mine type
+    description: Permet de changer le type de sa mine
     default: true
   privatemines.settax:
-    description: Allows setting your mine tax
+    description: Permet de définir la taxe de sa mine
     default: true
   privatemines.teleport:
-    description: Allows teleporting to your mine
+    description: Permet de se téléporter à sa mine
     default: true
   privatemines.admin:
-    description: Gives access to all admin commands
+    description: Donne accès à toutes les commandes admin
     default: op
   privatemines.admin.create:
-    description: Allows creating a private mine for another player
+    description: Permet de créer une mine pour un autre joueur
     default: op
   privatemines.admin.delete:
-    description: Allows deleting another player's private mine
+    description: Permet de supprimer la mine d'un autre joueur
     default: op
   privatemines.admin.reset:
-    description: Allows resetting another player's private mine
+    description: Permet de réinitialiser la mine d'un autre joueur
     default: op
   privatemines.admin.expand:
-    description: Allows expanding another player's private mine
+    description: Permet d'agrandir la mine d'un autre joueur
     default: op
   privatemines.admin.settype:
-    description: Allows changing the type of another player's private mine
+    description: Permet de changer le type de mine d'un autre joueur
     default: op
   privatemines.admin.settax:
-    description: Allows setting the tax for another player's private mine
+    description: Permet de définir la taxe de la mine d'un autre joueur
     default: op
   privatemines.admin.settier:
-    description: Allows setting the tier of a private mine
+    description: Permet de définir le palier d'une mine
     default: op
   privatemines.admin.pregen:
-    description: Allows pre-generating mines
+    description: Permet de pré-générer des mines
     default: op
   privatemines.admin.upgrade:
-    description: Allows upgrading mines (without cost)
+    description: Permet d'améliorer des mines (sans coût)
     default: op
   privatemines.admin.reload:
-    description: Allows reloading the plugin configuration
+    description: Permet de recharger la configuration du plugin
     default: op

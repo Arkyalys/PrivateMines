@@ -3,20 +3,19 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import org.bukkit.plugin.java.JavaPlugin;
 public class ErrorHandler {
     private final JavaPlugin plugin;
     private final File errorLogFile;
-    private final SimpleDateFormat dateFormat;
+    private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     public ErrorHandler(JavaPlugin plugin) {
         this.plugin = plugin;
         if (!plugin.getDataFolder().exists()) {
             plugin.getDataFolder().mkdirs();
         }
         this.errorLogFile = new File(plugin.getDataFolder(), "errors.log");
-        this.dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         if (!errorLogFile.exists()) {
             try {
                 errorLogFile.createNewFile();
@@ -26,7 +25,7 @@ public class ErrorHandler {
         }
     }
     public void logError(String message, Throwable throwable) {
-        String timestamp = dateFormat.format(new Date());
+        String timestamp = LocalDateTime.now().format(DATE_FORMAT);
         String logMessage = String.format("[%s] %s", timestamp, message);
         plugin.getLogger().severe(logMessage);
         if (throwable != null) {
@@ -43,7 +42,7 @@ public class ErrorHandler {
         }
     }
     public void logWarning(String message) {
-        String timestamp = dateFormat.format(new Date());
+        String timestamp = LocalDateTime.now().format(DATE_FORMAT);
         String logMessage = String.format("[%s] WARNING: %s", timestamp, message);
         plugin.getLogger().warning(message);
         try (PrintWriter writer = new PrintWriter(new FileWriter(errorLogFile, true))) {
@@ -54,7 +53,7 @@ public class ErrorHandler {
         }
     }
     public void logInfo(String message) {
-        String timestamp = dateFormat.format(new Date());
+        String timestamp = LocalDateTime.now().format(DATE_FORMAT);
         String logMessage = String.format("[%s] INFO: %s", timestamp, message);
         plugin.getLogger().info(message);
         try (PrintWriter writer = new PrintWriter(new FileWriter(errorLogFile, true))) {

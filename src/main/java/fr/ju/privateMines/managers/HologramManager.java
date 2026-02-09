@@ -88,7 +88,7 @@ public class HologramManager {
         if (ownerName == null) {
             ownerName = "Inconnu";
         }
-        int resetThreshold = plugin.getConfigManager().getConfig().getInt("Gameplay.auto-reset.threshold", 65);
+        int resetThreshold = plugin.getConfigManager().getConfig().getInt("Config.Gameplay.auto-reset.threshold", 65);
         int percentageMined = stats.getPercentageMined();
         String progressBar = ProgressBarUtil.createProgressBar(percentageMined);
         List<String> allLines = new java.util.ArrayList<>();

@@ -33,9 +33,9 @@ public class StatsManager {
         this.plugin = plugin;
         this.statsFile = new File(plugin.getDataFolder(), "stats.yml");
         this.mineStats = new ConcurrentHashMap<>();
-        this.enabled = plugin.getConfigManager().getConfig().getBoolean("Statistics.enabled", true);
-        this.saveInterval = plugin.getConfigManager().getConfig().getInt("Statistics.save-interval", 10);
-        this.maxTrackedVisitors = plugin.getConfigManager().getConfig().getInt("Statistics.max-tracked-visitors", 50);
+        this.enabled = plugin.getConfigManager().getConfig().getBoolean("Config.Statistics.enabled", true);
+        this.saveInterval = plugin.getConfigManager().getConfig().getInt("Config.Statistics.save-interval", 10);
+        this.maxTrackedVisitors = plugin.getConfigManager().getConfig().getInt("Config.Statistics.max-tracked-visitors", 50);
         this.statsPersistenceService = new StatsPersistenceService(plugin, this);
         this.statsBlocksService = new StatsBlocksService(plugin, this);
         this.statsResetService = new StatsResetService(plugin, this);

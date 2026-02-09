@@ -206,7 +206,7 @@ public class PrivateMinesPlaceholders extends PlaceholderExpansion {
         return ProgressBarUtil.createProgressBar(mine.getStats().getPercentageMined());
     }
     private String getNextReset(Mine mine) {
-        int threshold = plugin.getConfigManager().getConfig().getInt("Gameplay.auto-reset.threshold", 65);
+        int threshold = plugin.getConfigManager().getConfig().getInt("Config.Gameplay.auto-reset.threshold", 65);
         int percent = mine.getStats().getPercentageMined();
         return String.valueOf(Math.max(0, threshold - percent));
     }
@@ -226,7 +226,7 @@ public class PrivateMinesPlaceholders extends PlaceholderExpansion {
         return sb.toString().trim();
     }
     private String isMineFull(Mine mine) {
-        int threshold = plugin.getConfigManager().getConfig().getInt("Gameplay.auto-reset.threshold", 65);
+        int threshold = plugin.getConfigManager().getConfig().getInt("Config.Gameplay.auto-reset.threshold", 65);
         return mine.getStats().getPercentageMined() >= threshold ? "true" : "false";
     }
     private String getLastVisitor(Mine mine) {

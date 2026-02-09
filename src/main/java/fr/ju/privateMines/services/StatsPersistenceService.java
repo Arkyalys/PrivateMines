@@ -162,8 +162,8 @@ public class StatsPersistenceService {
             setStatsConfig(newConfig);
             
             // Notifications
-            boolean notifyConsole = plugin.getConfigManager().getConfig().getBoolean("Statistics.notifications.console", false);
-            boolean notifyInGame = plugin.getConfigManager().getConfig().getBoolean("Statistics.notifications.in-game", false);
+            boolean notifyConsole = plugin.getConfigManager().getConfig().getBoolean("Config.Statistics.notifications.console", false);
+            boolean notifyInGame = plugin.getConfigManager().getConfig().getBoolean("Config.Statistics.notifications.in-game", false);
             
             if (notifyConsole) {
                 plugin.getLogger().info("Statistiques sauvegardées avec succès !");

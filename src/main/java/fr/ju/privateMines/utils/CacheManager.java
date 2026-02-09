@@ -1,13 +1,13 @@
 package fr.ju.privateMines.utils;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 public class CacheManager {
     private final Map<String, CacheEntry> cache;
     private final long defaultExpirationTime;
     public CacheManager() {
-        this.cache = new HashMap<>();
-        this.defaultExpirationTime = TimeUnit.MINUTES.toMillis(5); 
+        this.cache = new ConcurrentHashMap<>();
+        this.defaultExpirationTime = TimeUnit.MINUTES.toMillis(5);
     }
     public void put(String key, Object value) {
         put(key, value, defaultExpirationTime);

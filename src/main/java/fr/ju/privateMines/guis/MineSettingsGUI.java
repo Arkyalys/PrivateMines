@@ -57,8 +57,8 @@ public class MineSettingsGUI {
         inventory.setItem(12, taxItem);
     }
     private static void setupResetItem(Inventory inventory, Mine mine, GUIManager guiManager, PrivateMines plugin) {
-        boolean autoReset = plugin.getConfigManager().getConfig().getBoolean("Config.Mines.auto-reset", true);
-        int resetPercentage = plugin.getConfigManager().getConfig().getInt("Config.Mines.auto-reset-percentage", 75);
+        boolean autoReset = plugin.getConfigManager().getConfig().getBoolean("Config.Gameplay.auto-reset.enabled", true);
+        int resetPercentage = plugin.getConfigManager().getConfig().getInt("Config.Gameplay.auto-reset.threshold", 65);
         List<String> resetLore = new ArrayList<>();
         resetLore.add("&7Reset automatique: " + (autoReset ? "&aActivé" : "&cDésactivé"));
         if (autoReset) {

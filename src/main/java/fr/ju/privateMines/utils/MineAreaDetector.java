@@ -3,96 +3,133 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
+import org.bukkit.ChunkSnapshot;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
 import fr.ju.privateMines.PrivateMines;
 import fr.ju.privateMines.models.Mine;
 public class MineAreaDetector {
+    private static final Material[] MARKER_TYPES = {
+        Material.POWERED_RAIL,
+        Material.RAIL,
+        Material.DETECTOR_RAIL,
+        Material.REDSTONE_BLOCK
+    };
+    private static final String[] MARKER_NAMES = {
+        "powered rail",
+        "regular rail",
+        "detector rail",
+        "redstone block"
+    };
+
     public MineAreaDetector(PrivateMines plugin) {
     }
+
     public boolean detectMineArea(Mine mine) {
         Location center = mine.getLocation();
-        Location topRail = null;
-        Location bottomRail = null;
-        PrivateMines.debugLog("Starting marker detection for mine at " + center.toString());
-        int searchRadius = 150;
-        PrivateMines.debugLog("Searching for rails in a radius of " + searchRadius + " blocks...");
-        PrivateMines.debugLog("Searching for powered rails...");
-        Location[] railLocations = searchForMarkers(center, searchRadius, Material.POWERED_RAIL, "powered rail");
-        if (railLocations != null) {
-            topRail = railLocations[0];
-            bottomRail = railLocations[1];
-            return processFoundMarkers(mine, topRail, bottomRail);
+        PrivateMines.debugLog("Début de la détection de marqueurs pour la mine à " + center.toString());
+
+        // Recherche progressive : d'abord petit rayon, puis plus grand si nécessaire
+        int[] searchRadii = {50, 100, 150};
+
+        for (int radius : searchRadii) {
+            PrivateMines.debugLog("Recherche avec rayon de " + radius + " blocs...");
+            for (int i = 0; i < MARKER_TYPES.length; i++) {
+                PrivateMines.debugLog("Recherche de " + MARKER_NAMES[i] + "...");
+                Location[] railLocations = searchForMarkersChunkBased(center, radius, MARKER_TYPES[i]);
+                if (railLocations != null) {
+                    return processFoundMarkers(mine, railLocations[0], railLocations[1]);
+                }
+            }
         }
-        PrivateMines.debugLog("No powered rail found, searching for regular rails...");
-        railLocations = searchForMarkers(center, searchRadius, Material.RAIL, "regular rail");
-        if (railLocations != null) {
-            topRail = railLocations[0];
-            bottomRail = railLocations[1];
-            return processFoundMarkers(mine, topRail, bottomRail);
-        }
-        PrivateMines.debugLog("No regular rail found, searching for detector rails...");
-        railLocations = searchForMarkers(center, searchRadius, Material.DETECTOR_RAIL, "detector rail");
-        if (railLocations != null) {
-            topRail = railLocations[0];
-            bottomRail = railLocations[1];
-            return processFoundMarkers(mine, topRail, bottomRail);
-        }
-        PrivateMines.debugLog("No detector rail found, searching for redstone blocks...");
-        railLocations = searchForMarkers(center, searchRadius, Material.REDSTONE_BLOCK, "redstone block");
-        if (railLocations != null) {
-            topRail = railLocations[0];
-            bottomRail = railLocations[1];
-            return processFoundMarkers(mine, topRail, bottomRail);
-        }
-        PrivateMines.debugLog("No marker found in the mine after thorough search!");
+
+        PrivateMines.debugLog("Aucun marqueur trouvé après recherche complète !");
         return false;
     }
-    private Location[] searchForMarkers(Location center, int searchRadius,
-                                      Material markerType, String markerName) {
+
+    /**
+     * Recherche optimisée par chunks au lieu de bloc par bloc.
+     * Au lieu d'itérer sur radius³ blocs individuels (27M pour radius=150),
+     * on itère sur les chunks concernés et utilise ChunkSnapshot pour un accès rapide.
+     */
+    private Location[] searchForMarkersChunkBased(Location center, int searchRadius,
+                                                   Material markerType) {
+        World world = center.getWorld();
+        if (world == null) return null;
+
+        int centerX = center.getBlockX();
+        int centerY = center.getBlockY();
+        int centerZ = center.getBlockZ();
+
+        int minChunkX = (centerX - searchRadius) >> 4;
+        int maxChunkX = (centerX + searchRadius) >> 4;
+        int minChunkZ = (centerZ - searchRadius) >> 4;
+        int maxChunkZ = (centerZ + searchRadius) >> 4;
+
+        int minY = Math.max(world.getMinHeight(), centerY - searchRadius);
+        int maxY = Math.min(world.getMaxHeight() - 1, centerY + searchRadius);
+
+        int foundMinX = Integer.MAX_VALUE, foundMinY = Integer.MAX_VALUE, foundMinZ = Integer.MAX_VALUE;
+        int foundMaxX = Integer.MIN_VALUE, foundMaxY = Integer.MIN_VALUE, foundMaxZ = Integer.MIN_VALUE;
         boolean found = false;
-        List<Location> allRailLocations = new ArrayList<>();
-        for (int y = searchRadius; y >= -searchRadius; y--) {
-            for (int x = -searchRadius; x <= searchRadius; x++) {
-                for (int z = -searchRadius; z <= searchRadius; z++) {
-                    Location loc = center.clone().add(x, y, z);
-                    Block block = loc.getBlock();
-                    if (block.getType() == markerType) {
-                        allRailLocations.add(loc);
-                        found = true;
+
+        for (int cx = minChunkX; cx <= maxChunkX; cx++) {
+            for (int cz = minChunkZ; cz <= maxChunkZ; cz++) {
+                if (!world.isChunkLoaded(cx, cz)) {
+                    world.getChunkAt(cx, cz);
+                }
+
+                ChunkSnapshot snapshot = world.getChunkAt(cx, cz).getChunkSnapshot();
+                int chunkBaseX = cx << 4;
+                int chunkBaseZ = cz << 4;
+
+                // Limiter la recherche aux blocs dans le rayon
+                int blockMinX = Math.max(0, (centerX - searchRadius) - chunkBaseX);
+                int blockMaxX = Math.min(15, (centerX + searchRadius) - chunkBaseX);
+                int blockMinZ = Math.max(0, (centerZ - searchRadius) - chunkBaseZ);
+                int blockMaxZ = Math.min(15, (centerZ + searchRadius) - chunkBaseZ);
+
+                for (int y = maxY; y >= minY; y--) {
+                    for (int bx = blockMinX; bx <= blockMaxX; bx++) {
+                        for (int bz = blockMinZ; bz <= blockMaxZ; bz++) {
+                            Material type = snapshot.getBlockType(bx, y, bz);
+                            if (type == markerType) {
+                                int worldX = chunkBaseX + bx;
+                                int worldZ = chunkBaseZ + bz;
+                                foundMinX = Math.min(foundMinX, worldX);
+                                foundMinY = Math.min(foundMinY, y);
+                                foundMinZ = Math.min(foundMinZ, worldZ);
+                                foundMaxX = Math.max(foundMaxX, worldX);
+                                foundMaxY = Math.max(foundMaxY, y);
+                                foundMaxZ = Math.max(foundMaxZ, worldZ);
+                                found = true;
+                            }
+                        }
                     }
                 }
             }
         }
-        if (found && !allRailLocations.isEmpty()) {
-            double minX = Double.MAX_VALUE;
-            double minY = Double.MAX_VALUE;
-            double minZ = Double.MAX_VALUE;
-            double maxX = Double.MIN_VALUE;
-            double maxY = Double.MIN_VALUE;
-            double maxZ = Double.MIN_VALUE;
-            for (Location railLoc : allRailLocations) {
-                minX = Math.min(minX, railLoc.getBlockX());
-                minY = Math.min(minY, railLoc.getBlockY());
-                minZ = Math.min(minZ, railLoc.getBlockZ());
-                maxX = Math.max(maxX, railLoc.getBlockX());
-                maxY = Math.max(maxY, railLoc.getBlockY());
-                maxZ = Math.max(maxZ, railLoc.getBlockZ());
-            }
-            Location minLocation = new Location(center.getWorld(), minX, minY, minZ);
-            Location maxLocation = new Location(center.getWorld(), maxX, maxY, maxZ);
+
+        if (found) {
+            Location maxLocation = new Location(world, foundMaxX, foundMaxY, foundMaxZ);
+            Location minLocation = new Location(world, foundMinX, foundMinY, foundMinZ);
+            PrivateMines.debugLog("Marqueurs trouvés : min=(" + foundMinX + "," + foundMinY + "," + foundMinZ +
+                                  ") max=(" + foundMaxX + "," + foundMaxY + "," + foundMaxZ + ")");
             return new Location[] { maxLocation, minLocation };
         }
+
         return null;
     }
+
     private boolean processFoundMarkers(Mine mine, Location topRail, Location bottomRail) {
         if (topRail == null || bottomRail == null) {
-            PrivateMines.debugLog("Incomplete markers!");
+            PrivateMines.debugLog("Marqueurs incomplets !");
             return false;
         }
         int minX = Math.min(topRail.getBlockX(), bottomRail.getBlockX());
@@ -102,17 +139,19 @@ public class MineAreaDetector {
         int minZ = Math.min(topRail.getBlockZ(), bottomRail.getBlockZ());
         int maxZ = Math.max(topRail.getBlockZ(), bottomRail.getBlockZ());
         mine.setMineArea(minX, minY, minZ, maxX, maxY, maxZ);
-        PrivateMines.debugLog("[DEBUG] Mine area set, totalBlocks=" + 
-                              mine.getStats().getTotalBlocks() + ", blocksMined=" + 
+        PrivateMines.debugLog("[DEBUG] Zone de mine définie, totalBlocks=" +
+                              mine.getStats().getTotalBlocks() + ", blocksMined=" +
                               mine.getStats().getBlocksMined());
         fillMineWithOres(mine, minX, minY, minZ, maxX, maxY, maxZ);
         return true;
     }
+
     private void fillMineWithOres(Mine mine, int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
         Map<Material, Double> blockDistribution = getBlockDistribution(mine);
         List<Material> weightedMaterials = buildWeightedMaterials(blockDistribution);
         fillBlocksInArea(mine, minX, minY, minZ, maxX, maxY, maxZ, weightedMaterials);
     }
+
     private Map<Material, Double> getBlockDistribution(Mine mine) {
         Map<Material, Double> blockDistribution = mine.getBlocks();
         if (blockDistribution == null || blockDistribution.isEmpty()) {
@@ -124,6 +163,7 @@ public class MineAreaDetector {
         }
         return blockDistribution;
     }
+
     private List<Material> buildWeightedMaterials(Map<Material, Double> blockDistribution) {
         List<Material> weightedMaterials = new ArrayList<>();
         for (Map.Entry<Material, Double> entry : blockDistribution.entrySet()) {
@@ -137,12 +177,14 @@ public class MineAreaDetector {
         }
         return weightedMaterials;
     }
+
     private void fillBlocksInArea(Mine mine, int minX, int minY, int minZ, int maxX, int maxY, int maxZ, List<Material> weightedMaterials) {
-        Random random = new Random();
+        ThreadLocalRandom random = ThreadLocalRandom.current();
+        World world = mine.getLocation().getWorld();
         for (int x = minX; x <= maxX; x++) {
             for (int y = minY; y <= maxY; y++) {
                 for (int z = minZ; z <= maxZ; z++) {
-                    Block block = mine.getLocation().getWorld().getBlockAt(x, y, z);
+                    Block block = world.getBlockAt(x, y, z);
                     if (block.getType() == Material.AIR) {
                         Material material = weightedMaterials.get(random.nextInt(weightedMaterials.size()));
                         block.setType(material);
@@ -151,11 +193,12 @@ public class MineAreaDetector {
             }
         }
     }
+
     public void helpPlaceRails(Player player) {
-        player.sendMessage(ColorUtil.translateColors("&eTo define the ore spawn area:"));
-        player.sendMessage(ColorUtil.translateColors("&7- Place a &6powered rail &7at the top of the area"));
-        player.sendMessage(ColorUtil.translateColors("&7- Place a &6powered rail &7at the bottom of the area"));
-        player.sendMessage(ColorUtil.translateColors("&7- The rails must be placed at opposite corners of the area"));
-        player.sendMessage(ColorUtil.translateColors("&7- Once the rails are placed, use &6/jumine create &7to create the mine"));
+        player.sendMessage(ColorUtil.translateColors("&ePour définir la zone de spawn des minerais :"));
+        player.sendMessage(ColorUtil.translateColors("&7- Placez un &6rail alimenté &7en haut de la zone"));
+        player.sendMessage(ColorUtil.translateColors("&7- Placez un &6rail alimenté &7en bas de la zone"));
+        player.sendMessage(ColorUtil.translateColors("&7- Les rails doivent être placés aux coins opposés de la zone"));
+        player.sendMessage(ColorUtil.translateColors("&7- Une fois les rails placés, utilisez &6/jumine create &7pour créer la mine"));
     }
-} 
+}
