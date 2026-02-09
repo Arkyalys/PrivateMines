@@ -42,7 +42,9 @@ public class MineSetTierCommand implements SubCommand {
             }
             mine.setTier(tier);
             mineManager.resetMine(tierTargetPlayer);
-            player.sendMessage(configManager.getMessage("mine-tier-set"));
+            player.sendMessage(configManager.getMessage("mine-tier-set")
+                    .replace("%player%", tierTargetPlayer.getName())
+                    .replace("%tier%", String.valueOf(tier)));
         } catch (NumberFormatException e) {
             player.sendMessage(configManager.getMessage("mine-invalid-tier"));
         }

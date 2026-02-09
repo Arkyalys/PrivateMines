@@ -40,7 +40,7 @@ public class MineExpandCommand implements SubCommand {
         fillMineWithOresAndBedrock(mine);
         mineManager.saveMineData(player);
         mineManager.resetMine(player);
-        player.sendMessage(configManager.getMessage("mine-expanded").replace("{size}", String.valueOf(mine.getSize())));
+        player.sendMessage(configManager.getMessage("mine-expanded").replace("%size%", String.valueOf(mine.getSize())));
         return true;
     }
     private void expandMineArea(fr.ju.privateMines.models.Mine mine) {
