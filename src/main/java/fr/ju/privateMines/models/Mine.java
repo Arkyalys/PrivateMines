@@ -110,7 +110,9 @@ public class Mine {
         this.maxX = maxX;
         this.maxY = maxY;
         this.maxZ = maxZ;
-        int totalBlocks = (maxX - minX + 1) * (maxY - minY + 1) * (maxZ - minZ + 1);
+        int totalBlocks = (int) Math.min(
+            (long)(maxX - minX + 1) * (maxY - minY + 1) * (maxZ - minZ + 1),
+            Integer.MAX_VALUE);
         this.stats.setTotalBlocks(totalBlocks);
         this.stats.resetBlockStats();
     }
@@ -195,7 +197,9 @@ public class Mine {
     }
     public void calculateTotalBlocks() {
         if (!hasMineArea()) return;
-        int total = (maxX - minX + 1) * (maxY - minY + 1) * (maxZ - minZ + 1);
+        int total = (int) Math.min(
+            (long)(maxX - minX + 1) * (maxY - minY + 1) * (maxZ - minZ + 1),
+            Integer.MAX_VALUE);
         stats.setTotalBlocks(total);
         if (statsService != null) {
             MineStats statsManagerStats = statsService.getStats(owner);

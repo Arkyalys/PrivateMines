@@ -170,13 +170,15 @@ public class MineListener implements Listener {
         if (mineSection.contains("blocks")) {
             ConfigurationSection blocksSection = mineSection.getConfigurationSection("blocks");
             Map<Material, Double> blocks = new HashMap<>();
-            for (String materialName : blocksSection.getKeys(false)) {
-                try {
-                    Material material = Material.valueOf(materialName);
-                    double chance = blocksSection.getDouble(materialName);
-                    blocks.put(material, chance);
-                } catch (IllegalArgumentException e) {
-                    plugin.getLogger().warning("Type de bloc invalide: " + materialName);
+            if (blocksSection != null) {
+                for (String materialName : blocksSection.getKeys(false)) {
+                    try {
+                        Material material = Material.valueOf(materialName);
+                        double chance = blocksSection.getDouble(materialName);
+                        blocks.put(material, chance);
+                    } catch (IllegalArgumentException e) {
+                        plugin.getLogger().warning("Type de bloc invalide: " + materialName);
+                    }
                 }
             }
             if (!blocks.isEmpty()) {
