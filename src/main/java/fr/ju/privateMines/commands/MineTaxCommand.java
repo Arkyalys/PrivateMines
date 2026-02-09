@@ -24,7 +24,7 @@ public class MineTaxCommand implements SubCommand {
         }
         if (args.length < 2) {
             Map<String, String> replacements = new HashMap<>();
-            int maxTax = configManager.getConfig().getInt("Config.Gameplay.max-tax", 100);
+            int maxTax = configManager.getMaxTax();
             replacements.put("%max-tax%", String.valueOf(maxTax));
             player.sendMessage(configManager.getMessage("mine-invalid-tax", replacements));
             return true;
@@ -34,7 +34,7 @@ public class MineTaxCommand implements SubCommand {
             mineManager.setMineTax(player, tax);
         } catch (NumberFormatException e) {
             Map<String, String> replacements = new HashMap<>();
-            int maxTax = configManager.getConfig().getInt("Config.Gameplay.max-tax", 100);
+            int maxTax = configManager.getMaxTax();
             replacements.put("%max-tax%", String.valueOf(maxTax));
             player.sendMessage(configManager.getMessage("mine-invalid-tax", replacements));
         }

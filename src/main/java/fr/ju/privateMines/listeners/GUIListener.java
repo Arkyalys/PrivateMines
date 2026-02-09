@@ -484,7 +484,7 @@ public class GUIListener implements Listener {
             }
             Mine mine = plugin.getMineManager().getMine(player).orElse(null);
             if (mine == null) return;
-            int maxSize = plugin.getConfigManager().getConfig().getInt("Config.Mines.max-size", 100);
+            int maxSize = plugin.getConfigManager().getMaxMineSize();
                 if (mine.getSize() >= maxSize) {
                     player.sendMessage(plugin.getConfigManager().getMessageOrDefault("gui.max-size", "&cVotre mine a déjà atteint sa taille maximale."));
                     player.closeInventory();

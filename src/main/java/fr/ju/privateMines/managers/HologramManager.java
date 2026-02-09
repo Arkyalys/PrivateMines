@@ -82,11 +82,8 @@ public class HologramManager {
     }
     private List<String> generateCentralHologramLines(Mine mine) {
         MineStats stats = mine.getStats();
-        String ownerName = plugin.getServer().getOfflinePlayer(mine.getOwner()).getName();
-        if (ownerName == null) {
-            ownerName = "Inconnu";
-        }
-        int resetThreshold = plugin.getConfigManager().getConfig().getInt("Config.Gameplay.auto-reset.threshold", 65);
+        String ownerName = plugin.getPlayerNameCache().getName(mine.getOwner());
+        int resetThreshold = plugin.getConfigManager().getAutoResetThreshold();
         int percentageMined = stats.getPercentageMined();
         String progressBar = ProgressBarUtil.createProgressBar(percentageMined);
         List<String> allLines = new java.util.ArrayList<>();
@@ -203,10 +200,7 @@ public class HologramManager {
      * Ajoute les informations du propriétaire de la mine
      */
     private void addOwnerInfo(List<String> lines, Mine mine) {
-        String ownerName = plugin.getServer().getOfflinePlayer(mine.getOwner()).getName();
-        if (ownerName == null) {
-            ownerName = "Inconnu";
-        }
+        String ownerName = plugin.getPlayerNameCache().getName(mine.getOwner());
         lines.add("&e&lPropriétaire: &f" + ownerName);
     }
     

@@ -3,7 +3,6 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
-import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 
 import fr.ju.privateMines.PrivateMines;
@@ -95,8 +94,7 @@ public class PrivateMinesPlaceholders extends PlaceholderExpansion {
             case "tax": return String.valueOf(mine.getTax());
             case "is_open": return mine.isOpen() ? "Ouverte" : "Fermée";
             case "owner":
-                String ownerName = Bukkit.getOfflinePlayer(mine.getOwner()).getName();
-                return ownerName != null ? ownerName : mine.getOwner().toString();
+                return plugin.getPlayerNameCache().getName(mine.getOwner());
             default: return null;
         }
     }
@@ -208,7 +206,7 @@ public class PrivateMinesPlaceholders extends PlaceholderExpansion {
         return ProgressBarUtil.createProgressBar(mine.getStats().getPercentageMined());
     }
     private String getNextReset(Mine mine) {
-        int threshold = plugin.getConfigManager().getConfig().getInt("Config.Gameplay.auto-reset.threshold", 65);
+        int threshold = plugin.getConfigManager().getAutoResetThreshold();
         int percent = mine.getStats().getPercentageMined();
         return String.valueOf(Math.max(0, threshold - percent));
     }
@@ -228,7 +226,7 @@ public class PrivateMinesPlaceholders extends PlaceholderExpansion {
         return sb.toString().trim();
     }
     private String isMineFull(Mine mine) {
-        int threshold = plugin.getConfigManager().getConfig().getInt("Config.Gameplay.auto-reset.threshold", 65);
+        int threshold = plugin.getConfigManager().getAutoResetThreshold();
         return mine.getStats().getPercentageMined() >= threshold ? "true" : "false";
     }
     private String getLastVisitor(Mine mine) {
@@ -241,7 +239,7 @@ public class PrivateMinesPlaceholders extends PlaceholderExpansion {
                 lastTime = entry.getValue();
             }
         }
-        return last != null ? Bukkit.getOfflinePlayer(last).getName() : "N/A";
+        return last != null ? plugin.getPlayerNameCache().getName(last) : "N/A";
     }
     private String getResetCount(Mine mine) {
         return String.valueOf((int) (System.currentTimeMillis() - mine.getStats().getLastReset()) / 1000);
@@ -382,11 +380,10 @@ public class PrivateMinesPlaceholders extends PlaceholderExpansion {
      * Récupère la valeur spécifique demandée pour une mine du top
      */
     private String getTopMineValue(Mine topMine, String valueType) {
-        OfflinePlayer owner = Bukkit.getOfflinePlayer(topMine.getOwner());
         MineStats stats = topMine.getStats();
-        
+
         switch (valueType) {
-            case "name": return owner.getName() != null ? owner.getName() : "Inconnu";
+            case "name": return plugin.getPlayerNameCache().getName(topMine.getOwner());
             case "blocks": return String.valueOf(stats.getBlocksMined());
             case "visits": return String.valueOf(stats.getVisits());
             case "tier": return String.valueOf(topMine.getTier());

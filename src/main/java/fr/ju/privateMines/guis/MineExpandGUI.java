@@ -35,7 +35,7 @@ public class MineExpandGUI {
         Inventory inventory = Bukkit.createInventory(null, 36, Component.text(ColorUtil.translateColors(GUI_TITLE)));
         
         // Récupérer la taille maximale de mine configurée
-        int maxSize = plugin.getConfigManager().getConfig().getInt("Config.Mines.max-size", 100);
+        int maxSize = plugin.getConfigManager().getMaxMineSize();
         
         // Ajouter les différents éléments à l'inventaire
         addCurrentSizeItem(inventory, mine, maxSize);
@@ -244,7 +244,7 @@ public class MineExpandGUI {
      * Ajoute le bouton d'action pour agrandir la mine
      */
     private static void addExpandActionButton(Inventory inventory, Mine mine, PrivateMines plugin, GUIManager guiManager) {
-        int costPerSize = plugin.getConfigManager().getConfig().getInt("Config.Gameplay.expand-cost", 100);
+        int costPerSize = plugin.getConfigManager().getExpandCost();
         
         List<String> lore = new ArrayList<>();
         lore.add("&7Agrandir votre mine pour augmenter");

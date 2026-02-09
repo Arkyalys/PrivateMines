@@ -137,10 +137,7 @@ public class MineVisitorsGUI {
      */
     private static ItemStack createContributorHeadItem(UUID contributorId) {
         OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(contributorId);
-        String name = offlinePlayer.getName();
-        if (name == null) {
-            name = contributorId.toString().substring(0, 8);
-        }
+        String name = PrivateMines.getInstance().getPlayerNameCache().getName(contributorId);
         
         ItemStack contributorItem = new ItemStack(Material.PLAYER_HEAD);
         SkullMeta meta = (SkullMeta) contributorItem.getItemMeta();
@@ -212,10 +209,7 @@ public class MineVisitorsGUI {
         
         // Récupérer les informations sur le joueur cible
         OfflinePlayer targetPlayer = Bukkit.getOfflinePlayer(targetId);
-        String targetName = targetPlayer.getName();
-        if (targetName == null) {
-            targetName = targetId.toString().substring(0, 8);
-        }
+        String targetName = PrivateMines.getInstance().getPlayerNameCache().getName(targetId);
         
         // Vérifier la mine du joueur
         Mine ownerMine = plugin.getMineManager().getMine(player).orElse(null);

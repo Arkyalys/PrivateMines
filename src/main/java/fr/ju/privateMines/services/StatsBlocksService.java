@@ -28,8 +28,6 @@ public class StatsBlocksService {
         stats.incrementBlocksMined();
         plugin.getMetricsService().incrementBlocksMined();
         mine.getStats().setBlocksMined(stats.getBlocksMined());
-        return stats.shouldAutoReset(
-            plugin.getConfigManager().getConfig().getInt("Config.Gameplay.auto-reset.threshold", 65)
-        );
+        return stats.shouldAutoReset(plugin.getConfigManager().getAutoResetThreshold());
     }
 } 

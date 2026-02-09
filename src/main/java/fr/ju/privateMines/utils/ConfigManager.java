@@ -17,13 +17,36 @@ public class ConfigManager {
     private File dataFile;
     private FileConfiguration tiers;
     private File tiersFile;
+
+    // Valeurs config cachées (évite les lookups YAML répétés sur les hot paths)
+    private volatile int autoResetThreshold;
+    private volatile int maxMineSize;
+    private volatile int maxTax;
+    private volatile int expandCost;
+    private volatile boolean autoResetEnabled;
+
     public ConfigManager(PrivateMines plugin) {
         this.plugin = plugin;
         setupConfig();
         setupMessages();
         setupData();
         setupTiers();
+        refreshCachedValues();
     }
+
+    private void refreshCachedValues() {
+        this.autoResetThreshold = config.getInt("Config.Gameplay.auto-reset.threshold", 65);
+        this.maxMineSize = config.getInt("Config.Mines.max-size", 100);
+        this.maxTax = config.getInt("Config.Gameplay.max-tax", 100);
+        this.expandCost = config.getInt("Config.Gameplay.expand-cost", 100);
+        this.autoResetEnabled = config.getBoolean("Config.Gameplay.auto-reset.enabled", true);
+    }
+
+    public int getAutoResetThreshold() { return autoResetThreshold; }
+    public int getMaxMineSize() { return maxMineSize; }
+    public int getMaxTax() { return maxTax; }
+    public int getExpandCost() { return expandCost; }
+    public boolean isAutoResetEnabled() { return autoResetEnabled; }
     private void setupConfig() {
         if (!plugin.getDataFolder().exists()) {
             plugin.getDataFolder().mkdir();
@@ -126,6 +149,7 @@ public class ConfigManager {
         config = YamlConfiguration.loadConfiguration(configFile);
         messages = YamlConfiguration.loadConfiguration(messagesFile);
         tiers = YamlConfiguration.loadConfiguration(tiersFile);
+        refreshCachedValues();
     }
     public void reloadData() {
         data = YamlConfiguration.loadConfiguration(dataFile);

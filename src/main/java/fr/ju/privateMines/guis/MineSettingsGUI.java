@@ -41,7 +41,7 @@ public class MineSettingsGUI {
     }
     private static void setupTaxItem(Inventory inventory, Mine mine, GUIManager guiManager, PrivateMines plugin) {
         int currentTax = mine.getTax();
-        int maxTax = plugin.getConfigManager().getConfig().getInt("Config.Gameplay.max-tax", 100);
+        int maxTax = plugin.getConfigManager().getMaxTax();
         List<String> taxLore = new ArrayList<>();
         taxLore.add("&7Taxe actuelle: &b" + currentTax + "%");
         taxLore.add("");
@@ -57,8 +57,8 @@ public class MineSettingsGUI {
         inventory.setItem(12, taxItem);
     }
     private static void setupResetItem(Inventory inventory, Mine mine, GUIManager guiManager, PrivateMines plugin) {
-        boolean autoReset = plugin.getConfigManager().getConfig().getBoolean("Config.Gameplay.auto-reset.enabled", true);
-        int resetPercentage = plugin.getConfigManager().getConfig().getInt("Config.Gameplay.auto-reset.threshold", 65);
+        boolean autoReset = plugin.getConfigManager().isAutoResetEnabled();
+        int resetPercentage = plugin.getConfigManager().getAutoResetThreshold();
         List<String> resetLore = new ArrayList<>();
         resetLore.add("&7Reset automatique: " + (autoReset ? "&aActivé" : "&cDésactivé"));
         if (autoReset) {

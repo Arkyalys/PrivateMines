@@ -20,6 +20,7 @@ import fr.ju.privateMines.utils.ConfigValidator;
 import fr.ju.privateMines.utils.DependencyManager;
 import fr.ju.privateMines.utils.ErrorHandler;
 import fr.ju.privateMines.utils.GUIManager;
+import fr.ju.privateMines.utils.PlayerNameCache;
 public class PrivateMines extends JavaPlugin {
     private static PrivateMines instance;
     private ConfigManager configManager;
@@ -33,6 +34,7 @@ public class PrivateMines extends JavaPlugin {
     private CacheManager cacheManager;
     private GUIManager guiManager;
     private MetricsService metricsService;
+    private PlayerNameCache playerNameCache;
     private static boolean debugMode = false;
     @Override
     public void onEnable() {
@@ -44,6 +46,8 @@ public class PrivateMines extends JavaPlugin {
             if (!checkAndHandleDependencies()) return;
             if (!loadAndValidateConfig()) return;
             initializeManagers();
+            playerNameCache = new PlayerNameCache();
+            getServer().getPluginManager().registerEvents(playerNameCache, this);
             metricsService = new MetricsService(this);
             metricsService.updateActiveMines(mineManager.getAllMines().size());
             metricsService.updateOpenMines((int) mineManager.getAllMines().stream().filter(fr.ju.privateMines.models.Mine::isOpen).count());
@@ -178,6 +182,10 @@ public class PrivateMines extends JavaPlugin {
 
     public MetricsService getMetricsService() {
         return metricsService;
+    }
+
+    public PlayerNameCache getPlayerNameCache() {
+        return playerNameCache;
     }
 
     /**

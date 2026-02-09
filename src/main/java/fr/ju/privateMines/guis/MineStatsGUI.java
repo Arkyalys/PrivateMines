@@ -138,8 +138,7 @@ public class MineStatsGUI {
             .sorted(Map.Entry.<java.util.UUID, Integer>comparingByValue().reversed())
             .limit(3)
             .forEach(entry -> {
-                String playerName = Bukkit.getOfflinePlayer(entry.getKey()).getName();
-                if (playerName == null) playerName = "Joueur inconnu";
+                String playerName = PrivateMines.getInstance().getPlayerNameCache().getName(entry.getKey());
                 visitorLore.add("&7- &b" + playerName + "&7: &b" + entry.getValue() + " visites");
             });
         

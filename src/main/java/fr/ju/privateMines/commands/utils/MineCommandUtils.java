@@ -27,9 +27,9 @@ public class MineCommandUtils {
             viewer.sendMessage(configManager.getMessageOrDefault("stats-none", "&cAucune statistique disponible pour cette mine."));
             return;
         }
-        String ownerName = plugin.getServer().getOfflinePlayer(ownerUUID).getName();
-        Map<String, String> rep = Map.of("%player%", ownerName != null ? ownerName : ownerUUID.toString(), "%mined%", String.valueOf(stats.getBlocksMined()), "%total%", String.valueOf(stats.getTotalBlocks()), "%percentage%", String.valueOf(stats.getPercentageMined()), "%visits%", String.valueOf(stats.getVisits()), "%time%", formatTimestamp(stats.getLastReset()));
-        viewer.sendMessage(configManager.getMessage("stats-header", Map.of("%player%", ownerName != null ? ownerName : ownerUUID.toString())));
+        String ownerName = plugin.getPlayerNameCache().getName(ownerUUID);
+        Map<String, String> rep = Map.of("%player%", ownerName, "%mined%", String.valueOf(stats.getBlocksMined()), "%total%", String.valueOf(stats.getTotalBlocks()), "%percentage%", String.valueOf(stats.getPercentageMined()), "%visits%", String.valueOf(stats.getVisits()), "%time%", formatTimestamp(stats.getLastReset()));
+        viewer.sendMessage(configManager.getMessage("stats-header", Map.of("%player%", ownerName)));
         viewer.sendMessage(configManager.getMessage("stats-blocks", rep));
         viewer.sendMessage(configManager.getMessage("stats-visits", rep));
         viewer.sendMessage(configManager.getMessage("stats-last-reset", rep));
@@ -46,8 +46,8 @@ public class MineCommandUtils {
         int count = 0;
         for (Mine mine : sortedMines) {
             if (count >= 5) break;
-            String ownerName = plugin.getServer().getOfflinePlayer(mine.getOwner()).getName();
-            Map<String, String> rep = Map.of("%position%", String.valueOf(count + 1), "%player%", ownerName != null ? ownerName : mine.getOwner().toString(), "%blocks%", String.valueOf(mine.getStats().getBlocksMined()));
+            String ownerName = plugin.getPlayerNameCache().getName(mine.getOwner());
+            Map<String, String> rep = Map.of("%position%", String.valueOf(count + 1), "%player%", ownerName, "%blocks%", String.valueOf(mine.getStats().getBlocksMined()));
             viewer.sendMessage(configManager.getMessage("stats-top-entry", rep));
             count++;
         }
