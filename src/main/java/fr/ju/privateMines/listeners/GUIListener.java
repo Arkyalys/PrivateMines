@@ -187,33 +187,17 @@ public class GUIListener implements Listener {
     }
     
     private void handleOwnerMainGUIClick(Player player, int slot) {
-        // Utilisation d'une approche fonctionnelle avec une map de slots vers des actions
-        Map<Integer, Runnable> slotActions = createSlotActionsMap(player);
-        
-        // Exécution de l'action associée au slot s'il existe
-        Runnable action = slotActions.get(slot);
-        if (action != null) {
-            action.run();
+        switch (slot) {
+            case 4 -> handleStatsButton(player);
+            case 20 -> handleTeleportButton(player);
+            case 21 -> handleResetButton(player);
+            case 22 -> handleToggleAccessButton(player);
+            case 23 -> handleSettingsButton(player);
+            case 24 -> handleVisitorsButton(player);
+            case 30 -> handleExpandButton(player);
+            case 31 -> handleUpgradeButton(player);
+            case 32 -> handleDeleteButton(player);
         }
-    }
-    
-    /**
-     * Crée une map associant chaque slot à son action correspondante
-     */
-    private Map<Integer, Runnable> createSlotActionsMap(Player player) {
-        Map<Integer, Runnable> actions = new HashMap<>();
-        
-        actions.put(4, () -> handleStatsButton(player));
-        actions.put(20, () -> handleTeleportButton(player));
-        actions.put(21, () -> handleResetButton(player));
-        actions.put(22, () -> handleToggleAccessButton(player));
-        actions.put(23, () -> handleSettingsButton(player));
-        actions.put(24, () -> handleVisitorsButton(player));
-        actions.put(30, () -> handleExpandButton(player));
-        actions.put(31, () -> handleUpgradeButton(player));
-        actions.put(32, () -> handleDeleteButton(player));
-        
-        return actions;
     }
     
     /**

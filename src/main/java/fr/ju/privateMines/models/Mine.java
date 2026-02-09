@@ -1,9 +1,9 @@
 package fr.ju.privateMines.models;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -23,7 +23,7 @@ public class Mine {
     private double schematicMinX, schematicMinY, schematicMinZ;
     private double schematicMaxX, schematicMaxY, schematicMaxZ;
     private MineAccess mineAccess;
-    private final Set<UUID> contributors = new HashSet<>();
+    private final Set<UUID> contributors = ConcurrentHashMap.newKeySet();
     private IStatsService statsService;
     
     public Mine(UUID owner, Location location) {
@@ -38,7 +38,7 @@ public class Mine {
         this.size = 1;
         this.tax = 0;
         this.isOpen = true;
-        this.blocks = new HashMap<>();
+        this.blocks = new ConcurrentHashMap<>();
         this.teleportLocation = location.clone().add(0.5, 1, 0.5);
         this.teleportLocation.setYaw(270);
         this.stats = new MineStats(owner);

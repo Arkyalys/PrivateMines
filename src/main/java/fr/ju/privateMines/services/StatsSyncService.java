@@ -10,6 +10,7 @@ import fr.ju.privateMines.models.MineStats;
 public class StatsSyncService {
     private final PrivateMines plugin;
     private final StatsManager statsManager;
+    private final Object saveLock = new Object();
     public StatsSyncService(PrivateMines plugin, StatsManager statsManager) {
         this.plugin = plugin;
         this.statsManager = statsManager;
@@ -43,16 +44,18 @@ public class StatsSyncService {
                 PrivateMines.debugLog("[DEBUG] Updated StatsManager's blocksMined to match mine: " + mineStats.getBlocksMined());
             }
         }
-        String path = "mines." + ownerUUID.toString();
-        FileConfiguration statsConfig = statsManager.statsConfig;
-        File statsFile = statsManager.statsFile;
-        statsConfig.set(path + ".total-blocks", statsManagerStats.getTotalBlocks());
-        statsConfig.set(path + ".blocks-mined", statsManagerStats.getBlocksMined());
-        try {
-            statsConfig.save(statsFile);
-            PrivateMines.debugLog("[DEBUG] Saved updated stats to stats.yml for UUID " + ownerUUID);
-        } catch (IOException e) {
-            plugin.getLogger().severe("Unable to save stats.yml after synchronization: " + e.getMessage());
+        synchronized (saveLock) {
+            String path = "mines." + ownerUUID.toString();
+            FileConfiguration statsConfig = statsManager.statsConfig;
+            File statsFile = statsManager.statsFile;
+            statsConfig.set(path + ".total-blocks", statsManagerStats.getTotalBlocks());
+            statsConfig.set(path + ".blocks-mined", statsManagerStats.getBlocksMined());
+            try {
+                statsConfig.save(statsFile);
+                PrivateMines.debugLog("[DEBUG] Saved updated stats to stats.yml for UUID " + ownerUUID);
+            } catch (IOException e) {
+                plugin.getLogger().severe("Unable to save stats.yml after synchronization: " + e.getMessage());
+            }
         }
     }
 } 

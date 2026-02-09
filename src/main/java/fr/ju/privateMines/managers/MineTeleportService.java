@@ -122,24 +122,24 @@ public class MineTeleportService {
      * Génère un point de téléportation basé sur les limites du schéma
      */
     private Location getSchematicBasedTeleportLocation(Mine mine) {
-        plugin.getLogger().info("Utilisation des limites du schéma pour la téléportation");
-        
+        debug("Utilisation des limites du schéma pour la téléportation");
+
         double teleportX = mine.getSchematicMinX() - 2;
         double centerY = Math.max(64, mine.getSchematicMinY() + 1);
         double centerZ = (mine.getSchematicMinZ() + mine.getSchematicMaxZ()) / 2;
-        
+
         Location schematicCenter = new Location(mine.getLocation().getWorld(), teleportX, centerY, centerZ);
         schematicCenter.setYaw(90);
-        
-        plugin.getLogger().info("Point de téléportation basé sur le schéma: " + schematicCenter.toString());
+
+        debug("Point de téléportation basé sur le schéma: " + schematicCenter);
         return schematicCenter;
     }
-    
+
     /**
      * Retourne la position de téléportation de base (fallback)
      */
     private Location getBaseTeleportLocation(Mine mine) {
-        plugin.getLogger().info("Aucune zone ou schéma défini, utilisation de la position de base de la mine");
+        debug("Aucune zone ou schéma défini, utilisation de la position de base de la mine");
         Location baseLoc = mine.getLocation().clone().add(0.5, 1, 0.5);
         baseLoc.setYaw(90);
         return baseLoc;
@@ -164,12 +164,7 @@ public class MineTeleportService {
                location.getZ() + "]";
     }
     
-    /**
-     * Log un message de debug si le mode debug est activé
-     */
     private void debug(String message) {
-        if (PrivateMines.isDebugMode()) {
-            plugin.getLogger().info("[DEBUG] " + message);
-        }
+        PrivateMines.debugLog("[TELEPORT] " + message);
     }
 } 

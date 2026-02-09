@@ -18,8 +18,8 @@ import fr.ju.privateMines.services.StatsResetService;
 import fr.ju.privateMines.services.StatsSyncService;
 public class StatsManager {
     final PrivateMines plugin;
-    public File statsFile;
-    public FileConfiguration statsConfig;
+    public final File statsFile;
+    public volatile FileConfiguration statsConfig;
     public final Map<UUID, MineStats> mineStats;
     public final boolean enabled;
     public final int saveInterval;
