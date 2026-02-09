@@ -3,14 +3,19 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ThreadLocalRandom;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChunkSnapshot;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
+
+import com.sk89q.worldedit.EditSession;
+import com.sk89q.worldedit.WorldEdit;
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldedit.math.BlockVector3;
+import com.sk89q.worldedit.world.block.BlockTypes;
 
 import fr.ju.privateMines.PrivateMines;
 import fr.ju.privateMines.models.Mine;
@@ -179,19 +184,35 @@ public class MineAreaDetector {
     }
 
     private void fillBlocksInArea(Mine mine, int minX, int minY, int minZ, int maxX, int maxY, int maxZ, List<Material> weightedMaterials) {
-        ThreadLocalRandom random = ThreadLocalRandom.current();
         World world = mine.getLocation().getWorld();
-        for (int x = minX; x <= maxX; x++) {
-            for (int y = minY; y <= maxY; y++) {
-                for (int z = minZ; z <= maxZ; z++) {
-                    Block block = world.getBlockAt(x, y, z);
-                    if (block.getType() == Material.AIR) {
-                        Material material = weightedMaterials.get(random.nextInt(weightedMaterials.size()));
-                        block.setType(material);
+        if (world == null) return;
+
+        Material[] weightedArray = weightedMaterials.toArray(new Material[0]);
+        com.sk89q.worldedit.world.World weWorld = BukkitAdapter.adapt(world);
+        PrivateMines plugin = PrivateMines.getInstance();
+
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            try (EditSession editSession = WorldEdit.getInstance().newEditSession(weWorld)) {
+                java.util.Random random = new java.util.Random();
+                for (int x = minX; x <= maxX; x++) {
+                    for (int y = minY; y <= maxY; y++) {
+                        for (int z = minZ; z <= maxZ; z++) {
+                            BlockVector3 pos = BlockVector3.at(x, y, z);
+                            if (editSession.getBlock(pos).getBlockType() == BlockTypes.AIR) {
+                                Material mat = weightedArray[random.nextInt(weightedArray.length)];
+                                com.sk89q.worldedit.world.block.BlockType weType = BukkitAdapter.asBlockType(mat);
+                                if (weType != null) {
+                                    editSession.setBlock(pos, weType.getDefaultState());
+                                }
+                            }
+                        }
                     }
                 }
+                PrivateMines.debugLog("[MineAreaDetector] Remplissage async terminé pour mine " + mine.getOwner());
+            } catch (Exception e) {
+                PrivateMines.getInstance().getLogger().severe("Erreur FAWE lors du remplissage initial: " + e.getMessage());
             }
-        }
+        });
     }
 
     public void helpPlaceRails(Player player) {
