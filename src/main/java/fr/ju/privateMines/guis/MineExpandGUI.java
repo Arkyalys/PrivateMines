@@ -244,7 +244,7 @@ public class MineExpandGUI {
      * Ajoute le bouton d'action pour agrandir la mine
      */
     private static void addExpandActionButton(Inventory inventory, Mine mine, PrivateMines plugin, GUIManager guiManager) {
-        int costPerSize = plugin.getConfigManager().getConfig().getInt("Config.Mines.expand-cost", 100);
+        int costPerSize = plugin.getConfigManager().getConfig().getInt("Config.Gameplay.expand-cost", 100);
         
         List<String> lore = new ArrayList<>();
         lore.add("&7Agrandir votre mine pour augmenter");

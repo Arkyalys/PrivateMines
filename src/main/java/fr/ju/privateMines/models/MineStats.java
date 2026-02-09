@@ -1,4 +1,5 @@
 package fr.ju.privateMines.models;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -58,7 +59,7 @@ public class MineStats {
         return lastReset;
     }
     public Map<UUID, Integer> getVisitorStats() {
-        return new HashMap<>(visitorStats);
+        return Collections.unmodifiableMap(visitorStats);
     }
     public void setLastReset(long lastReset) {
         this.lastReset = lastReset;

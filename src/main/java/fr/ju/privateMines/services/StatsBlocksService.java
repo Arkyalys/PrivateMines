@@ -16,12 +16,14 @@ public class StatsBlocksService {
         UUID ownerUUID = mine.getOwner();
         MineStats stats = statsManager.getMineStats().computeIfAbsent(ownerUUID, uuid -> new MineStats(uuid));
         if (stats.getTotalBlocks() <= 0 && mine.hasMineArea()) {
-            int calculatedTotal = (mine.getMaxX() - mine.getMinX() + 1) *
-                                 (mine.getMaxY() - mine.getMinY() + 1) *
-                                 (mine.getMaxZ() - mine.getMinZ() + 1);
+            int calculatedTotal = (int) Math.min(
+                (long)(mine.getMaxX() - mine.getMinX() + 1) *
+                (mine.getMaxY() - mine.getMinY() + 1) *
+                (mine.getMaxZ() - mine.getMinZ() + 1),
+                Integer.MAX_VALUE);
             stats.setTotalBlocks(calculatedTotal);
             mine.getStats().setTotalBlocks(calculatedTotal);
-            plugin.getLogger().info("[DEBUG] Auto-fixed totalBlocks to " + calculatedTotal + " for UUID " + ownerUUID);
+            PrivateMines.debugLog("[DEBUG] Auto-fixed totalBlocks to " + calculatedTotal + " for UUID " + ownerUUID);
         }
         stats.incrementBlocksMined();
         plugin.getMetricsService().incrementBlocksMined();

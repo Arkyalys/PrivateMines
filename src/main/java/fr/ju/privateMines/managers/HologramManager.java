@@ -1,9 +1,9 @@
 package fr.ju.privateMines.managers;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.bukkit.Location;
 
@@ -22,7 +22,7 @@ public class HologramManager {
     private final HologramUpdateService hologramUpdateService;
     public HologramManager(PrivateMines plugin) {
         this.plugin = plugin;
-        this.mineHolograms = new HashMap<>();
+        this.mineHolograms = new ConcurrentHashMap<>();
         this.hologramCreationService = new HologramCreationService(plugin, this);
         this.hologramDeleteService = new HologramDeleteService(plugin, this);
         this.hologramUpdateService = new HologramUpdateService(plugin, this);
@@ -31,9 +31,7 @@ public class HologramManager {
         if (mine == null || !mine.hasMineArea()) {
             return;
         }
-        if (!mineHolograms.containsKey(mine.getOwner())) {
-            mineHolograms.put(mine.getOwner(), new HashMap<>());
-        }
+        mineHolograms.computeIfAbsent(mine.getOwner(), k -> new ConcurrentHashMap<>());
         int minX = mine.getMinX();
         int maxX = mine.getMaxX();
         int minZ = mine.getMinZ();

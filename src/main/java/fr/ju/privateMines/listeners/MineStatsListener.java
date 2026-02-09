@@ -3,8 +3,6 @@ import org.bukkit.Location;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
-
 import fr.ju.privateMines.PrivateMines;
 import fr.ju.privateMines.managers.MineManager;
 import fr.ju.privateMines.managers.StatsManager;
@@ -28,10 +26,6 @@ public class MineStatsListener implements Listener {
             plugin.getHologramManager().createOrUpdateHologram(mine);
         }
     }
-    @EventHandler
-    public void onPlayerMove(PlayerMoveEvent event) {
-        // Suppression de la logique d'ajout de visite
-    }
     private Mine findMineByLocation(Location location) {
         // Vérifier le cache d'abord
         Mine cachedResult = getCachedMine(location);
@@ -49,24 +43,26 @@ public class MineStatsListener implements Listener {
     }
     
     /**
-     * Vérifie si la mine pour cette location est déjà en cache
+     * Vérifie si la mine pour ce chunk est déjà en cache.
+     * Comme le cache est par chunk, on re-vérifie les bounds exactes du bloc.
      */
     private Mine getCachedMine(Location location) {
         if (plugin.getCacheManager() == null) {
             return null;
         }
-        
+
         String cacheKey = buildLocationCacheKey(location);
         Object cachedMine = plugin.getCacheManager().get(cacheKey);
-        
+
         if (cachedMine instanceof Mine) {
-            return (Mine) cachedMine;
+            Mine mine = (Mine) cachedMine;
+            return isLocationInMine(location, mine) ? mine : null;
         }
-        
+
         if (cachedMine instanceof Boolean && !(Boolean)cachedMine) {
             return null;
         }
-        
+
         return null;
     }
     
@@ -124,12 +120,12 @@ public class MineStatsListener implements Listener {
     }
     
     /**
-     * Construit la clé de cache pour une location
+     * Construit la clé de cache par chunk (16x16) au lieu de par bloc.
+     * Réduit drastiquement le nombre d'entrées en cache.
      */
     private String buildLocationCacheKey(Location location) {
-        return "mine_at_" + location.getWorld().getName() + "_" + 
-               location.getBlockX() + "_" + 
-               location.getBlockY() + "_" + 
-               location.getBlockZ();
+        return "mine_chunk_" + location.getWorld().getName() + "_" +
+               (location.getBlockX() >> 4) + "_" +
+               (location.getBlockZ() >> 4);
     }
 } 

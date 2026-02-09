@@ -17,15 +17,17 @@ public class StatsResetService {
         MineStats stats = statsManager.getMineStats().computeIfAbsent(ownerUUID, uuid -> new MineStats(uuid));
         int totalBlocks = stats.getTotalBlocks();
         if (totalBlocks <= 0 && mine.hasMineArea()) {
-            totalBlocks = (mine.getMaxX() - mine.getMinX() + 1) *
-                         (mine.getMaxY() - mine.getMinY() + 1) *
-                         (mine.getMaxZ() - mine.getMinZ() + 1);
+            totalBlocks = (int) Math.min(
+                (long)(mine.getMaxX() - mine.getMinX() + 1) *
+                (mine.getMaxY() - mine.getMinY() + 1) *
+                (mine.getMaxZ() - mine.getMinZ() + 1),
+                Integer.MAX_VALUE);
         }
         stats.resetBlockStats();
         stats.setTotalBlocks(totalBlocks);
         mine.getStats().setTotalBlocks(totalBlocks);
         statsManager.saveStats();
-        plugin.getLogger().info("[DEBUG] Reset stats for mine owned by " + ownerUUID +
+        PrivateMines.debugLog("[DEBUG] Reset stats for mine owned by " + ownerUUID +
                               ". totalBlocks = " + totalBlocks +
                               ", blocksMined = " + stats.getBlocksMined());
     }

@@ -1,5 +1,6 @@
 package fr.ju.privateMines.commands;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -177,7 +178,7 @@ public class MineCommand implements CommandExecutor {
                     replacements.put("%world%", worldName);
                     sender.sendMessage(configManager.getMessage("mine-reset-world-unloaded", replacements));
                     try {
-                        org.bukkit.util.FileUtil.copy(worldFolder, worldFolder);
+                        deleteDirectory(worldFolder);
                         sender.sendMessage(configManager.getMessage("mine-reset-world-deleted", replacements));
                     } catch (Exception e) {
                         replacements.put("%error%", e.getMessage());
@@ -219,5 +220,23 @@ public class MineCommand implements CommandExecutor {
     }
     private void handleUnknownCommand(Player player) {
         player.sendMessage(configManager.getMessage("mine-usage-unknown"));
+    }
+    private void deleteDirectory(File directory) throws IOException {
+        if (!directory.exists()) return;
+        File[] files = directory.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    deleteDirectory(file);
+                } else {
+                    if (!file.delete()) {
+                        throw new IOException("Impossible de supprimer: " + file.getAbsolutePath());
+                    }
+                }
+            }
+        }
+        if (!directory.delete()) {
+            throw new IOException("Impossible de supprimer: " + directory.getAbsolutePath());
+        }
     }
 } 

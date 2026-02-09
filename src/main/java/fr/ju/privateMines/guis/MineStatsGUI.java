@@ -1,7 +1,8 @@
 package fr.ju.privateMines.guis;
-import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -92,9 +93,9 @@ public class MineStatsGUI {
 
     private static void addResetInfoItem(Inventory inventory, GUIManager guiManager, MineStats stats) {
         List<String> resetLore = new ArrayList<>();
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+        DateTimeFormatter sdf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss").withZone(ZoneId.systemDefault());
         long lastReset = stats.getLastReset();
-        String resetDate = lastReset > 0 ? sdf.format(new Date(lastReset)) : "Jamais";
+        String resetDate = lastReset > 0 ? sdf.format(Instant.ofEpochMilli(lastReset)) : "Jamais";
         
         resetLore.add("&7Dernier reset: &b" + resetDate);
         

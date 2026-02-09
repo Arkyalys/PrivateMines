@@ -136,8 +136,10 @@ public class PrivateMines extends JavaPlugin {
                 metricsService.stop();
             }
             errorHandler.logInfo("PrivateMines plugin successfully deactivated!");
+            errorHandler.shutdown();
         } catch (Exception e) {
             errorHandler.logError("Error while deactivating the plugin", e);
+            errorHandler.shutdown();
         }
     }
     public static PrivateMines getInstance() {

@@ -1,6 +1,7 @@
 package fr.ju.privateMines.placeholders;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -93,8 +94,9 @@ public class PrivateMinesPlaceholders extends PlaceholderExpansion {
             case "size": return String.valueOf(mine.getSize());
             case "tax": return String.valueOf(mine.getTax());
             case "is_open": return mine.isOpen() ? "Ouverte" : "Fermée";
-            case "owner": return Bukkit.getOfflinePlayer(mine.getOwner()).getName() != null ? 
-                          Bukkit.getOfflinePlayer(mine.getOwner()).getName() : mine.getOwner().toString();
+            case "owner":
+                String ownerName = Bukkit.getOfflinePlayer(mine.getOwner()).getName();
+                return ownerName != null ? ownerName : mine.getOwner().toString();
             default: return null;
         }
     }
@@ -264,9 +266,9 @@ public class PrivateMinesPlaceholders extends PlaceholderExpansion {
             return "N/A";
         }
     }
+    private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").withZone(ZoneId.systemDefault());
     private String formatDate(long timestamp) {
-        SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy HH:mm");
-        return format.format(new Date(timestamp));
+        return DATE_FORMAT.format(Instant.ofEpochMilli(timestamp));
     }
     /**
      * Type énuméré pour les coordonnées

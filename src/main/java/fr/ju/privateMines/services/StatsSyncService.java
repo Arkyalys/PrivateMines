@@ -22,23 +22,25 @@ public class StatsSyncService {
         int totalBlocks = mineStats.getTotalBlocks();
         if (totalBlocks > 0) {
             statsManagerStats.setTotalBlocks(totalBlocks);
-            plugin.getLogger().info("[DEBUG] Synchronized totalBlocks: " + totalBlocks + " for UUID " + ownerUUID);
+            PrivateMines.debugLog("[DEBUG] Synchronized totalBlocks: " + totalBlocks + " for UUID " + ownerUUID);
         } else if (mine.hasMineArea()) {
-            int calculatedTotal = (mine.getMaxX() - mine.getMinX() + 1) *
-                                (mine.getMaxY() - mine.getMinY() + 1) *
-                                (mine.getMaxZ() - mine.getMinZ() + 1);
+            int calculatedTotal = (int) Math.min(
+                (long)(mine.getMaxX() - mine.getMinX() + 1) *
+                (mine.getMaxY() - mine.getMinY() + 1) *
+                (mine.getMaxZ() - mine.getMinZ() + 1),
+                Integer.MAX_VALUE);
             statsManagerStats.setTotalBlocks(calculatedTotal);
             mineStats.setTotalBlocks(calculatedTotal);
-            plugin.getLogger().info("[DEBUG] Recalculated and synchronized totalBlocks: " + calculatedTotal + " for UUID " + ownerUUID);
+            PrivateMines.debugLog("[DEBUG] Recalculated and synchronized totalBlocks: " + calculatedTotal + " for UUID " + ownerUUID);
         }
         int blocksMined = statsManagerStats.getBlocksMined();
         if (blocksMined > 0) {
             if (mineStats.getBlocksMined() < blocksMined) {
                 mineStats.setBlocksMined(blocksMined);
-                plugin.getLogger().info("[DEBUG] Updated mine's blocksMined to match StatsManager: " + blocksMined);
+                PrivateMines.debugLog("[DEBUG] Updated mine's blocksMined to match StatsManager: " + blocksMined);
             } else if (mineStats.getBlocksMined() > blocksMined) {
                 statsManagerStats.setBlocksMined(mineStats.getBlocksMined());
-                plugin.getLogger().info("[DEBUG] Updated StatsManager's blocksMined to match mine: " + mineStats.getBlocksMined());
+                PrivateMines.debugLog("[DEBUG] Updated StatsManager's blocksMined to match mine: " + mineStats.getBlocksMined());
             }
         }
         String path = "mines." + ownerUUID.toString();
@@ -48,7 +50,7 @@ public class StatsSyncService {
         statsConfig.set(path + ".blocks-mined", statsManagerStats.getBlocksMined());
         try {
             statsConfig.save(statsFile);
-            plugin.getLogger().info("[DEBUG] Saved updated stats to stats.yml for UUID " + ownerUUID);
+            PrivateMines.debugLog("[DEBUG] Saved updated stats to stats.yml for UUID " + ownerUUID);
         } catch (IOException e) {
             plugin.getLogger().severe("Unable to save stats.yml after synchronization: " + e.getMessage());
         }

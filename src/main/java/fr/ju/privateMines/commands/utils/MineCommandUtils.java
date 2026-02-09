@@ -1,7 +1,8 @@
 package fr.ju.privateMines.commands.utils;
-import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -51,10 +52,9 @@ public class MineCommandUtils {
             count++;
         }
     }
+    private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").withZone(ZoneId.systemDefault());
     public static String formatTimestamp(long timestamp) {
-        Date date = new Date(timestamp);
-        SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy HH:mm");
-        return format.format(date);
+        return DATE_FORMAT.format(Instant.ofEpochMilli(timestamp));
     }
     public static void sendHelp(PrivateMines plugin, MineManager mineManager, ConfigManager configManager, Player player) {
         player.sendMessage(configManager.getMessage("help-title"));

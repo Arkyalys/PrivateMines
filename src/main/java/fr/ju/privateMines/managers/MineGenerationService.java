@@ -132,10 +132,6 @@ public class MineGenerationService {
             return false;
         }
     }
-    public void createDefaultMineArea(Mine mine) {
-    }
-    public void fillMineWithOres(Mine mine, Map<Integer, Map<Material, Double>> mineTiers) {
-    }
     public Material getRandomBlock(Map<Material, Double> blocks) {
         if (blocks == null || blocks.isEmpty()) {
             plugin.getLogger().severe("[Reset Debug] getRandomBlock a reçu une map de blocs vide ou nulle! Retourne STONE.");

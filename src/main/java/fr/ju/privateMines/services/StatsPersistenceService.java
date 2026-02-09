@@ -101,7 +101,7 @@ public class StatsPersistenceService {
      * Journalise les informations de débogage sur les blocs minés.
      */
     private void logDebugInfo(UUID owner, int blocksMined) {
-        plugin.getLogger().info("[DEBUG] Loaded " + blocksMined + " mined blocks for UUID " + owner);
+        PrivateMines.debugLog("[DEBUG] Loaded " + blocksMined + " mined blocks for UUID " + owner);
     }
     public void startSaveTask() {
         int saveInterval = getSaveInterval();
