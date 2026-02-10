@@ -46,7 +46,6 @@ public class MineExpandCommand implements SubCommand {
             return true;
         }
         mine.expand();
-        PrivateMines.getInstance().getMetricsService().incrementMineExpansions();
         if (mine.hasMineArea()) {
             expandMineArea(mine);
         }

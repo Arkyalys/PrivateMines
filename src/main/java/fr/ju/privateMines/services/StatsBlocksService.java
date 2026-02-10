@@ -26,7 +26,6 @@ public class StatsBlocksService {
             PrivateMines.debugLog("[DEBUG] Auto-fixed totalBlocks to " + calculatedTotal + " for UUID " + ownerUUID);
         }
         stats.incrementBlocksMined();
-        plugin.getMetricsService().incrementBlocksMined();
         mine.getStats().setBlocksMined(stats.getBlocksMined());
         return stats.shouldAutoReset(plugin.getConfigManager().getAutoResetThreshold());
     }

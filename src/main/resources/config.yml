@@ -154,13 +154,3 @@ MiningStats:
       final-earnings: "&b• &fGains totaux: &b${earnings}"
       final-hourly-rate: "&b• &fTaux horaire: &b${hourly_rate} &7/heure"
       final-time: "&7Durée totale de la session: &b{time}"
-
-# ┌─────────────────────────────────────┐
-# │         Métriques Prometheus         │
-# └─────────────────────────────────────┘
-# Expose les métriques du plugin sur un endpoint HTTP
-# Utile pour Grafana / monitoring
-
-Metrics:
-   enabled: true
-   port: 30012

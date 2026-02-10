@@ -31,7 +31,6 @@ public class MineTeleportCommand implements SubCommand {
             }
             player.teleport(tpLocation);
             player.sendMessage(configManager.getMessage("mine-teleport"));
-            PrivateMines.getInstance().getMetricsService().incrementTeleports();
             mineManager.saveMineData(player);
         } else {
             player.sendMessage(configManager.getMessage("mine-no-mine"));

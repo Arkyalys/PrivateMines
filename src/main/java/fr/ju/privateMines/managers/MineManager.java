@@ -269,9 +269,6 @@ public class MineManager {
         if (success) {
             debug("[DEBUG] Mine generation successful for " + player.getName() + ". Adding to map...");
             mineMemoryService.addMineToMap(player.getUniqueId(), mine);
-            plugin.getMetricsService().updateActiveMines(mineMemoryService.getPlayerMines().size());
-            plugin.getMetricsService().updateOpenMines((int) mineMemoryService.getPlayerMines().values().stream().filter(Mine::isOpen).count());
-            plugin.getMetricsService().incrementMinesCreated();
             debug("[DEBUG] Mine added to map for UUID: " + player.getUniqueId() + ". Map size: " + mineMemoryService.getPlayerMines().size());
             if (mine.hasMineArea()) {
                 mine.calculateTotalBlocks();
@@ -388,13 +385,9 @@ public class MineManager {
     }
     public void addMineToMap(UUID uuid, Mine mine) {
         mineMemoryService.addMineToMap(uuid, mine);
-        plugin.getMetricsService().updateActiveMines(mineMemoryService.getPlayerMines().size());
-        plugin.getMetricsService().updateOpenMines((int) mineMemoryService.getPlayerMines().values().stream().filter(Mine::isOpen).count());
     }
     public void removeMine(UUID uuid) {
         mineMemoryService.removeMine(uuid);
-        plugin.getMetricsService().updateActiveMines(mineMemoryService.getPlayerMines().size());
-        plugin.getMetricsService().updateOpenMines((int) mineMemoryService.getPlayerMines().values().stream().filter(Mine::isOpen).count());
     }
     public Mine findAvailablePregenMine() {
         for (Map.Entry<UUID, Mine> entry : mineMemoryService.getPlayerMines().entrySet()) {

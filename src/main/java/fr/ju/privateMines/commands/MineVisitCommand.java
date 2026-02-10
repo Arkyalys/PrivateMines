@@ -56,8 +56,6 @@ public class MineVisitCommand implements SubCommand {
         }
         player.teleport(targetLocation);
         targetMine.getStats().addVisit(player.getUniqueId());
-        PrivateMines.getInstance().getMetricsService().incrementVisits();
-        PrivateMines.getInstance().getMetricsService().incrementTeleports();
         Map<String, String> replacements = new HashMap<>();
         replacements.put("%player%", targetPlayer.getName());
         player.sendMessage(configManager.getMessage("mine-visit-success", replacements));

@@ -28,7 +28,6 @@ public class MineDeleteService {
             plugin.getHologramManager().removeHologram(ownerId);
         }
         mineManager.removeMine(ownerId);
-        plugin.getMetricsService().incrementMinesDeleted();
         String path = "mines." + ownerId.toString();
         plugin.getConfigManager().getData().set(path, null);
         plugin.getConfigManager().saveData();

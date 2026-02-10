@@ -546,7 +546,6 @@ public class GUIListener implements Listener {
         boolean currentState = mine.isOpen();
         mine.setOpen(!currentState);
         plugin.getMineManager().saveMine(mine);
-        plugin.getMetricsService().updateOpenMines((int) plugin.getMineManager().getAllMines().stream().filter(Mine::isOpen).count());
         String message = currentState ? 
                 "&cVotre mine est maintenant fermée aux visiteurs." : 
                 "&aVotre mine est maintenant ouverte aux visiteurs.";
