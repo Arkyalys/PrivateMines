@@ -24,23 +24,23 @@ public class MineTeleportService {
      */
     public Location getBetterTeleportLocation(Mine mine) {
         debug("Calcul du point de téléportation pour la mine de UUID: " + mine.getOwner());
-              
-        // Vérifie s'il existe déjà un point de téléportation personnalisé
-        if (hasCustomTeleportLocation(mine)) {
-            return mine.getTeleportLocation();
-        }
-        
-        // Génère un point de téléportation basé sur la zone de la mine
+
+        // Priorité 1: la zone de mine (le plus fiable)
         if (mine.hasMineArea()) {
             return getMineAreaTeleportLocation(mine);
         }
-        
-        // Utilise les limites du schéma si disponibles
+
+        // Priorité 2: les limites du schéma
         if (mine.hasSchematicBounds()) {
             return getSchematicBasedTeleportLocation(mine);
         }
-        
-        // Fallback: utilise la position de base de la mine
+
+        // Priorité 3: point de téléportation personnalisé
+        if (hasCustomTeleportLocation(mine)) {
+            return mine.getTeleportLocation();
+        }
+
+        // Fallback: position de base de la mine
         return getBaseTeleportLocation(mine);
     }
     

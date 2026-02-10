@@ -149,8 +149,9 @@ public class MineResetService {
      * DOIT etre appele depuis un thread async.
      */
     private void fillMineBlocks(Mine mine, Map<Material, Double> mineBlocks, World world, PrivateMines plugin) {
-        PrivateMines.debugLog("[Reset Debug] Remplissage FAWE: (" + mine.getMinX() + "," + mine.getMinY() + "," + mine.getMinZ() +
+        plugin.getLogger().info("[Reset] Remplissage FAWE zone: (" + mine.getMinX() + "," + mine.getMinY() + "," + mine.getMinZ() +
                 ") a (" + mine.getMaxX() + "," + mine.getMaxY() + "," + mine.getMaxZ() + ")");
+        plugin.getLogger().info("[Reset] Blocs du tier " + mine.getTier() + ": " + mineBlocks);
 
         com.sk89q.worldedit.world.World weWorld = BukkitAdapter.adapt(world);
 
@@ -170,10 +171,10 @@ public class MineResetService {
             );
 
             int blocksChanged = editSession.setBlocks(region, pattern);
-            PrivateMines.debugLog("[Reset Debug] Mine reset avec FAWE. " + blocksChanged + " blocs modifies.");
+            plugin.getLogger().info("[Reset] FAWE termine: " + blocksChanged + " blocs modifies.");
         } catch (Exception e) {
-            plugin.getLogger().severe("[Reset Debug] Erreur FAWE lors du reset: " + e.getMessage());
-            plugin.getErrorHandler().logError("Erreur FAWE lors du reset", e);
+            plugin.getLogger().severe("[Reset] Erreur FAWE: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
