@@ -56,66 +56,55 @@ public class MineTeleportService {
     }
     
     /**
-     * Génère un point de téléportation basé sur la zone de la mine
+     * Génère un point de téléportation basé sur la zone de la mine.
+     * Téléporte au centre de la mine area, au-dessus de la zone de minage.
+     * Ne retourne JAMAIS à la position de base (mine origin), car elle peut être
+     * très loin de la zone de minage réelle.
      */
     private Location getMineAreaTeleportLocation(Mine mine) {
         debug("Calcul d'un point de téléportation basé sur les limites de la mine");
-        
+
         World world = mine.getLocation().getWorld();
         if (world == null) {
             plugin.getLogger().warning("Le monde de la mine est null, utilisation de la position de base");
             return getBaseTeleportLocation(mine);
         }
-        
+
         logMineAreaDebugInfo(mine);
-        
-        // Calcul du point de téléportation initial
+
+        // Téléporter au centre de la mine area, juste au-dessus
+        int centerX = (mine.getMinX() + mine.getMaxX()) / 2;
         int centerZ = (mine.getMinZ() + mine.getMaxZ()) / 2;
-        int teleportX = mine.getMinX() - 2;
-        int teleportZ = centerZ;
-        int teleportY = Math.max(64, mine.getMinY() + 1);
-        
-        Location teleportLocation = new Location(world, teleportX + 0.5, teleportY, teleportZ + 0.5);
+        int teleportY = mine.getMaxY() + 2;
+
+        Location teleportLocation = new Location(world, centerX + 0.5, teleportY, centerZ + 0.5);
         teleportLocation.setYaw(90);
-        
+
         debug("Point de téléportation calculé: " + formatLocation(teleportLocation));
-        
-        // Vérifie si la position est sûre (pas de blocs solides)
+
+        // Cherche un espace libre vers le haut si nécessaire
         if (!isSafeLocation(teleportLocation)) {
-            return findSafeAlternativeLocation(mine, teleportX, teleportZ, teleportY, world);
+            for (int checkY = teleportY; checkY < teleportY + 20; checkY++) {
+                Location check = new Location(world, centerX + 0.5, checkY, centerZ + 0.5);
+                check.setYaw(90);
+                if (isSafeLocation(check)) {
+                    debug("Position sûre trouvée à Y=" + checkY);
+                    return check;
+                }
+            }
+            // Force la TP au centre de la mine area plutôt que retourner à l'origin
+            debug("Aucune position sûre trouvée, téléportation forcée au centre de la mine area");
         }
-        
+
         return teleportLocation;
     }
-    
+
     /**
      * Vérifie si une position est sûre pour la téléportation (espace libre)
      */
     private boolean isSafeLocation(Location location) {
-        return location.getBlock().getType() == Material.AIR && 
+        return location.getBlock().getType() == Material.AIR &&
                location.clone().add(0, 1, 0).getBlock().getType() == Material.AIR;
-    }
-    
-    /**
-     * Recherche une position de téléportation alternative sûre
-     */
-    private Location findSafeAlternativeLocation(Mine mine, int teleportX, int teleportZ, int teleportY, World world) {
-        debug("La position calculée n'est pas sûre, recherche d'une position alternative");
-        
-        // Essaie de trouver un espace libre en montant
-        for (int checkY = teleportY; checkY < Math.min(255, teleportY + 20); checkY++) {
-            Location check = new Location(world, teleportX + 0.5, checkY, teleportZ + 0.5);
-            check.setYaw(90);
-            
-            if (isSafeLocation(check)) {
-                debug("Position sûre trouvée à Y=" + checkY);
-                return check;
-            }
-        }
-        
-        // Si aucun espace sûr trouvé, retourne à la position de base
-        plugin.getLogger().warning("Aucune position sûre trouvée, retour à la position de base");
-        return getBaseTeleportLocation(mine);
     }
     
     /**
